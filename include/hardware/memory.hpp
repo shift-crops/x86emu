@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 #include <assert.h>
-#include "../common.hpp" 
+#include "common.hpp" 
 
 #define DEFAULT_MEMORY_SIZE 	(1*KB)
 #define CHECK_RANGE(addr, len)	assert(addr+len-1 < mem_size)

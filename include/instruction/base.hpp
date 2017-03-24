@@ -2,21 +2,8 @@
 #define _INSTR_BASE_H
 
 #include <string.h>
-#include "../common.hpp"
+#include "common.hpp"
 #include "instruction.hpp"
-
-#define GET_GPREG(reg) 			emu->get_gpreg(reg)
-#define SET_GPREG(reg, v) 		emu->set_gpreg(reg, v)
-#define UPDATE_GPREG(reg, v) 		emu->update_gpreg(reg, v)
-#define EFLAGS_UPDATE_ADD(v1, v2)	emu->p_eflags()->update_add(v1, v2)
-#define EFLAGS_UPDATE_OR(v1, v2)	emu->p_eflags()->update_or(v1, v2)
-#define EFLAGS_UPDATE_AND(v1, v2)	emu->p_eflags()->update_and(v1, v2)
-#define EFLAGS_UPDATE_SUB(v1, v2)	emu->p_eflags()->update_sub(v1, v2)
-#define EFLAGS_CF			(emu->p_eflags()->is_carry())
-#define EFLAGS_PF			(emu->p_eflags()->is_parity())
-#define EFLAGS_ZF			(emu->p_eflags()->is_zero())
-#define EFLAGS_SF			(emu->p_eflags()->is_sign())
-#define EFLAGS_OF			(emu->p_eflags()->is_overflow())
 
 class InstrBase : public ExecInstr , public ParseInstr {
 	public:

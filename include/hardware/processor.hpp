@@ -2,7 +2,7 @@
 #define _PROCESSOR_H
 
 #include <stdint.h>
-#include "../common.hpp"
+#include "common.hpp"
 
 enum reg32_t { EAX, ECX, EDX, EBX, ESP, EBP, ESI, EDI, GPREGS_COUNT };
 enum reg16_t { AX, CX, DX, BX, SP, BP, SI, DI };
@@ -59,7 +59,7 @@ class Processor {
 			uint16_t ip;
 		};
 
-		uint16_t sregs[SEGREGS_COUNT];
+		uint16_t segregs[SEGREGS_COUNT];
 
 		union{
 			uint32_t raw;
@@ -127,12 +127,14 @@ class Processor {
 		uint32_t get_gpreg(enum reg32_t n){ return gpregs[n].reg32; };
 		uint16_t get_gpreg(enum reg16_t n){ return gpregs[n].reg16; };
 		uint8_t get_gpreg(enum reg8_t n){ return n<AH ? gpregs[n].reg8_l : gpregs[n-AH].reg8_h; };
+		uint16_t get_segreg(enum segreg_t n){ return segregs[n]; };
 
 		void set_eip(uint32_t v){ eip = v; };
 		void set_eflags(uint32_t v){ eflags.raw = v; };
 		void set_gpreg(enum reg32_t n, uint32_t v){ gpregs[n].reg32 = v; };
 		void set_gpreg(enum reg16_t n, uint16_t v){ gpregs[n].reg16 = v; };
 		void set_gpreg(enum reg8_t n, uint8_t v){ (n<AH ? gpregs[n].reg8_l : gpregs[n-AH].reg8_h) = v; };
+		void set_segreg(enum segreg_t n, uint16_t v){ segregs[n] = v; };
 
 		uint32_t update_eip(int32_t v){ return eip += v; };
 		uint32_t update_gpreg(enum reg32_t n, int32_t v){ return gpregs[n].reg32 += v; };

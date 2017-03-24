@@ -1,4 +1,4 @@
-#include "eflags.hpp"
+#include "hardware/eflags.hpp"
 
 Eflags::Eflags(Processor *p){
 	processor = p;

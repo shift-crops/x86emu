@@ -4,7 +4,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <assert.h>
-#include "../common.hpp"
+#include "common.hpp"
 #include "processor.hpp"
 
 #define is_x(XF) 	processor && processor->eflags.XF

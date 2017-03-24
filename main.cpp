@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <string.h>
 #include "common.hpp"
-#include "instruction/instr_base.hpp"
-#include "hardware/emulator.hpp"
+#include "instruction/base.hpp"
+#include "emulator/emulator.hpp"
 
 #define MEMORY_SIZE (1*MB)
 

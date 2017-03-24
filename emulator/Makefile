@@ -1,6 +1,6 @@
-TARGET := hardware.a
+TARGET := emulator.a
 
-SRCS := processor.cpp memory.cpp eflags.cpp io.cpp
+SRCS := emulator.cpp
 OBJS := $(SRCS:.cpp=.o)
 DEPS := $(SRCS:.cpp=.d)
 

@@ -4,7 +4,7 @@ SRCS := parse.cpp exec.cpp instr16.cpp instr32.cpp
 OBJS := $(SRCS:.cpp=.o)
 DEPS := $(SRCS:.cpp=.d)
 
-CXXFLAGS := -Wall -MMD
+CXXFLAGS := -Wall -MMD -I../include
 
 all: $(TARGET)
 

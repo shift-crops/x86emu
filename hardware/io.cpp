@@ -1,5 +1,5 @@
 #include <stdint.h>
-#include "io.hpp"
+#include "hardware/io.hpp"
 
 IO::IO(){
 }
@@ -25,6 +25,7 @@ void IO::out_io32(uint16_t addr, uint32_t value){
 	switch (addr) {
 	}
 }
+
 void IO::out_io8(uint16_t addr, uint8_t value){
 	switch (addr) {
 		case 0x03f8:

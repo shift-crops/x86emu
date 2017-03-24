@@ -1,5 +1,5 @@
 #include <string.h>
-#include "processor.hpp"
+#include "hardware/processor.hpp"
 
 Processor::Processor(void){
 	memset(gpregs, 0, sizeof(gpregs));

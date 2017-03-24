@@ -1,5 +1,5 @@
 #include <stdint.h>
-#include "instr_base.hpp"
+#include "instruction/base.hpp"
 
 #define instr32(f) ((instrfunc_t)&Instr32::f)
 
@@ -376,7 +376,7 @@ void Instr32::push_imm8(void){
 #define JCC_REL8(cc, is_flag) \
 void Instr32::j ## cc(void){ \
 	if(is_flag) \
-		emu->update_eip(IMM8); \
+		UPDATE_EIP(IMM8); \
 }
 
 JCC_REL8(o, EFLAGS_OF)
@@ -538,7 +538,7 @@ void Instr32::ret(void){
 	uint32_t addr;
 
 	addr = pop32();
-	emu->set_eip(addr);
+	SET_EIP(addr);
 }
 
 void Instr32::mov_rm32_imm32(void){
@@ -576,16 +576,16 @@ void Instr32::out_imm8_eax(void){
 }
 
 void Instr32::call_rel32(void){
-	push32(emu->get_eip());
-	emu->update_eip(IMM32);
+	push32(GET_EIP());
+	UPDATE_EIP(IMM32);
 }
 
 void Instr32::jmp_rel32(void){
-	emu->update_eip(IMM32);
+	UPDATE_EIP(IMM32);
 }
 
 void Instr32::jmp_rel8(void){
-	emu->update_eip(IMM8);
+	UPDATE_EIP(IMM8);
 }
 
 void Instr32::in_al_dx(void){
@@ -731,15 +731,15 @@ void Instr32::call_rm32(void){
 
 	rm32 = get_rm32();
 
-	push32(emu->get_eip());
-	emu->set_eip(rm32);
+	push32(GET_EIP());
+	SET_EIP(rm32);
 }
 
 void Instr32::jmp_rm32(void){
 	uint32_t rm32;
 
 	rm32 = get_rm32();
-	emu->set_eip(rm32);
+	SET_EIP(rm32);
 }
 
 void Instr32::push_rm32(void){

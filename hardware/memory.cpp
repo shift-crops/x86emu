@@ -1,6 +1,6 @@
 #include <stdint.h>
 #include <string.h>
-#include "memory.hpp"
+#include "hardware/memory.hpp"
 
 Memory::Memory(size_t size){
 	mem_size = size;

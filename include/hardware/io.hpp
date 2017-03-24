@@ -2,7 +2,7 @@
 #define _IO_H
 
 #include <stdint.h>
-#include "../common.hpp" 
+#include "common.hpp" 
 
 class IO {
 	public:

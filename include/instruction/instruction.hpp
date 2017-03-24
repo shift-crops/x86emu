@@ -1,8 +1,28 @@
 #ifndef _INSTRUCTION_H
 #define _INSTRUCTION_H
 
-#include "../common.hpp"
-#include "../hardware/emulator.hpp"
+#include "common.hpp"
+#include "emulator/emulator.hpp"
+
+#define GET_EIP()			emu->get_eip()
+#define SET_EIP(v)			emu->set_eip(v)
+#define UPDATE_EIP(v)			emu->update_eip(v)
+#define GET_GPREG(reg)			emu->get_gpreg(reg)
+#define SET_GPREG(reg, v)		emu->set_gpreg(reg, v)
+#define UPDATE_GPREG(reg, v)		emu->update_gpreg(reg, v)
+#define EFLAGS_UPDATE_ADD(v1, v2)	emu->update_eflags_add(v1, v2)
+#define EFLAGS_UPDATE_OR(v1, v2)	emu->update_eflags_or(v1, v2)
+#define EFLAGS_UPDATE_AND(v1, v2)	emu->update_eflags_and(v1, v2)
+#define EFLAGS_UPDATE_SUB(v1, v2)	emu->update_eflags_sub(v1, v2)
+#define EFLAGS_CF			emu->is_eflags_carry()
+#define EFLAGS_PF			emu->is_eflags_parity()
+#define EFLAGS_ZF			emu->is_eflags_zero()
+#define EFLAGS_SF			emu->is_eflags_sign()
+#define EFLAGS_OF			emu->is_eflags_overflow()
+#define READ_MEM32(addr)		emu->read_mem32(addr)
+#define READ_MEM8(addr)			emu->read_mem8(addr)
+#define WRITE_MEM32(addr, v)		emu->write_mem32(addr, v)
+#define WRITE_MEM8(addr, v)		emu->write_mem8(addr, v)
 
 #define OPCODE	(instr.opcode)
 #define _MODRM	(instr._modrm)
