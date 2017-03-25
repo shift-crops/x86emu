@@ -3,7 +3,6 @@
 
 Processor::Processor(void){
 	memset(gpregs, 0, sizeof(gpregs));
-	eflags.raw = 0;
 	eip = 0;
 }
 

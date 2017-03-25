@@ -1,0 +1,4 @@
+BITS 16
+	org 0xffff0
+	mov sp, 0x1000
+	jmp 0x7c00

@@ -32,6 +32,28 @@ uint32_t ExecInstr::get_r32(void){
 	return GET_GPREG(static_cast<reg32_t>(REG));
 }
 
+void ExecInstr::set_rm16(uint16_t value){
+	if(MOD == 3)
+		SET_GPREG(static_cast<reg16_t>(RM), value);
+	else 
+		WRITE_MEM16(calc_modrm(), value);
+}
+
+uint16_t ExecInstr::get_rm16(void){
+	if(MOD == 3)
+		return GET_GPREG(static_cast<reg16_t>(RM));
+	else
+		return READ_MEM16(calc_modrm());
+}
+
+void ExecInstr::set_r16(uint16_t value){
+	SET_GPREG(static_cast<reg16_t>(REG), value);
+}
+
+uint16_t ExecInstr::get_r16(void){
+	return GET_GPREG(static_cast<reg16_t>(REG));
+}
+
 void ExecInstr::set_rm8(uint8_t value){
 	if(MOD == 3)
 		SET_GPREG(static_cast<reg8_t>(RM), value);
@@ -39,7 +61,7 @@ void ExecInstr::set_rm8(uint8_t value){
 		WRITE_MEM8(calc_modrm(), value);
 }
 
-uint32_t ExecInstr::get_rm8(void){
+uint8_t ExecInstr::get_rm8(void){
 	if(MOD == 3)
 		return GET_GPREG(static_cast<reg8_t>(RM));
 	else
@@ -50,28 +72,16 @@ void ExecInstr::set_r8(uint8_t value){
 	SET_GPREG(static_cast<reg8_t>(REG), value);
 }
 
-uint32_t ExecInstr::get_r8(void){
+uint8_t ExecInstr::get_r8(void){
 	return GET_GPREG(static_cast<reg8_t>(REG));
 }
 
-void ExecInstr::push32(uint32_t value){
-	uint32_t esp;
-
-	UPDATE_GPREG(ESP, -4);
-	esp = GET_GPREG(ESP);
-	WRITE_MEM32(esp, value);
-	DEBUG_MSG("push(0x%08x) 0x%08x\n", esp, value);
+void ExecInstr::set_sreg(uint16_t value){
+	EMU->set_segreg(static_cast<segreg_t>(REG), value);
 }
 
-uint32_t ExecInstr::pop32(void){
-	uint32_t esp, value;
-
-	esp = GET_GPREG(ESP);
-	value = READ_MEM32(esp);
-	DEBUG_MSG("pop(0x%08x) 0x%08x\n", esp, value);
-	UPDATE_GPREG(ESP, 4);
-
-	return value;
+uint16_t ExecInstr::get_sreg(void){
+	return EMU->get_segreg(static_cast<segreg_t>(REG));
 }
 
 uint32_t ExecInstr::calc_modrm(void){

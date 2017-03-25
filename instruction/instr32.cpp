@@ -86,6 +86,8 @@ void Instr32::init_instr(void){
 	set_funcflag(0x89, instr32(mov_rm32_r32) ,CHK_MODRM);
 	set_funcflag(0x8a, instr32(mov_r8_rm8) ,CHK_MODRM);
 	set_funcflag(0x8b, instr32(mov_r32_rm32) ,CHK_MODRM);
+	set_funcflag(0x8c, instr32(mov_rm32_sreg) ,CHK_MODRM);
+	set_funcflag(0x8e, instr32(mov_sreg_rm16) ,CHK_MODRM);
 
 	set_funcflag(0x90, instr32(nop) ,CHK_MODRM);
 	for (i=1; i<8; i++)	set_funcflag(0x90+i, instr32(xchg_r32_eax) ,CHK_IMM32);
@@ -98,6 +100,10 @@ void Instr32::init_instr(void){
 	set_funcflag(0xc7, instr32(mov_rm32_imm32) ,CHK_MODRM | CHK_IMM32);
 
 	set_funcflag(0xc9, instr32(leave) ,0);
+
+	set_funcflag(0xcd, instr32(int_imm8) ,CHK_IMM8);
+
+	set_funcflag(0xcf, instr32(iret) ,0);
 
 	set_funcflag(0xe4, instr32(in_al_imm8), CHK_IMM8);
 	set_funcflag(0xe5, instr32(in_eax_imm8), CHK_IMM8);
@@ -115,15 +121,6 @@ void Instr32::init_instr(void){
 	set_funcflag(0xff, instr32(code_ff) ,CHK_MODRM);
 }
 
-void Instr32::add_rm8_r8(void){
-	uint8_t rm8, r8;
-
-	rm8 = get_rm8();
-	r8 = get_r8();
-	set_rm8(rm8+r8);
-	EFLAGS_UPDATE_ADD(rm8, r8);
-}
-
 void Instr32::add_rm32_r32(void){
 	uint32_t rm32, r32;
 
@@ -131,15 +128,6 @@ void Instr32::add_rm32_r32(void){
 	r32 = get_r32();
 	set_rm32(rm32+r32);
 	EFLAGS_UPDATE_ADD(rm32, r32);
-}
-
-void Instr32::add_r8_rm8(void){
-	uint8_t r8, rm8;
-
-	r8 = get_r8();
-	rm8 = get_rm8();
-	set_r8(r8+rm8);
-	EFLAGS_UPDATE_ADD(r8, rm8);
 }
 
 void Instr32::add_r32_rm32(void){
@@ -151,15 +139,6 @@ void Instr32::add_r32_rm32(void){
 	EFLAGS_UPDATE_ADD(r32, rm32);
 }
 
-void Instr32::or_rm8_r8(void){
-	uint8_t rm8, r8;
-
-	rm8 = get_rm8();
-	r8 = get_r8();
-	set_rm8(rm8|r8);
-	EFLAGS_UPDATE_OR(rm8, r8);
-}
-
 void Instr32::or_rm32_r32(void){
 	uint32_t rm32, r32;
 
@@ -167,15 +146,6 @@ void Instr32::or_rm32_r32(void){
 	r32 = get_r32();
 	set_rm32(rm32|r32);
 	EFLAGS_UPDATE_OR(rm32, r32);
-}
-
-void Instr32::or_r8_rm8(void){
-	uint8_t r8, rm8;
-
-	r8 = get_r8();
-	rm8 = get_rm8();
-	set_r8(r8|rm8);
-	EFLAGS_UPDATE_OR(r8, rm8);
 }
 
 void Instr32::or_r32_rm32(void){
@@ -187,15 +157,6 @@ void Instr32::or_r32_rm32(void){
 	EFLAGS_UPDATE_OR(r32, rm32);
 }
 
-void Instr32::and_rm8_r8(void){
-	uint8_t rm8, r8;
-
-	rm8 = get_rm8();
-	r8 = get_r8();
-	set_rm8(rm8&r8);
-	EFLAGS_UPDATE_AND(rm8, r8);
-}
-
 void Instr32::and_rm32_r32(void){
 	uint32_t rm32, r32;
 
@@ -203,15 +164,6 @@ void Instr32::and_rm32_r32(void){
 	r32 = get_r32();
 	set_rm32(rm32&r32);
 	EFLAGS_UPDATE_AND(rm32, r32);
-}
-
-void Instr32::and_r8_rm8(void){
-	uint8_t r8, rm8;
-
-	r8 = get_r8();
-	rm8 = get_rm8();
-	set_r8(r8|rm8);
-	EFLAGS_UPDATE_AND(r8, rm8);
 }
 
 void Instr32::and_r32_rm32(void){
@@ -223,15 +175,6 @@ void Instr32::and_r32_rm32(void){
 	EFLAGS_UPDATE_AND(r32, rm32);
 }
 
-void Instr32::sub_rm8_r8(void){
-	uint8_t rm8, r8;
-
-	rm8 = get_rm8();
-	r8 = get_r8();
-	set_rm8(rm8-r8);
-	EFLAGS_UPDATE_SUB(rm8, r8);
-}
-
 void Instr32::sub_rm32_r32(void){
 	uint32_t rm32, r32;
 
@@ -239,15 +182,6 @@ void Instr32::sub_rm32_r32(void){
 	r32 = get_r32();
 	set_rm32(rm32-r32);
 	EFLAGS_UPDATE_SUB(rm32, r32);
-}
-
-void Instr32::sub_r8_rm8(void){
-	uint8_t r8, rm8;
-
-	r8 = get_r8();
-	rm8 = get_rm8();
-	set_r8(r8-rm8);
-	EFLAGS_UPDATE_SUB(r8, rm8);
 }
 
 void Instr32::sub_r32_rm32(void){
@@ -259,28 +193,12 @@ void Instr32::sub_r32_rm32(void){
 	EFLAGS_UPDATE_SUB(r32, rm32);
 }
 
-void Instr32::xor_rm8_r8(void){
-	uint8_t rm8, r8;
-
-	rm8 = get_rm8();
-	r8 = get_r8();
-	set_rm8(rm8^r8);
-}
-
 void Instr32::xor_rm32_r32(void){
 	uint32_t rm32, r32;
 
 	rm32 = get_rm32();
 	r32 = get_r32();
 	set_rm32(rm32^r32);
-}
-
-void Instr32::xor_r8_rm8(void){
-	uint8_t r8, rm8;
-
-	r8 = get_r8();
-	rm8 = get_rm8();
-	set_r8(r8^rm8);
 }
 
 void Instr32::xor_r32_rm32(void){
@@ -291,14 +209,6 @@ void Instr32::xor_r32_rm32(void){
 	set_r32(r32^rm32);
 }
 
-void Instr32::cmp_rm8_r8(void){
-	uint8_t rm8, r8;
-
-	rm8 = get_rm8();
-	r8 = get_r8();
-	EFLAGS_UPDATE_SUB(rm8, r8);
-}
-
 void Instr32::cmp_rm32_r32(void){
 	uint32_t rm32, r32;
 
@@ -307,27 +217,12 @@ void Instr32::cmp_rm32_r32(void){
 	EFLAGS_UPDATE_SUB(rm32, r32);
 }
 
-void Instr32::cmp_r8_rm8(void){
-	uint8_t r8, rm8;
-
-	r8 = get_r8();
-	rm8 = get_rm8();
-	EFLAGS_UPDATE_SUB(r8, rm8);
-}
-
 void Instr32::cmp_r32_rm32(void){
 	uint32_t r32, rm32;
 
 	r32 = get_r32();
 	rm32 = get_rm32();
 	EFLAGS_UPDATE_SUB(r32, rm32);
-}
-
-void Instr32::cmp_al_imm8(void){
-	uint8_t al;
-
-	al = GET_GPREG(AL);
-	EFLAGS_UPDATE_SUB(al, IMM8);
 }
 
 void Instr32::cmp_eax_imm32(void){
@@ -355,46 +250,23 @@ void Instr32::push_r32(void){
 	uint8_t reg;
 
 	reg = OPCODE & ((1<<3)-1);
-	push32(GET_GPREG(static_cast<reg32_t>(reg)));
+	PUSH32(GET_GPREG(static_cast<reg32_t>(reg)));
 }
 
 void Instr32::pop_r32(void){
 	uint8_t reg;
 
 	reg = OPCODE & ((1<<3)-1);
-	SET_GPREG(static_cast<reg32_t>(reg), pop32());
+	SET_GPREG(static_cast<reg32_t>(reg), POP32());
 }
 
 void Instr32::push_imm32(void){
-	push32(IMM32);
+	PUSH32(IMM32);
 }
 
 void Instr32::push_imm8(void){
-	push32(IMM8);
+	PUSH32(IMM8);
 }
-
-#define JCC_REL8(cc, is_flag) \
-void Instr32::j ## cc(void){ \
-	if(is_flag) \
-		UPDATE_EIP(IMM8); \
-}
-
-JCC_REL8(o, EFLAGS_OF)
-JCC_REL8(no, !EFLAGS_OF)
-JCC_REL8(b, EFLAGS_CF)
-JCC_REL8(nb, !EFLAGS_CF)
-JCC_REL8(z, EFLAGS_ZF)
-JCC_REL8(nz, !EFLAGS_ZF)
-JCC_REL8(be, EFLAGS_CF || EFLAGS_ZF)
-JCC_REL8(a, !(EFLAGS_CF || EFLAGS_ZF))
-JCC_REL8(s, EFLAGS_SF)
-JCC_REL8(ns, !EFLAGS_SF)
-JCC_REL8(p, EFLAGS_PF)
-JCC_REL8(np, !EFLAGS_PF)
-JCC_REL8(l, EFLAGS_SF != EFLAGS_OF)
-JCC_REL8(nl, EFLAGS_SF == EFLAGS_OF)
-JCC_REL8(le, EFLAGS_ZF || (EFLAGS_SF != EFLAGS_OF))
-JCC_REL8(nle, !EFLAGS_ZF && (EFLAGS_SF == EFLAGS_OF))
 
 /*
 void Instr32::code_80(void){
@@ -447,29 +319,12 @@ void Instr32::code_83(void){
 	}
 }
 
-void Instr32::test_rm8_r8(void){
-	uint8_t rm8, r8;
-
-	rm8 = get_rm8();
-	r8 = get_r8();
-	EFLAGS_UPDATE_AND(rm8, r8);
-}
-
 void Instr32::test_rm32_r32(void){
 	uint32_t rm32, r32;
 
 	rm32 = get_rm32();
 	r32 = get_r32();
 	EFLAGS_UPDATE_AND(rm32, r32);
-}
-
-void Instr32::xchg_r8_rm8(void){
-	uint8_t r8, rm8;
-
-	r8 = get_r8();
-	rm8 = get_rm8();
-	set_r8(rm8);
-	set_rm8(r8);
 }
 
 void Instr32::xchg_r32_rm32(void){
@@ -481,25 +336,11 @@ void Instr32::xchg_r32_rm32(void){
 	set_rm32(r32);
 }
 
-void Instr32::mov_rm8_r8(void){
-	uint8_t r8;
-
-	r8 = get_r8();
-	set_rm8(r8);
-}
-
 void Instr32::mov_rm32_r32(void){
 	uint32_t r32;
 
 	r32 = get_r32();
 	set_rm32(r32);
-}
-
-void Instr32::mov_r8_rm8(void){
-	uint8_t rm8;
-
-	rm8 = get_rm8();
-	set_r8(rm8);
 }
 
 void Instr32::mov_r32_rm32(void){
@@ -509,7 +350,12 @@ void Instr32::mov_r32_rm32(void){
 	set_r32(rm32);
 }
 
-void Instr32::nop(void){} 		// xchg eax, eax
+void Instr32::mov_rm32_sreg(void){
+	uint16_t sreg;
+
+	sreg = get_sreg();
+	set_rm32(sreg);
+}
 
 void Instr32::xchg_r32_eax(void){
 	uint32_t r32, eax;
@@ -518,13 +364,6 @@ void Instr32::xchg_r32_eax(void){
 	eax = GET_GPREG(EAX);
 	set_r32(eax);
 	SET_GPREG(EAX, r32);
-}
-
-void Instr32::mov_r8_imm8(void){
-	uint8_t reg;
-
-	reg = OPCODE & ((1<<3)-1);
-	SET_GPREG(static_cast<reg8_t>(reg), IMM8);
 }
 
 void Instr32::mov_r32_imm32(void){
@@ -537,7 +376,7 @@ void Instr32::mov_r32_imm32(void){
 void Instr32::ret(void){
 	uint32_t addr;
 
-	addr = pop32();
+	addr = POP32();
 	SET_EIP(addr);
 }
 
@@ -550,33 +389,22 @@ void Instr32::leave(void){
 
 	ebp = GET_GPREG(EBP);
 	SET_GPREG(ESP, ebp);
-	SET_GPREG(EBP, pop32());
-}
-
-void Instr32::in_al_imm8(void){
-	SET_GPREG(AL, emu->in_io8(IMM8));
+	SET_GPREG(EBP, POP32());
 }
 
 void Instr32::in_eax_imm8(void){
-	SET_GPREG(EAX, emu->in_io32(IMM8));
-}
-
-void Instr32::out_imm8_al(void){
-	uint8_t al;
-
-	al = GET_GPREG(AL);
-	emu->out_io8(IMM8, al);
+	SET_GPREG(EAX, EMU->in_io32(IMM8));
 }
 
 void Instr32::out_imm8_eax(void){
 	uint32_t eax;
 
 	eax = GET_GPREG(EAX);
-	emu->out_io32(IMM8, eax);
+	EMU->out_io32(IMM8, eax);
 }
 
 void Instr32::call_rel32(void){
-	push32(GET_EIP());
+	PUSH32(GET_EIP());
 	UPDATE_EIP(IMM32);
 }
 
@@ -584,31 +412,11 @@ void Instr32::jmp_rel32(void){
 	UPDATE_EIP(IMM32);
 }
 
-void Instr32::jmp_rel8(void){
-	UPDATE_EIP(IMM8);
-}
-
-void Instr32::in_al_dx(void){
-	uint16_t dx;
-
-	dx = GET_GPREG(DX);
-	SET_GPREG(AL, emu->in_io8(dx));
-}
-
 void Instr32::in_eax_dx(void){
 	uint16_t dx;
 
 	dx = GET_GPREG(DX);
-	SET_GPREG(EAX, emu->in_io32(dx));
-}
-
-void Instr32::out_dx_al(void){
-	uint16_t dx;
-	uint8_t al;
-
-	dx = GET_GPREG(DX);
-	al = GET_GPREG(AL);
-	emu->out_io8(dx, al);
+	SET_GPREG(EAX, EMU->in_io32(dx));
 }
 
 void Instr32::out_dx_eax(void){
@@ -617,7 +425,7 @@ void Instr32::out_dx_eax(void){
 
 	dx = GET_GPREG(DX);
 	eax = GET_GPREG(EAX);
-	emu->out_io32(dx, eax);
+	EMU->out_io32(dx, eax);
 }
 
 void Instr32::code_ff(void){
@@ -731,7 +539,7 @@ void Instr32::call_rm32(void){
 
 	rm32 = get_rm32();
 
-	push32(GET_EIP());
+	PUSH32(GET_EIP());
 	SET_EIP(rm32);
 }
 
@@ -746,6 +554,6 @@ void Instr32::push_rm32(void){
 	uint32_t rm32;
 
 	rm32 = get_rm32();
-	push32(rm32);
+	PUSH32(rm32);
 }
 

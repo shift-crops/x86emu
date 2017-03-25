@@ -11,6 +11,13 @@ uint32_t IO::in_io32(uint16_t addr){
 	}
 }
 
+uint16_t IO::in_io16(uint16_t addr){
+	switch (addr){
+		default:
+			return 0;
+	}
+}
+
 uint8_t IO::in_io8(uint16_t addr){
 	switch (addr){
 		case 0x03f8:
@@ -22,6 +29,11 @@ uint8_t IO::in_io8(uint16_t addr){
 }
 
 void IO::out_io32(uint16_t addr, uint32_t value){
+	switch (addr) {
+	}
+}
+
+void IO::out_io16(uint16_t addr, uint16_t value){
 	switch (addr) {
 	}
 }

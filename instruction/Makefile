@@ -1,6 +1,6 @@
 TARGET := instruction.a
 
-SRCS := parse.cpp exec.cpp instr16.cpp instr32.cpp
+SRCS := parse.cpp exec.cpp instr_base.cpp instr16.cpp instr32.cpp
 OBJS := $(SRCS:.cpp=.o)
 DEPS := $(SRCS:.cpp=.d)
 

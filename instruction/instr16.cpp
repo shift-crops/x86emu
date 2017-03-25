@@ -1,5 +1,558 @@
-#include <string.h>
+#include <stdint.h>
 #include "instruction/base.hpp"
 
+#define instr16(f) ((instrfunc_t)&Instr16::f)
+
 void Instr16::init_instr(void){
+	int i;
+
+	set_funcflag(0x00, instr16(add_rm8_r8) ,CHK_MODRM);
+	set_funcflag(0x01, instr16(add_rm16_r16) ,CHK_MODRM);
+	set_funcflag(0x02, instr16(add_r8_rm8) ,CHK_MODRM);
+	set_funcflag(0x03, instr16(add_r16_rm16) ,CHK_MODRM);
+	//set_funcflag(0x04, instr16(add_al_imm8) ,CHK_IMM8);
+	//set_funcflag(0x05, instr16(add_eax_imm16) ,CHK_IMM16);
+
+	set_funcflag(0x08, instr16(or_rm8_r8) ,CHK_MODRM);
+	set_funcflag(0x09, instr16(or_rm16_r16) ,CHK_MODRM);
+	set_funcflag(0x0a, instr16(or_r8_rm8) ,CHK_MODRM);
+	set_funcflag(0x0b, instr16(or_r16_rm16) ,CHK_MODRM);
+	//set_funcflag(0x0c, instr16(or_al_imm8) ,CHK_IMM8);
+	//set_funcflag(0x0d, instr16(or_eax_imm16) ,CHK_IMM16);
+
+	set_funcflag(0x20, instr16(and_rm8_r8) ,CHK_MODRM);
+	set_funcflag(0x21, instr16(and_rm16_r16) ,CHK_MODRM);
+	set_funcflag(0x22, instr16(and_r8_rm8) ,CHK_MODRM);
+	set_funcflag(0x23, instr16(and_r16_rm16) ,CHK_MODRM);
+	//set_funcflag(0x24, instr16(and_al_imm8) ,CHK_IMM8);
+	//set_funcflag(0x25, instr16(and_eax_imm16) ,CHK_IMM16);
+
+	set_funcflag(0x28, instr16(sub_rm8_r8) ,CHK_MODRM);
+	set_funcflag(0x29, instr16(sub_rm16_r16) ,CHK_MODRM);
+	set_funcflag(0x2a, instr16(sub_r8_rm8) ,CHK_MODRM);
+	set_funcflag(0x2b, instr16(sub_r16_rm16) ,CHK_MODRM);
+	//set_funcflag(0x2c, instr16(sub_al_imm8) ,CHK_IMM8);
+	//set_funcflag(0x2d, instr16(sub_eax_imm16) ,CHK_IMM16);
+
+	set_funcflag(0x30, instr16(xor_rm8_r8) ,CHK_MODRM);
+	set_funcflag(0x31, instr16(xor_rm16_r16) ,CHK_MODRM);
+	set_funcflag(0x16, instr16(xor_r8_rm8) ,CHK_MODRM);
+	set_funcflag(0x33, instr16(xor_r16_rm16) ,CHK_MODRM);
+	//set_funcflag(0x34, instr16(xor_al_imm8) ,CHK_IMM8);
+	//set_funcflag(0x35, instr16(xor_eax_imm16) ,CHK_IMM16);
+
+	set_funcflag(0x38, instr16(cmp_rm8_r8) ,CHK_MODRM);
+	set_funcflag(0x39, instr16(cmp_rm16_r16) ,CHK_MODRM);
+	set_funcflag(0x3a, instr16(cmp_r8_rm8) ,CHK_MODRM);
+	set_funcflag(0x3b, instr16(cmp_r16_rm16) ,CHK_MODRM);
+	set_funcflag(0x3c, instr16(cmp_al_imm8) ,CHK_IMM8);
+	set_funcflag(0x3d, instr16(cmp_ax_imm16) ,CHK_IMM16);
+
+	for (i=0; i<8; i++)	set_funcflag(0x40+i, instr16(inc_r16) ,0);
+	for (i=0; i<8; i++)	set_funcflag(0x48+i, instr16(dec_r16) ,0);
+	for (i=0; i<8; i++)	set_funcflag(0x50+i, instr16(push_r16) ,0);
+	for (i=0; i<8; i++)	set_funcflag(0x58+i, instr16(pop_r16) ,0);
+
+	set_funcflag(0x68, instr16(push_imm16) ,CHK_IMM16);
+	//set_funcflag(0x69, instr16(imul_r16_rm16_imm16) ,CHK_MODRM|CHK_IMM16);
+	set_funcflag(0x6a, instr16(push_imm8) ,CHK_IMM8);
+	//set_funcflag(0x6b, instr16(imul_r16_rm16_imm8) ,CHK_MODRM|CHK_IMM8);
+
+	set_funcflag(0x70, instr16(jo) ,CHK_IMM8);
+	set_funcflag(0x71, instr16(jno) ,CHK_IMM8);
+	set_funcflag(0x72, instr16(jb) ,CHK_IMM8);
+	set_funcflag(0x73, instr16(jnb) ,CHK_IMM8);
+	set_funcflag(0x74, instr16(jz) ,CHK_IMM8);
+	set_funcflag(0x75, instr16(jnz) ,CHK_IMM8);
+	set_funcflag(0x76, instr16(jbe) ,CHK_IMM8);
+	set_funcflag(0x77, instr16(ja) ,CHK_IMM8);
+	set_funcflag(0x78, instr16(js) ,CHK_IMM8);
+	set_funcflag(0x79, instr16(jns) ,CHK_IMM8);
+	set_funcflag(0x7a, instr16(jp) ,CHK_IMM8);
+	set_funcflag(0x7b, instr16(jnp) ,CHK_IMM8);
+	set_funcflag(0x7c, instr16(jl) ,CHK_IMM8);
+	set_funcflag(0x7d, instr16(jnl) ,CHK_IMM8);
+	set_funcflag(0x7e, instr16(jle) ,CHK_IMM8);
+	set_funcflag(0x7f, instr16(jnle) ,CHK_IMM8);
+	//set_funcflag(0x80, instr16(code_80) ,CHK_MODRM | CHK_IMM8);
+	//set_funcflag(0x81, instr16(code_81) ,CHK_MODRM | CHK_IMM16);
+	//set_funcflag(0x82, instr16(code_82) ,CHK_MODRM | CHK_IMM8);
+	set_funcflag(0x83, instr16(code_83) ,CHK_MODRM | CHK_IMM8);
+	set_funcflag(0x84, instr16(test_rm8_r8) ,CHK_MODRM);
+	set_funcflag(0x85, instr16(test_rm16_r16) ,CHK_MODRM);
+	set_funcflag(0x86, instr16(xchg_r8_rm8) ,CHK_MODRM);
+	set_funcflag(0x87, instr16(xchg_r16_rm16) ,CHK_MODRM);
+	set_funcflag(0x88, instr16(mov_rm8_r8) ,CHK_MODRM);
+	set_funcflag(0x89, instr16(mov_rm16_r16) ,CHK_MODRM);
+	set_funcflag(0x8a, instr16(mov_r8_rm8) ,CHK_MODRM);
+	set_funcflag(0x8b, instr16(mov_r16_rm16) ,CHK_MODRM);
+	set_funcflag(0x8c, instr16(mov_rm16_sreg) ,CHK_MODRM);
+	set_funcflag(0x8e, instr16(mov_sreg_rm16) ,CHK_MODRM);
+
+	set_funcflag(0x90, instr16(nop) ,CHK_MODRM);
+	for (i=1; i<8; i++)	set_funcflag(0x90+i, instr16(xchg_r16_ax) ,CHK_IMM16);
+
+	for (i=0; i<8; i++)	set_funcflag(0xb0+i, instr16(mov_r8_imm8) ,CHK_IMM8);
+	for (i=0; i<8; i++)	set_funcflag(0xb8+i, instr16(mov_r16_imm16) ,CHK_IMM16);
+
+	set_funcflag(0xc3, instr16(ret) ,0);
+
+	set_funcflag(0xc7, instr16(mov_rm16_imm16) ,CHK_MODRM | CHK_IMM16);
+
+	set_funcflag(0xc9, instr16(leave) ,0);
+
+	set_funcflag(0xcd, instr16(int_imm8) ,CHK_IMM8);
+
+	set_funcflag(0xcf, instr16(iret) ,0);
+
+	set_funcflag(0xe4, instr16(in_al_imm8), CHK_IMM8);
+	set_funcflag(0xe5, instr16(in_ax_imm8), CHK_IMM8);
+	set_funcflag(0xe6, instr16(out_imm8_al), CHK_IMM8);
+	set_funcflag(0xe7, instr16(out_imm8_ax), CHK_IMM8);
+	set_funcflag(0xe8, instr16(call_rel16) ,CHK_IMM16);
+	set_funcflag(0xe9, instr16(jmp_rel16) ,CHK_IMM16);
+
+	set_funcflag(0xeb, instr16(jmp_rel8) ,CHK_IMM8);
+	set_funcflag(0xec, instr16(in_al_dx), 0);
+	set_funcflag(0xed, instr16(in_ax_dx), 0);
+	set_funcflag(0xee, instr16(out_dx_al), 0);
+	set_funcflag(0xef, instr16(out_dx_ax), 0);
+
+	set_funcflag(0xff, instr16(code_ff) ,CHK_MODRM);
 }
+
+void Instr16::add_rm16_r16(void){
+	uint16_t rm16, r16;
+
+	rm16 = get_rm16();
+	r16 = get_r16();
+	set_rm16(rm16+r16);
+	EFLAGS_UPDATE_ADD(rm16, r16);
+}
+
+void Instr16::add_r16_rm16(void){
+	uint16_t r16, rm16;
+
+	r16 = get_r16();
+	rm16 = get_rm16();
+	set_r16(r16+rm16);
+	EFLAGS_UPDATE_ADD(r16, rm16);
+}
+
+void Instr16::or_rm16_r16(void){
+	uint16_t rm16, r16;
+
+	rm16 = get_rm16();
+	r16 = get_r16();
+	set_rm16(rm16|r16);
+	EFLAGS_UPDATE_OR(rm16, r16);
+}
+
+void Instr16::or_r16_rm16(void){
+	uint16_t r16, rm16;
+
+	r16 = get_r16();
+	rm16 = get_rm16();
+	set_r16(r16|rm16);
+	EFLAGS_UPDATE_OR(r16, rm16);
+}
+
+void Instr16::and_rm16_r16(void){
+	uint16_t rm16, r16;
+
+	rm16 = get_rm16();
+	r16 = get_r16();
+	set_rm16(rm16&r16);
+	EFLAGS_UPDATE_AND(rm16, r16);
+}
+
+void Instr16::and_r16_rm16(void){
+	uint16_t r16, rm16;
+
+	r16 = get_r16();
+	rm16 = get_rm16();
+	set_r16(r16|rm16);
+	EFLAGS_UPDATE_AND(r16, rm16);
+}
+
+void Instr16::sub_rm16_r16(void){
+	uint16_t rm16, r16;
+
+	rm16 = get_rm16();
+	r16 = get_r16();
+	set_rm16(rm16-r16);
+	EFLAGS_UPDATE_SUB(rm16, r16);
+}
+
+void Instr16::sub_r16_rm16(void){
+	uint16_t r16, rm16;
+
+	r16 = get_r16();
+	rm16 = get_rm16();
+	set_r16(r16-rm16);
+	EFLAGS_UPDATE_SUB(r16, rm16);
+}
+
+void Instr16::xor_rm16_r16(void){
+	uint16_t rm16, r16;
+
+	rm16 = get_rm16();
+	r16 = get_r16();
+	set_rm16(rm16^r16);
+}
+
+void Instr16::xor_r16_rm16(void){
+	uint16_t r16, rm16;
+
+	r16 = get_r16();
+	rm16 = get_rm16();
+	set_r16(r16^rm16);
+}
+
+void Instr16::cmp_rm16_r16(void){
+	uint16_t rm16, r16;
+
+	rm16 = get_rm16();
+	r16 = get_r16();
+	EFLAGS_UPDATE_SUB(rm16, r16);
+}
+
+void Instr16::cmp_r16_rm16(void){
+	uint16_t r16, rm16;
+
+	r16 = get_r16();
+	rm16 = get_rm16();
+	EFLAGS_UPDATE_SUB(r16, rm16);
+}
+
+void Instr16::cmp_ax_imm16(void){
+	uint16_t ax;
+
+	ax = GET_GPREG(AX);
+	EFLAGS_UPDATE_SUB(ax, IMM16);
+}
+
+void Instr16::inc_r16(void){
+	uint8_t reg;
+
+	reg = OPCODE & ((1<<3)-1);
+	UPDATE_GPREG(static_cast<reg16_t>(reg), 1);
+}
+
+void Instr16::dec_r16(void){
+	uint8_t reg;
+
+	reg = OPCODE & ((1<<3)-1);
+	UPDATE_GPREG(static_cast<reg16_t>(reg), -1);
+}
+
+void Instr16::push_r16(void){
+	uint8_t reg;
+
+	reg = OPCODE & ((1<<3)-1);
+	PUSH16(GET_GPREG(static_cast<reg16_t>(reg)));
+}
+
+void Instr16::pop_r16(void){
+	uint8_t reg;
+
+	reg = OPCODE & ((1<<3)-1);
+	SET_GPREG(static_cast<reg16_t>(reg), POP16());
+}
+
+void Instr16::push_imm16(void){
+	PUSH16(IMM16);
+}
+
+void Instr16::push_imm8(void){
+	PUSH16(IMM8);
+}
+
+/*
+void Instr16::code_80(void){
+	switch(REG){
+		case 0:	add_rm8_imm8();		break;
+		case 1:	or_rm8_imm8();		break;
+		case 2:	adc_rm8_imm8();		break;
+		case 3:	sbb_rm8_imm8();		break;
+		case 4:	and_rm8_imm8();		break;
+		case 5:	sub_rm8_imm8();		break;
+		case 6:	xor_rm8_imm8();		break;
+		case 7:	cmp_rm8_imm8();		break;
+		default:
+			ERROR("not implemented: 0x80 /%d\n", REG);
+	}
+}
+
+void Instr16::code_81(void){
+	switch(REG){
+		case 0:	add_rm16_imm16();	break;
+		case 1:	or_rm16_imm16();	break;
+		case 2:	adc_rm16_imm16();	break;
+		case 3:	sbb_rm16_imm16();	break;
+		case 4:	and_rm16_imm16();	break;
+		case 5:	sub_rm16_imm16();	break;
+		case 6:	xor_rm16_imm16();	break;
+		case 7:	cmp_rm16_imm16();	break;
+		default:
+			ERROR("not implemented: 0x81 /%d\n", REG);
+	}
+}
+
+void Instr16::code_82(void){
+	code_80();
+}
+*/
+
+void Instr16::code_83(void){
+	switch(REG){
+		case 0:	add_rm16_imm8();	break;
+		case 1:	or_rm16_imm8();		break;
+		case 2:	adc_rm16_imm8();	break;
+		case 3:	sbb_rm16_imm8();	break;
+		case 4:	and_rm16_imm8();	break;
+		case 5:	sub_rm16_imm8();	break;
+		case 6:	xor_rm16_imm8();	break;
+		case 7:	cmp_rm16_imm8();	break;
+		default:
+			ERROR("not implemented: 0x83 /%d\n", REG);
+	}
+}
+
+void Instr16::test_rm16_r16(void){
+	uint16_t rm16, r16;
+
+	rm16 = get_rm16();
+	r16 = get_r16();
+	EFLAGS_UPDATE_AND(rm16, r16);
+}
+
+void Instr16::xchg_r16_rm16(void){
+	uint16_t r16, rm16;
+
+	r16 = get_r16();
+	rm16 = get_rm16();
+	set_r16(rm16);
+	set_rm16(r16);
+}
+
+void Instr16::mov_rm16_r16(void){
+	uint16_t r16;
+
+	r16 = get_r16();
+	set_rm16(r16);
+}
+
+void Instr16::mov_r16_rm16(void){
+	uint16_t rm16;
+
+	rm16 = get_rm16();
+	set_r16(rm16);
+}
+
+void Instr16::mov_rm16_sreg(void){
+	uint16_t sreg;
+
+	sreg = get_sreg();
+	set_rm16(sreg);
+}
+
+void Instr16::xchg_r16_ax(void){
+	uint16_t r16, ax;
+
+	r16 = get_r16();
+	ax = GET_GPREG(AX);
+	set_r16(ax);
+	SET_GPREG(AX, r16);
+}
+
+void Instr16::mov_r16_imm16(void){
+	uint8_t reg;
+
+	reg = OPCODE & ((1<<3)-1);
+	SET_GPREG(static_cast<reg16_t>(reg), IMM16);
+}
+
+void Instr16::ret(void){
+	uint16_t addr;
+
+	addr = POP16();
+	SET_IP(addr);
+}
+
+void Instr16::mov_rm16_imm16(void){
+	set_rm16(IMM16);
+}
+
+void Instr16::leave(void){
+	uint16_t ebp;
+
+	ebp = GET_GPREG(EBP);
+	SET_GPREG(ESP, ebp);
+	SET_GPREG(EBP, POP16());
+}
+
+void Instr16::in_ax_imm8(void){
+	SET_GPREG(AX, EMU->in_io16(IMM8));
+}
+
+void Instr16::out_imm8_ax(void){
+	uint16_t ax;
+
+	ax = GET_GPREG(AX);
+	EMU->out_io16(IMM8, ax);
+}
+
+void Instr16::call_rel16(void){
+	PUSH16(GET_IP());
+	UPDATE_IP(IMM16);
+}
+
+void Instr16::jmp_rel16(void){
+	UPDATE_IP(IMM16);
+}
+
+void Instr16::in_ax_dx(void){
+	uint16_t dx;
+
+	dx = GET_GPREG(DX);
+	SET_GPREG(AX, EMU->in_io16(dx));
+}
+
+void Instr16::out_dx_ax(void){
+	uint16_t dx, ax;
+
+	dx = GET_GPREG(DX);
+	ax = GET_GPREG(AX);
+	EMU->out_io16(dx, ax);
+}
+
+void Instr16::code_ff(void){
+	switch(REG){
+		case 0:
+			inc_rm16();
+			break;
+		case 1:
+			dec_rm16();
+			break;
+		case 2:
+			call_rm16();
+			break;
+		case 4:
+			jmp_rm16();
+			break;
+		case 6:
+			push_rm16();
+			break;
+		default:
+			ERROR("not implemented: 0xff /%d\n", REG);
+	}
+}
+
+/******************************************************************/
+
+void Instr16::add_rm16_imm8(void){
+	uint16_t rm16;
+
+	rm16 = get_rm16();
+	set_rm16(rm16+IMM8);
+	EFLAGS_UPDATE_ADD(rm16, IMM8);
+}
+
+void Instr16::or_rm16_imm8(void){
+	uint16_t rm16;
+
+	rm16 = get_rm16();
+	set_rm16(rm16|IMM8);
+	EFLAGS_UPDATE_OR(rm16, IMM8);
+}
+
+void Instr16::adc_rm16_imm8(void){
+	uint16_t rm16;
+	uint8_t cf;
+
+	rm16 = get_rm16();
+	cf = EFLAGS_CF;
+	set_rm16(rm16+IMM8+cf);
+	EFLAGS_UPDATE_ADD(rm16, IMM8+cf);
+}
+
+void Instr16::sbb_rm16_imm8(void){
+	uint16_t rm16;
+	uint8_t cf;
+
+	rm16 = get_rm16();
+	cf = EFLAGS_CF;
+	set_rm16(rm16-IMM8-cf);
+	EFLAGS_UPDATE_SUB(rm16, IMM8+cf);
+}
+
+void Instr16::and_rm16_imm8(void){
+	uint16_t rm16;
+
+	rm16 = get_rm16();
+	set_rm16(rm16&IMM8);
+	EFLAGS_UPDATE_AND(rm16, IMM8);
+}
+
+void Instr16::sub_rm16_imm8(void){
+	uint16_t rm16;
+
+	rm16 = get_rm16();
+	set_rm16(rm16-IMM8);
+	EFLAGS_UPDATE_SUB(rm16, IMM8);
+}
+
+void Instr16::xor_rm16_imm8(void){
+	uint16_t rm16;
+
+	rm16 = get_rm16();
+	set_rm16(rm16^IMM8);
+}
+
+void Instr16::cmp_rm16_imm8(void){
+	uint16_t rm16;
+
+	rm16 = get_rm16();
+	EFLAGS_UPDATE_SUB(rm16, IMM8);
+}
+
+/******************************************************************/
+
+void Instr16::inc_rm16(void){
+	uint16_t rm16;
+
+	rm16 = get_rm16();
+	set_rm16(rm16+1);
+}
+
+void Instr16::dec_rm16(void){
+	uint16_t rm16;
+
+	rm16 = get_rm16();
+	set_rm16(rm16-1);
+}
+
+void Instr16::call_rm16(void){
+	uint16_t rm16;
+
+	rm16 = get_rm16();
+
+	PUSH16(GET_IP());
+	SET_IP(rm16);
+}
+
+void Instr16::jmp_rm16(void){
+	uint16_t rm16;
+
+	rm16 = get_rm16();
+	SET_IP(rm16);
+}
+
+void Instr16::push_rm16(void){
+	uint16_t rm16;
+
+	rm16 = get_rm16();
+	PUSH16(rm16);
+}
+

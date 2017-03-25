@@ -13,11 +13,8 @@ class Emulator;
 class Hardware : public Processor, public Memory, public IO {
 	friend Emulator;
 
-	private:
-		Eflags _eflags;
-
 	public:
-		Hardware(size_t size) : Memory(size) { _eflags = Eflags(this); };
+		Hardware(size_t size = 0) : Memory(size) {};
 };
 
 #endif
