@@ -3,122 +3,108 @@
 
 #define instr32(f) ((instrfunc_t)&Instr32::f)
 
-void Instr32::init_instr(void){
+Instr32::Instr32(Emulator *e) : Instruction(e) {
 	int i;
 
-	set_funcflag(0x00, instr32(add_rm8_r8) ,CHK_MODRM);
-	set_funcflag(0x01, instr32(add_rm32_r32) ,CHK_MODRM);
-	set_funcflag(0x02, instr32(add_r8_rm8) ,CHK_MODRM);
-	set_funcflag(0x03, instr32(add_r32_rm32) ,CHK_MODRM);
-	//set_funcflag(0x04, instr32(add_al_imm8) ,CHK_IMM8);
-	//set_funcflag(0x05, instr32(add_eax_imm32) ,CHK_IMM32);
+	INFO("Instr32::init_instr");
+	// 0x00 : add_rm8_r8
+	set_funcflag(0x01, instr32(add_rm32_r32), CHK_MODRM);
+	// 0x02 : add_r8_rm8
+	set_funcflag(0x03, instr32(add_r32_rm32), CHK_MODRM);
+	// 0x04 : add_al_imm8
+	//set_funcflag(0x05, instr32(add_eax_imm32), CHK_IMM32);
 
-	set_funcflag(0x08, instr32(or_rm8_r8) ,CHK_MODRM);
-	set_funcflag(0x09, instr32(or_rm32_r32) ,CHK_MODRM);
-	set_funcflag(0x0a, instr32(or_r8_rm8) ,CHK_MODRM);
-	set_funcflag(0x0b, instr32(or_r32_rm32) ,CHK_MODRM);
-	//set_funcflag(0x0c, instr32(or_al_imm8) ,CHK_IMM8);
-	//set_funcflag(0x0d, instr32(or_eax_imm32) ,CHK_IMM32);
+	// 0x08 : or_rm8_r8
+	set_funcflag(0x09, instr32(or_rm32_r32), CHK_MODRM);
+	set_funcflag(0x0a, instr32(or_r8_rm8), CHK_MODRM);
+	set_funcflag(0x0b, instr32(or_r32_rm32), CHK_MODRM);
+	//set_funcflag(0x0c, instr32(or_al_imm8), CHK_IMM8);
+	//set_funcflag(0x0d, instr32(or_eax_imm32), CHK_IMM32);
 
-	set_funcflag(0x20, instr32(and_rm8_r8) ,CHK_MODRM);
-	set_funcflag(0x21, instr32(and_rm32_r32) ,CHK_MODRM);
-	set_funcflag(0x22, instr32(and_r8_rm8) ,CHK_MODRM);
-	set_funcflag(0x23, instr32(and_r32_rm32) ,CHK_MODRM);
-	//set_funcflag(0x24, instr32(and_al_imm8) ,CHK_IMM8);
-	//set_funcflag(0x25, instr32(and_eax_imm32) ,CHK_IMM32);
+	// 0x20 : and_rm8_r8
+	set_funcflag(0x21, instr32(and_rm32_r32), CHK_MODRM);
+	// 0x22 : and_r8_rm8
+	set_funcflag(0x23, instr32(and_r32_rm32), CHK_MODRM);
+	// 0x24 : and_al_imm8
+	//set_funcflag(0x25, instr32(and_eax_imm32), CHK_IMM32);
 
-	set_funcflag(0x28, instr32(sub_rm8_r8) ,CHK_MODRM);
-	set_funcflag(0x29, instr32(sub_rm32_r32) ,CHK_MODRM);
-	set_funcflag(0x2a, instr32(sub_r8_rm8) ,CHK_MODRM);
-	set_funcflag(0x2b, instr32(sub_r32_rm32) ,CHK_MODRM);
-	//set_funcflag(0x2c, instr32(sub_al_imm8) ,CHK_IMM8);
-	//set_funcflag(0x2d, instr32(sub_eax_imm32) ,CHK_IMM32);
+	// 0x28 : sub_rm8_r8
+	set_funcflag(0x29, instr32(sub_rm32_r32), CHK_MODRM);
+	// 0x2a : sub_r8_rm8
+	set_funcflag(0x2b, instr32(sub_r32_rm32), CHK_MODRM);
+	// 0x2c : sub_al_imm8
+	//set_funcflag(0x2d, instr32(sub_eax_imm32), CHK_IMM32);
 
-	set_funcflag(0x30, instr32(xor_rm8_r8) ,CHK_MODRM);
-	set_funcflag(0x31, instr32(xor_rm32_r32) ,CHK_MODRM);
-	set_funcflag(0x32, instr32(xor_r8_rm8) ,CHK_MODRM);
-	set_funcflag(0x33, instr32(xor_r32_rm32) ,CHK_MODRM);
-	//set_funcflag(0x34, instr32(xor_al_imm8) ,CHK_IMM8);
-	//set_funcflag(0x35, instr32(xor_eax_imm32) ,CHK_IMM32);
+	// 0x30 : xor_rm8_r8
+	set_funcflag(0x31, instr32(xor_rm32_r32), CHK_MODRM);
+	// 0x32 : xor_r8_rm8
+	set_funcflag(0x33, instr32(xor_r32_rm32), CHK_MODRM);
+	//set_funcflag(0x34, instr32(xor_al_imm8), CHK_IMM8);
+	//set_funcflag(0x35, instr32(xor_eax_imm32), CHK_IMM32);
 
-	set_funcflag(0x38, instr32(cmp_rm8_r8) ,CHK_MODRM);
-	set_funcflag(0x39, instr32(cmp_rm32_r32) ,CHK_MODRM);
-	set_funcflag(0x3a, instr32(cmp_r8_rm8) ,CHK_MODRM);
-	set_funcflag(0x3b, instr32(cmp_r32_rm32) ,CHK_MODRM);
-	set_funcflag(0x3c, instr32(cmp_al_imm8) ,CHK_IMM8);
-	set_funcflag(0x3d, instr32(cmp_eax_imm32) ,CHK_IMM32);
+	// 0x38 : cmp_rm8_r8
+	set_funcflag(0x39, instr32(cmp_rm32_r32), CHK_MODRM);
+	// 0x3a : cmp_r8_rm8
+	set_funcflag(0x3b, instr32(cmp_r32_rm32), CHK_MODRM);
+	// 0x3c : cmp_al_imm8
+	set_funcflag(0x3d, instr32(cmp_eax_imm32), CHK_IMM32);
 
 	for (i=0; i<8; i++)	set_funcflag(0x40+i, instr32(inc_r32) ,0);
 	for (i=0; i<8; i++)	set_funcflag(0x48+i, instr32(dec_r32) ,0);
 	for (i=0; i<8; i++)	set_funcflag(0x50+i, instr32(push_r32) ,0);
 	for (i=0; i<8; i++)	set_funcflag(0x58+i, instr32(pop_r32) ,0);
 
-	set_funcflag(0x68, instr32(push_imm32) ,CHK_IMM32);
-	//set_funcflag(0x69, instr32(imul_r32_rm32_imm32) ,CHK_MODRM|CHK_IMM32);
-	set_funcflag(0x6a, instr32(push_imm8) ,CHK_IMM8);
-	//set_funcflag(0x6b, instr32(imul_r32_rm32_imm8) ,CHK_MODRM|CHK_IMM8);
+	set_funcflag(0x68, instr32(push_imm32), CHK_IMM32);
+	//set_funcflag(0x69, instr32(imul_r32_rm32_imm32), CHK_MODRM|CHK_IMM32);
+	set_funcflag(0x6a, instr32(push_imm8), CHK_IMM8);
+	//set_funcflag(0x6b, instr32(imul_r32_rm32_imm8), CHK_MODRM|CHK_IMM8);
 
-	set_funcflag(0x70, instr32(jo) ,CHK_IMM8);
-	set_funcflag(0x71, instr32(jno) ,CHK_IMM8);
-	set_funcflag(0x72, instr32(jb) ,CHK_IMM8);
-	set_funcflag(0x73, instr32(jnb) ,CHK_IMM8);
-	set_funcflag(0x74, instr32(jz) ,CHK_IMM8);
-	set_funcflag(0x75, instr32(jnz) ,CHK_IMM8);
-	set_funcflag(0x76, instr32(jbe) ,CHK_IMM8);
-	set_funcflag(0x77, instr32(ja) ,CHK_IMM8);
-	set_funcflag(0x78, instr32(js) ,CHK_IMM8);
-	set_funcflag(0x79, instr32(jns) ,CHK_IMM8);
-	set_funcflag(0x7a, instr32(jp) ,CHK_IMM8);
-	set_funcflag(0x7b, instr32(jnp) ,CHK_IMM8);
-	set_funcflag(0x7c, instr32(jl) ,CHK_IMM8);
-	set_funcflag(0x7d, instr32(jnl) ,CHK_IMM8);
-	set_funcflag(0x7e, instr32(jle) ,CHK_IMM8);
-	set_funcflag(0x7f, instr32(jnle) ,CHK_IMM8);
-	//set_funcflag(0x80, instr32(code_80) ,CHK_MODRM | CHK_IMM8);
-	//set_funcflag(0x81, instr32(code_81) ,CHK_MODRM | CHK_IMM32);
-	//set_funcflag(0x82, instr32(code_82) ,CHK_MODRM | CHK_IMM8);
-	set_funcflag(0x83, instr32(code_83) ,CHK_MODRM | CHK_IMM8);
-	set_funcflag(0x84, instr32(test_rm8_r8) ,CHK_MODRM);
-	set_funcflag(0x85, instr32(test_rm32_r32) ,CHK_MODRM);
-	set_funcflag(0x86, instr32(xchg_r8_rm8) ,CHK_MODRM);
-	set_funcflag(0x87, instr32(xchg_r32_rm32) ,CHK_MODRM);
-	set_funcflag(0x88, instr32(mov_rm8_r8) ,CHK_MODRM);
-	set_funcflag(0x89, instr32(mov_rm32_r32) ,CHK_MODRM);
-	set_funcflag(0x8a, instr32(mov_r8_rm8) ,CHK_MODRM);
-	set_funcflag(0x8b, instr32(mov_r32_rm32) ,CHK_MODRM);
-	set_funcflag(0x8c, instr32(mov_rm32_sreg) ,CHK_MODRM);
-	set_funcflag(0x8e, instr32(mov_sreg_rm16) ,CHK_MODRM);
+	// 0x70-0x7f : jcc
+	//set_funcflag(0x80, instr32(code_80), CHK_MODRM | CHK_IMM8);
+	//set_funcflag(0x81, instr32(code_81), CHK_MODRM | CHK_IMM32);
+	//set_funcflag(0x82, instr32(code_82), CHK_MODRM | CHK_IMM8);
+	set_funcflag(0x83, instr32(code_83), CHK_MODRM | CHK_IMM8);
+	// 0x84 : test_rm8_r8
+	set_funcflag(0x85, instr32(test_rm32_r32), CHK_MODRM);
+	// 0x86 : xchg_r8_rm8
+	set_funcflag(0x87, instr32(xchg_r32_rm32), CHK_MODRM);
+	// 0x88 : mov_rm8_r8
+	set_funcflag(0x89, instr32(mov_rm32_r32), CHK_MODRM);
+	// 0x8a : mov_r8_rm8
+	set_funcflag(0x8b, instr32(mov_r32_rm32), CHK_MODRM);
+	set_funcflag(0x8c, instr32(mov_rm32_sreg), CHK_MODRM);
+	// 0x8e : mov_sreg_rm16
 
-	set_funcflag(0x90, instr32(nop) ,CHK_MODRM);
+	// 0x90 : nop
 	for (i=1; i<8; i++)	set_funcflag(0x90+i, instr32(xchg_r32_eax) ,CHK_IMM32);
 
-	for (i=0; i<8; i++)	set_funcflag(0xb0+i, instr32(mov_r8_imm8) ,CHK_IMM8);
+	// 0xb0-0xb7 : mov_r8_imm
 	for (i=0; i<8; i++)	set_funcflag(0xb8+i, instr32(mov_r32_imm32) ,CHK_IMM32);
 
-	set_funcflag(0xc3, instr32(ret) ,0);
+	set_funcflag(0xc3, instr32(ret), 0);
 
-	set_funcflag(0xc7, instr32(mov_rm32_imm32) ,CHK_MODRM | CHK_IMM32);
+	set_funcflag(0xc7, instr32(mov_rm32_imm32), CHK_MODRM | CHK_IMM32);
 
-	set_funcflag(0xc9, instr32(leave) ,0);
+	set_funcflag(0xc9, instr32(leave), 0);
 
-	set_funcflag(0xcd, instr32(int_imm8) ,CHK_IMM8);
+	// 0xcd : int_imm8
 
-	set_funcflag(0xcf, instr32(iret) ,0);
+	// 0xcf : iret
 
-	set_funcflag(0xe4, instr32(in_al_imm8), CHK_IMM8);
+	// 0xe4 : in_al_imm8
 	set_funcflag(0xe5, instr32(in_eax_imm8), CHK_IMM8);
-	set_funcflag(0xe6, instr32(out_imm8_al), CHK_IMM8);
+	// 0xe6 : out_imm8_al
 	set_funcflag(0xe7, instr32(out_imm8_eax), CHK_IMM8);
-	set_funcflag(0xe8, instr32(call_rel32) ,CHK_IMM32);
-	set_funcflag(0xe9, instr32(jmp_rel32) ,CHK_IMM32);
+	set_funcflag(0xe8, instr32(call_rel32), CHK_IMM32);
+	set_funcflag(0xe9, instr32(jmp_rel32), CHK_IMM32);
 
-	set_funcflag(0xeb, instr32(jmp_rel8) ,CHK_IMM8);
-	set_funcflag(0xec, instr32(in_al_dx), 0);
+	set_funcflag(0xeb, instr32(jmp_rel8), CHK_IMM8);
+	// 0xec : in_al_dx
 	set_funcflag(0xed, instr32(in_eax_dx), 0);
-	set_funcflag(0xee, instr32(out_dx_al), 0);
+	// 0xee : out_dx_al
 	set_funcflag(0xef, instr32(out_dx_eax), 0);
 
-	set_funcflag(0xff, instr32(code_ff) ,CHK_MODRM);
+	set_funcflag(0xff, instr32(code_ff), CHK_MODRM);
 }
 
 void Instr32::add_rm32_r32(void){

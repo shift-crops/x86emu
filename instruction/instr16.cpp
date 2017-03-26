@@ -3,122 +3,107 @@
 
 #define instr16(f) ((instrfunc_t)&Instr16::f)
 
-void Instr16::init_instr(void){
+Instr16::Instr16(Emulator *e) : Instruction(e) {
 	int i;
 
-	set_funcflag(0x00, instr16(add_rm8_r8) ,CHK_MODRM);
-	set_funcflag(0x01, instr16(add_rm16_r16) ,CHK_MODRM);
-	set_funcflag(0x02, instr16(add_r8_rm8) ,CHK_MODRM);
-	set_funcflag(0x03, instr16(add_r16_rm16) ,CHK_MODRM);
-	//set_funcflag(0x04, instr16(add_al_imm8) ,CHK_IMM8);
-	//set_funcflag(0x05, instr16(add_eax_imm16) ,CHK_IMM16);
+	// 0x00 : add_rm8_r8
+	set_funcflag(0x01, instr16(add_rm16_r16), CHK_MODRM);
+	// 0x02 : add_r8_rm8
+	set_funcflag(0x03, instr16(add_r16_rm16), CHK_MODRM);
+	// 0x04 : add_al_imm8
+	//set_funcflag(0x05, instr16(add_ax_imm16), CHK_IMM16);
 
-	set_funcflag(0x08, instr16(or_rm8_r8) ,CHK_MODRM);
-	set_funcflag(0x09, instr16(or_rm16_r16) ,CHK_MODRM);
-	set_funcflag(0x0a, instr16(or_r8_rm8) ,CHK_MODRM);
-	set_funcflag(0x0b, instr16(or_r16_rm16) ,CHK_MODRM);
-	//set_funcflag(0x0c, instr16(or_al_imm8) ,CHK_IMM8);
-	//set_funcflag(0x0d, instr16(or_eax_imm16) ,CHK_IMM16);
+	// 0x08 : or_rm8_r8
+	set_funcflag(0x09, instr16(or_rm16_r16), CHK_MODRM);
+	set_funcflag(0x0a, instr16(or_r8_rm8), CHK_MODRM);
+	set_funcflag(0x0b, instr16(or_r16_rm16), CHK_MODRM);
+	//set_funcflag(0x0c, instr16(or_al_imm8), CHK_IMM8);
+	//set_funcflag(0x0d, instr16(or_ax_imm16), CHK_IMM16);
 
-	set_funcflag(0x20, instr16(and_rm8_r8) ,CHK_MODRM);
-	set_funcflag(0x21, instr16(and_rm16_r16) ,CHK_MODRM);
-	set_funcflag(0x22, instr16(and_r8_rm8) ,CHK_MODRM);
-	set_funcflag(0x23, instr16(and_r16_rm16) ,CHK_MODRM);
-	//set_funcflag(0x24, instr16(and_al_imm8) ,CHK_IMM8);
-	//set_funcflag(0x25, instr16(and_eax_imm16) ,CHK_IMM16);
+	// 0x20 : and_rm8_r8
+	set_funcflag(0x21, instr16(and_rm16_r16), CHK_MODRM);
+	// 0x22 : and_r8_rm8
+	set_funcflag(0x23, instr16(and_r16_rm16), CHK_MODRM);
+	// 0x24 : and_al_imm8
+	//set_funcflag(0x25, instr16(and_ax_imm16), CHK_IMM16);
 
-	set_funcflag(0x28, instr16(sub_rm8_r8) ,CHK_MODRM);
-	set_funcflag(0x29, instr16(sub_rm16_r16) ,CHK_MODRM);
-	set_funcflag(0x2a, instr16(sub_r8_rm8) ,CHK_MODRM);
-	set_funcflag(0x2b, instr16(sub_r16_rm16) ,CHK_MODRM);
-	//set_funcflag(0x2c, instr16(sub_al_imm8) ,CHK_IMM8);
-	//set_funcflag(0x2d, instr16(sub_eax_imm16) ,CHK_IMM16);
+	// 0x28 : sub_rm8_r8
+	set_funcflag(0x29, instr16(sub_rm16_r16), CHK_MODRM);
+	// 0x2a : sub_r8_rm8
+	set_funcflag(0x2b, instr16(sub_r16_rm16), CHK_MODRM);
+	// 0x2c : sub_al_imm8
+	//set_funcflag(0x2d, instr16(sub_ax_imm16), CHK_IMM16);
 
-	set_funcflag(0x30, instr16(xor_rm8_r8) ,CHK_MODRM);
-	set_funcflag(0x31, instr16(xor_rm16_r16) ,CHK_MODRM);
-	set_funcflag(0x16, instr16(xor_r8_rm8) ,CHK_MODRM);
-	set_funcflag(0x33, instr16(xor_r16_rm16) ,CHK_MODRM);
-	//set_funcflag(0x34, instr16(xor_al_imm8) ,CHK_IMM8);
-	//set_funcflag(0x35, instr16(xor_eax_imm16) ,CHK_IMM16);
+	// 0x30 : xor_rm8_r8
+	set_funcflag(0x31, instr16(xor_rm16_r16), CHK_MODRM);
+	// 0x16 : xor_r8_rm8
+	set_funcflag(0x33, instr16(xor_r16_rm16), CHK_MODRM);
+	//set_funcflag(0x34, instr16(xor_al_imm8), CHK_IMM8);
+	//set_funcflag(0x35, instr16(xor_ax_imm16), CHK_IMM16);
 
-	set_funcflag(0x38, instr16(cmp_rm8_r8) ,CHK_MODRM);
-	set_funcflag(0x39, instr16(cmp_rm16_r16) ,CHK_MODRM);
-	set_funcflag(0x3a, instr16(cmp_r8_rm8) ,CHK_MODRM);
-	set_funcflag(0x3b, instr16(cmp_r16_rm16) ,CHK_MODRM);
-	set_funcflag(0x3c, instr16(cmp_al_imm8) ,CHK_IMM8);
-	set_funcflag(0x3d, instr16(cmp_ax_imm16) ,CHK_IMM16);
+	// 0x38 : cmp_rm8_r8
+	set_funcflag(0x39, instr16(cmp_rm16_r16), CHK_MODRM);
+	// 0x3a : cmp_r8_rm8
+	set_funcflag(0x3b, instr16(cmp_r16_rm16), CHK_MODRM);
+	// 0x3c : cmp_al_imm8
+	set_funcflag(0x3d, instr16(cmp_ax_imm16), CHK_IMM16);
 
 	for (i=0; i<8; i++)	set_funcflag(0x40+i, instr16(inc_r16) ,0);
 	for (i=0; i<8; i++)	set_funcflag(0x48+i, instr16(dec_r16) ,0);
 	for (i=0; i<8; i++)	set_funcflag(0x50+i, instr16(push_r16) ,0);
 	for (i=0; i<8; i++)	set_funcflag(0x58+i, instr16(pop_r16) ,0);
 
-	set_funcflag(0x68, instr16(push_imm16) ,CHK_IMM16);
-	//set_funcflag(0x69, instr16(imul_r16_rm16_imm16) ,CHK_MODRM|CHK_IMM16);
-	set_funcflag(0x6a, instr16(push_imm8) ,CHK_IMM8);
-	//set_funcflag(0x6b, instr16(imul_r16_rm16_imm8) ,CHK_MODRM|CHK_IMM8);
+	set_funcflag(0x68, instr16(push_imm16), CHK_IMM16);
+	//set_funcflag(0x69, instr16(imul_r16_rm16_imm16), CHK_MODRM|CHK_IMM16);
+	set_funcflag(0x6a, instr16(push_imm8), CHK_IMM8);
+	//set_funcflag(0x6b, instr16(imul_r16_rm16_imm8), CHK_MODRM|CHK_IMM8);
 
-	set_funcflag(0x70, instr16(jo) ,CHK_IMM8);
-	set_funcflag(0x71, instr16(jno) ,CHK_IMM8);
-	set_funcflag(0x72, instr16(jb) ,CHK_IMM8);
-	set_funcflag(0x73, instr16(jnb) ,CHK_IMM8);
-	set_funcflag(0x74, instr16(jz) ,CHK_IMM8);
-	set_funcflag(0x75, instr16(jnz) ,CHK_IMM8);
-	set_funcflag(0x76, instr16(jbe) ,CHK_IMM8);
-	set_funcflag(0x77, instr16(ja) ,CHK_IMM8);
-	set_funcflag(0x78, instr16(js) ,CHK_IMM8);
-	set_funcflag(0x79, instr16(jns) ,CHK_IMM8);
-	set_funcflag(0x7a, instr16(jp) ,CHK_IMM8);
-	set_funcflag(0x7b, instr16(jnp) ,CHK_IMM8);
-	set_funcflag(0x7c, instr16(jl) ,CHK_IMM8);
-	set_funcflag(0x7d, instr16(jnl) ,CHK_IMM8);
-	set_funcflag(0x7e, instr16(jle) ,CHK_IMM8);
-	set_funcflag(0x7f, instr16(jnle) ,CHK_IMM8);
-	//set_funcflag(0x80, instr16(code_80) ,CHK_MODRM | CHK_IMM8);
-	//set_funcflag(0x81, instr16(code_81) ,CHK_MODRM | CHK_IMM16);
-	//set_funcflag(0x82, instr16(code_82) ,CHK_MODRM | CHK_IMM8);
-	set_funcflag(0x83, instr16(code_83) ,CHK_MODRM | CHK_IMM8);
-	set_funcflag(0x84, instr16(test_rm8_r8) ,CHK_MODRM);
-	set_funcflag(0x85, instr16(test_rm16_r16) ,CHK_MODRM);
-	set_funcflag(0x86, instr16(xchg_r8_rm8) ,CHK_MODRM);
-	set_funcflag(0x87, instr16(xchg_r16_rm16) ,CHK_MODRM);
-	set_funcflag(0x88, instr16(mov_rm8_r8) ,CHK_MODRM);
-	set_funcflag(0x89, instr16(mov_rm16_r16) ,CHK_MODRM);
-	set_funcflag(0x8a, instr16(mov_r8_rm8) ,CHK_MODRM);
-	set_funcflag(0x8b, instr16(mov_r16_rm16) ,CHK_MODRM);
-	set_funcflag(0x8c, instr16(mov_rm16_sreg) ,CHK_MODRM);
-	set_funcflag(0x8e, instr16(mov_sreg_rm16) ,CHK_MODRM);
+	// 0x70-0x7f : jcc
+	//set_funcflag(0x80, instr16(code_80), CHK_MODRM | CHK_IMM8);
+	//set_funcflag(0x81, instr16(code_81), CHK_MODRM | CHK_IMM16);
+	//set_funcflag(0x82, instr16(code_82), CHK_MODRM | CHK_IMM8);
+	set_funcflag(0x83, instr16(code_83), CHK_MODRM | CHK_IMM8);
+	// 0x84 : test_rm8_r8
+	set_funcflag(0x85, instr16(test_rm16_r16), CHK_MODRM);
+	// 0x86 : xchg_r8_rm8
+	set_funcflag(0x87, instr16(xchg_r16_rm16), CHK_MODRM);
+	// 0x88 : mov_rm8_r8
+	set_funcflag(0x89, instr16(mov_rm16_r16), CHK_MODRM);
+	// 0x8a : mov_r8_rm8
+	set_funcflag(0x8b, instr16(mov_r16_rm16), CHK_MODRM);
+	set_funcflag(0x8c, instr16(mov_rm16_sreg), CHK_MODRM);
+	// 0x8e : mov_sreg_rm16
 
-	set_funcflag(0x90, instr16(nop) ,CHK_MODRM);
+	// 0x90 : nop
 	for (i=1; i<8; i++)	set_funcflag(0x90+i, instr16(xchg_r16_ax) ,CHK_IMM16);
 
-	for (i=0; i<8; i++)	set_funcflag(0xb0+i, instr16(mov_r8_imm8) ,CHK_IMM8);
+	// 0xb0-0xb7 : mov_r8_imm
 	for (i=0; i<8; i++)	set_funcflag(0xb8+i, instr16(mov_r16_imm16) ,CHK_IMM16);
 
-	set_funcflag(0xc3, instr16(ret) ,0);
+	set_funcflag(0xc3, instr16(ret), 0);
 
-	set_funcflag(0xc7, instr16(mov_rm16_imm16) ,CHK_MODRM | CHK_IMM16);
+	set_funcflag(0xc7, instr16(mov_rm16_imm16), CHK_MODRM | CHK_IMM16);
 
-	set_funcflag(0xc9, instr16(leave) ,0);
+	set_funcflag(0xc9, instr16(leave), 0);
 
-	set_funcflag(0xcd, instr16(int_imm8) ,CHK_IMM8);
+	// 0xcd : int_imm8
 
-	set_funcflag(0xcf, instr16(iret) ,0);
+	// 0xcf : iret
 
-	set_funcflag(0xe4, instr16(in_al_imm8), CHK_IMM8);
+	// 0xe4 : in_al_imm8
 	set_funcflag(0xe5, instr16(in_ax_imm8), CHK_IMM8);
-	set_funcflag(0xe6, instr16(out_imm8_al), CHK_IMM8);
+	// 0xe6 : out_imm8_al
 	set_funcflag(0xe7, instr16(out_imm8_ax), CHK_IMM8);
-	set_funcflag(0xe8, instr16(call_rel16) ,CHK_IMM16);
-	set_funcflag(0xe9, instr16(jmp_rel16) ,CHK_IMM16);
+	set_funcflag(0xe8, instr16(call_rel16), CHK_IMM16);
+	set_funcflag(0xe9, instr16(jmp_rel16), CHK_IMM16);
 
-	set_funcflag(0xeb, instr16(jmp_rel8) ,CHK_IMM8);
-	set_funcflag(0xec, instr16(in_al_dx), 0);
+	set_funcflag(0xeb, instr16(jmp_rel8), CHK_IMM8);
+	// 0xec : in_al_dx
 	set_funcflag(0xed, instr16(in_ax_dx), 0);
-	set_funcflag(0xee, instr16(out_dx_al), 0);
+	// 0xee : out_dx_al
 	set_funcflag(0xef, instr16(out_dx_ax), 0);
 
-	set_funcflag(0xff, instr16(code_ff) ,CHK_MODRM);
+	set_funcflag(0xff, instr16(code_ff), CHK_MODRM);
 }
 
 void Instr16::add_rm16_r16(void){

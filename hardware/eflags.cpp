@@ -1,7 +1,7 @@
 #include "hardware/eflags.hpp"
 
 Eflags::Eflags(){
-	eflags.raw = 0x00000002;
+	eflags.reg32 = 0x00000002;
 }
 
 template uint32_t Eflags::update_eflags_add(uint32_t v1, uint32_t v2);
@@ -25,7 +25,7 @@ template <class T> uint32_t Eflags::update_eflags_add(T v1, uint32_t v2){
 	set_sign(sr);
 	set_overflow(!(s1^s2) && s1^sr);
 
-	return eflags.raw;
+	return eflags.reg32;
 }
 
 template uint32_t Eflags::update_eflags_or(uint32_t v1, uint32_t v2);
@@ -44,7 +44,7 @@ template <class T> uint32_t Eflags::update_eflags_or(T v1, uint32_t v2){
 	set_sign((result >> (size-1)) & 1);
 	set_overflow(0);
 
-	return eflags.raw;
+	return eflags.reg32;
 }
 
 template uint32_t Eflags::update_eflags_and(uint32_t v1, uint32_t v2);
@@ -63,7 +63,7 @@ template <class T> uint32_t Eflags::update_eflags_and(T v1, uint32_t v2){
 	set_sign((result >> (size-1)) & 1);
 	set_overflow(0);
 
-	return eflags.raw;
+	return eflags.reg32;
 }
 
 template uint32_t Eflags::update_eflags_sub(uint32_t v1, uint32_t v2);
@@ -87,7 +87,7 @@ template <class T> uint32_t Eflags::update_eflags_sub(T v1, uint32_t v2){
 	set_sign(sr);
 	set_overflow(s1^s2 && s1^sr);
 
-	return eflags.raw;
+	return eflags.reg32;
 }
 
 bool Eflags::chk_parity(uint8_t v){

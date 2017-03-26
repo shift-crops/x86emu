@@ -14,10 +14,10 @@ int main(int argc, char *argv[]){
 	emu.load_binary("bios/bios", 0xffff0, 0x10);
 	emu.load_binary(argv[1], 0xf7c00, 0x200);
 
-	while(emu.get_eip()){
+	while(!emu.is_halt() && emu.get_eip()){
 		bool is_protected = emu.is_protected();
 
-		if(!(is_protected ? instr32.parse() : instr16.parse()))
+		while(!(is_protected ? instr32.parse() : instr16.parse()))
 			is_protected ^= true;
 
 		if(is_protected)

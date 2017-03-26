@@ -4,6 +4,7 @@
 Processor::Processor(void){
 	memset(gpregs, 0, sizeof(gpregs));
 	eip = 0;
+	halt = false;
 }
 
 void Processor::dump_regs(void){

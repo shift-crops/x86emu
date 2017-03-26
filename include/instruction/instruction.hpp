@@ -123,7 +123,6 @@ class ExecInstr : protected virtual Instruction {
 		uint16_t get_sreg(void);
 
 	private:
-		virtual void init_instr() = 0;
 		uint32_t calc_modrm(void);
 		uint32_t calc_sib(void);
 };

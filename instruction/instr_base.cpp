@@ -1,6 +1,65 @@
 #include <stdint.h>
 #include "instruction/base.hpp"
 
+#define instrbase(f) ((instrfunc_t)&InstrBase::f)
+
+InstrBase::InstrBase() : Instruction(NULL), ExecInstr(NULL), ParseInstr(NULL) {
+	int i;
+
+	memset(instrfuncs, 0, sizeof(instrfuncs));
+	memset(chk, 0, sizeof(chk));
+
+	set_funcflag(0x00, instrbase(add_rm8_r8), CHK_MODRM);
+	set_funcflag(0x02, instrbase(add_r8_rm8), CHK_MODRM);
+	//set_funcflag(0x04, instrbase(add_al_imm8), CHK_IMM8);
+	set_funcflag(0x08, instrbase(or_rm8_r8), CHK_MODRM);
+	set_funcflag(0x0a, instrbase(or_r8_rm8), CHK_MODRM);
+	//set_funcflag(0x0c, instrbase(or_al_imm8), CHK_IMM8);
+	set_funcflag(0x20, instrbase(and_rm8_r8), CHK_MODRM);
+	set_funcflag(0x22, instrbase(and_r8_rm8), CHK_MODRM);
+	//set_funcflag(0x24, instrbase(and_al_imm8), CHK_IMM8);
+	set_funcflag(0x28, instrbase(sub_rm8_r8), CHK_MODRM);
+	set_funcflag(0x2a, instrbase(sub_r8_rm8), CHK_MODRM);
+	//set_funcflag(0x2c, instrbase(sub_al_imm8), CHK_IMM8);
+	set_funcflag(0x30, instrbase(xor_rm8_r8), CHK_MODRM);
+	set_funcflag(0x32, instrbase(xor_r8_rm8), CHK_MODRM);
+	//set_funcflag(0x34, instrbase(xor_al_imm8), CHK_IMM8);
+	set_funcflag(0x38, instrbase(cmp_rm8_r8), CHK_MODRM);
+	set_funcflag(0x3a, instrbase(cmp_r8_rm8), CHK_MODRM);
+	set_funcflag(0x3c, instrbase(cmp_al_imm8), CHK_IMM8);
+	set_funcflag(0x70, instrbase(jo), CHK_IMM8);
+	set_funcflag(0x71, instrbase(jno), CHK_IMM8);
+	set_funcflag(0x72, instrbase(jb), CHK_IMM8);
+	set_funcflag(0x73, instrbase(jnb), CHK_IMM8);
+	set_funcflag(0x74, instrbase(jz), CHK_IMM8);
+	set_funcflag(0x75, instrbase(jnz), CHK_IMM8);
+	set_funcflag(0x76, instrbase(jbe), CHK_IMM8);
+	set_funcflag(0x77, instrbase(ja), CHK_IMM8);
+	set_funcflag(0x78, instrbase(js), CHK_IMM8);
+	set_funcflag(0x79, instrbase(jns), CHK_IMM8);
+	set_funcflag(0x7a, instrbase(jp), CHK_IMM8);
+	set_funcflag(0x7b, instrbase(jnp), CHK_IMM8);
+	set_funcflag(0x7c, instrbase(jl), CHK_IMM8);
+	set_funcflag(0x7d, instrbase(jnl), CHK_IMM8);
+	set_funcflag(0x7e, instrbase(jle), CHK_IMM8);
+	set_funcflag(0x7f, instrbase(jnle), CHK_IMM8);
+	set_funcflag(0x84, instrbase(test_rm8_r8), CHK_MODRM);
+	set_funcflag(0x86, instrbase(xchg_r8_rm8), CHK_MODRM);
+	set_funcflag(0x88, instrbase(mov_rm8_r8), CHK_MODRM);
+	set_funcflag(0x8a, instrbase(mov_r8_rm8), CHK_MODRM);
+	set_funcflag(0x8e, instrbase(mov_sreg_rm16), CHK_MODRM);
+	set_funcflag(0x90, instrbase(nop), CHK_MODRM);
+	for (i=0; i<8; i++)	set_funcflag(0xb0+i, instrbase(mov_r8_imm8) ,CHK_IMM8);
+	set_funcflag(0xcd, instrbase(int_imm8), CHK_IMM8);
+	set_funcflag(0xcf, instrbase(iret), 0);
+	set_funcflag(0xe4, instrbase(in_al_imm8), CHK_IMM8);
+	set_funcflag(0xe6, instrbase(out_imm8_al), CHK_IMM8);
+	set_funcflag(0xec, instrbase(in_al_dx), 0);
+	set_funcflag(0xee, instrbase(out_dx_al), 0);
+	set_funcflag(0xf4, instrbase(hlt), 0);
+}
+
+
 void InstrBase::add_rm8_r8(void){
 	uint8_t rm8, r8;
 
@@ -219,4 +278,8 @@ void InstrBase::out_dx_al(void){
 	dx = GET_GPREG(DX);
 	al = GET_GPREG(AL);
 	EMU->out_io8(dx, al);
+}
+
+void InstrBase::hlt(void){
+	EMU->do_halt(true);
 }

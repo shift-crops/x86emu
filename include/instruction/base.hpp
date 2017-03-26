@@ -7,11 +7,9 @@
 
 class InstrBase : public ExecInstr , public ParseInstr {
 	public:
-		InstrBase() : Instruction(NULL), ExecInstr(NULL), ParseInstr(NULL)
-       			{ memset(instrfuncs, 0, sizeof(instrfuncs)); memset(chk, 0, sizeof(chk)); };
+		InstrBase();
 	protected:
 		void set_funcflag(uint8_t idx, instrfunc_t func, uint8_t flags){ instrfuncs[idx] = func; chk[idx].flags = flags; };
-                virtual void init_instr(void) = 0;
 
 		void add_rm8_r8(void);
 		void add_r8_rm8(void);
@@ -56,6 +54,7 @@ class InstrBase : public ExecInstr , public ParseInstr {
                 void jmp_rel8(void);
 		void in_al_dx(void);
 		void out_dx_al(void);
+		void hlt(void);
 
 		//virtual void code_80(void) = 0;
 		//virtual void code_81(void) = 0;
@@ -66,10 +65,8 @@ class InstrBase : public ExecInstr , public ParseInstr {
 
 class Instr16 : public InstrBase {
         public:
-                Instr16(Emulator *e) : Instruction(e) { init_instr(); };
+                Instr16(Emulator *e);
         private:
-                void init_instr(void);
-
 		void add_rm16_r16(void);
 		void add_r16_rm16(void);
 		void or_rm16_r16(void);
@@ -133,10 +130,8 @@ class Instr16 : public InstrBase {
 
 class Instr32 : public InstrBase {
         public:
-                Instr32(Emulator *e) : Instruction(e) { init_instr(); };
+                Instr32(Emulator *e);
         private:
-                void init_instr(void);
-
 		void add_rm32_r32(void);
 		void add_r32_rm32(void);
 		void or_rm32_r32(void);

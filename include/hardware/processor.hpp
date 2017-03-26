@@ -37,6 +37,9 @@ class Processor : public Eflags, public CR {
 			uint16_t limit;
 		} IDTR;
 */
+
+		bool halt;
+
 	public:
 		Processor();
 		void dump_regs(void);
@@ -60,6 +63,9 @@ class Processor : public Eflags, public CR {
 		uint32_t update_gpreg(enum reg32_t n, int32_t v){ return gpregs[n].reg32 += v; };
 		uint16_t update_gpreg(enum reg16_t n, int16_t v){ return gpregs[n].reg16 += v; };
 		uint8_t update_gpreg(enum reg8_t n, int8_t v){ return (n<AH ? gpregs[n].reg8_l : gpregs[n-AH].reg8_h) += v; };
+
+		bool is_halt(void){ return halt; };
+		void do_halt(bool h){ halt = h; };
 };
 
 #endif

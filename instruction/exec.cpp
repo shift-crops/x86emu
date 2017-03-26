@@ -2,7 +2,7 @@
 
 bool ExecInstr::exec(void){
         if(!instrfuncs[OPCODE]){
-                ERROR("not implemented OPCODE 0x%02d", OPCODE);
+                ERROR("not implemented OPCODE 0x%02x", OPCODE);
 		return false;
 	}
 

@@ -7,7 +7,9 @@
 class Eflags {
 	private:
 		union {
-			uint32_t raw;
+			uint32_t reg32;
+			uint16_t reg16;
+
 			struct {
 				uint32_t CF : 1;
 				uint32_t : 1;           // 1
@@ -36,8 +38,10 @@ class Eflags {
 	public:
 		Eflags();
 
-		uint32_t get_eflags(void){ return eflags.raw; };
-		void set_eflags(uint32_t v){ eflags.raw = v; };
+		uint32_t get_eflags(void){ return eflags.reg32; };
+		void set_eflags(uint32_t v){ eflags.reg32 = v; };
+		uint16_t get_flags(void){ return eflags.reg16; };
+		void set_flags(uint16_t v){ eflags.reg16 = v; };
 
 		bool is_carry(void){ return eflags.CF; };
 		bool is_parity(void){ return eflags.PF; };
