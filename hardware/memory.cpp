@@ -5,6 +5,7 @@
 Memory::Memory(size_t size){
 	mem_size = size;
 	memory = new uint8_t[size];
+	a20_gate = true;
 }
 
 Memory::~Memory(){

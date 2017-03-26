@@ -14,7 +14,7 @@ InstrBase::InstrBase() : Instruction(NULL), ExecInstr(NULL), ParseInstr(NULL) {
 	//set_funcflag(0x04, instrbase(add_al_imm8), CHK_IMM8);
 	set_funcflag(0x08, instrbase(or_rm8_r8), CHK_MODRM);
 	set_funcflag(0x0a, instrbase(or_r8_rm8), CHK_MODRM);
-	//set_funcflag(0x0c, instrbase(or_al_imm8), CHK_IMM8);
+	set_funcflag(0x0c, instrbase(or_al_imm8), CHK_IMM8);
 	set_funcflag(0x20, instrbase(and_rm8_r8), CHK_MODRM);
 	set_funcflag(0x22, instrbase(and_r8_rm8), CHK_MODRM);
 	//set_funcflag(0x24, instrbase(and_al_imm8), CHK_IMM8);
@@ -85,6 +85,14 @@ void InstrBase::or_rm8_r8(void){
 	r8 = get_r8();
 	set_rm8(rm8|r8);
 	EFLAGS_UPDATE_OR(rm8, r8);
+}
+
+void InstrBase::or_al_imm8(void){
+	uint8_t al;
+
+	al = GET_GPREG(AL);
+	SET_GPREG(AL, al|IMM8);
+	EFLAGS_UPDATE_OR(al, IMM8);
 }
 
 void InstrBase::or_r8_rm8(void){
@@ -250,14 +258,14 @@ void InstrBase::iret(void){
 }
 
 void InstrBase::in_al_imm8(void){
-	SET_GPREG(AL, EMU->in_io8(IMM8));
+	SET_GPREG(AL, EMU->in_io8((uint8_t)IMM8));
 }
 
 void InstrBase::out_imm8_al(void){
 	uint8_t al;
 
 	al = GET_GPREG(AL);
-	EMU->out_io8(IMM8, al);
+	EMU->out_io8((uint8_t)IMM8, al);
 }
 
 void InstrBase::jmp_rel8(void){

@@ -34,7 +34,7 @@ bool ParseInstr::parse(void){
 	}
 	else if(chk[OPCODE].imm8){
 		IMM8 = (int8_t)get_emu()->get_code8(0);
-		DEBUG_MSG("imm8_s:%d", IMM8);
+		DEBUG_MSG("imm8:%d", IMM8);
 		UPDATE_EIP(1);
 	}
 

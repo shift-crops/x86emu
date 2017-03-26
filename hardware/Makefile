@@ -1,6 +1,6 @@
 TARGET := hardware.a
 
-SRCS := processor.cpp memory.cpp eflags.cpp io.cpp
+SRCS := processor.cpp memory.cpp eflags.cpp
 OBJS := $(SRCS:.cpp=.o)
 DEPS := $(SRCS:.cpp=.d)
 

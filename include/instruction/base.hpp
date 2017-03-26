@@ -15,6 +15,7 @@ class InstrBase : public ExecInstr , public ParseInstr {
 		void add_r8_rm8(void);
 		void or_rm8_r8(void);
 		void or_r8_rm8(void);
+		void or_al_imm8(void);
 		void and_rm8_r8(void);
 		void and_r8_rm8(void);
 		void sub_rm8_r8(void);

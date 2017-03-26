@@ -12,8 +12,10 @@ uint32_t DataAccess::trans_v2p_seg(segreg_t seg, uint32_t vaddr){
 	}
 	else{
 		paddr = (get_segreg(seg) << 4) + vaddr;
-		paddr &= (1<<20)-1;			// A20 mask
 	}
+
+	if(chk_a20gate())
+		paddr &= (1<<20)-1;
 
 	return paddr;
 }

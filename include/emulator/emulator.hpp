@@ -6,8 +6,9 @@
 #include "hardware/hardware.hpp"
 #include "access.hpp"
 #include "interrupt.hpp"
+#include "io.hpp"
 
-class Emulator : public Interrupt {
+class Emulator : public Interrupt, public IO {
 	public:
 		Emulator(size_t size, uint32_t eip, uint16_t cs) : Hardware(size) { set_eip(eip); set_segreg(CS, cs); };
 

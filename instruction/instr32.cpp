@@ -6,7 +6,6 @@
 Instr32::Instr32(Emulator *e) : Instruction(e) {
 	int i;
 
-	INFO("Instr32::init_instr");
 	// 0x00 : add_rm8_r8
 	set_funcflag(0x01, instr32(add_rm32_r32), CHK_MODRM);
 	// 0x02 : add_r8_rm8

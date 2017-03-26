@@ -1,6 +1,6 @@
-TARGET := emulator.a
+TARGET := device.a
 
-SRCS := emulator.cpp access.cpp interrupt.cpp io.cpp
+SRCS := com.cpp syscontrol.cpp
 OBJS := $(SRCS:.cpp=.o)
 DEPS := $(SRCS:.cpp=.d)
 
