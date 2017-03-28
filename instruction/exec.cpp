@@ -1,3 +1,4 @@
+#include <assert.h>
 #include "instruction/instruction.hpp"
 
 bool ExecInstr::exec(void){
@@ -97,26 +98,78 @@ uint32_t ExecInstr::get_crn(void){
 }
 
 uint32_t ExecInstr::calc_modrm(void){
+	assert(MOD != 3);
+
+	if(is_protected())
+		return calc_modrm32();
+	else
+		return calc_modrm16();
+}
+
+uint32_t ExecInstr::calc_modrm16(void){
+	uint32_t addr = 0;
+
 	switch(MOD){
-		case 0:
-			if(RM == 4)
-				return calc_sib();
-			else if(RM == 5)
-				return DISP32;
-			else
-    				return GET_GPREG(static_cast<reg32_t>(RM));
 		case 1:
-			if(RM == 4)
-				return calc_sib() + DISP8;
-			else
-    				return GET_GPREG(static_cast<reg32_t>(RM)) + DISP8;
+			addr += DISP8;
+			break;
 		case 2:
-			if(RM == 4)
-				return calc_sib() + DISP32;
-			else
-    				return GET_GPREG(static_cast<reg32_t>(RM)) + DISP32;
+			addr += DISP16;
+			break;
 	}
-	return -1;
+
+	switch(RM){
+		case 0:
+		case 1:
+		case 7:
+			addr += GET_GPREG(BX);
+			break;
+		case 2:
+		case 3:
+		case 6:
+			if(MOD == 0 && RM == 6)
+				addr += DISP16;
+			else
+				addr += GET_GPREG(BP);
+			break;
+	}
+
+	if(RM < 6){
+		if(RM % 2)
+			addr += GET_GPREG(DI);
+		else
+			addr += GET_GPREG(SI);
+	}
+
+	return addr;
+}
+
+uint32_t ExecInstr::calc_modrm32(void){
+	uint32_t addr = 0;
+
+	switch(MOD){
+		case 1:
+			addr += DISP8;
+			break;
+		case 2:
+			addr += DISP32;
+			break;
+	}
+
+	switch(RM){
+		case 4:
+			addr += calc_sib();
+			break;
+		case 5:
+			if(MOD == 0){
+				addr += DISP32;
+				break;
+			}
+		default:
+			addr += GET_GPREG(static_cast<reg32_t>(RM));
+	}
+
+	return addr;
 }
 
 uint32_t ExecInstr::calc_sib(void){

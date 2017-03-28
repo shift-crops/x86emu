@@ -2,7 +2,7 @@
 #include <map>
 #include "instruction/instruction.hpp"
 
-bool ParseInstr::parse(bool is_protected){
+bool ParseInstr::parse(void){
 	memset(&instr, 0, sizeof(instr));
 
 	if(!parse_prefix_opcode())
@@ -15,7 +15,7 @@ bool ParseInstr::parse(bool is_protected){
 	}
 
 	if(chk[OPCODE].modrm)
-		parse_modrm_sib_disp(is_protected);
+		parse_modrm_sib_disp();
 
 	if(chk[OPCODE].imm32){
 		IMM32 = get_emu()->get_code32(0);
@@ -89,18 +89,21 @@ next:			PREFIX = code;
 		UPDATE_EIP(1);
 	}
 
-	DEBUG_MSG("EIP:0x%02x opcode:%02x ", GET_EIP()-1, OPCODE);
+	if(is_protected())
+		DEBUG_MSG("EIP:0x%04x opcode:%02x ", GET_EIP()-1, OPCODE);
+	else
+		DEBUG_MSG("IP:0x%02x opcode:%02x ", GET_IP()-1, OPCODE);
 
 	return true;
 }
 
-void ParseInstr::parse_modrm_sib_disp(bool is_protected){
+void ParseInstr::parse_modrm_sib_disp(void){
 	_MODRM = get_emu()->get_code8(0);
 	UPDATE_EIP(1);
 
 	DEBUG_MSG("[mod:%d reg:%d rm:%d] ", MOD, REG, RM);
 
-	if(is_protected){
+	if(is_protected()){
 		if (MOD != 3 && RM == 4) {
 			_SIB = get_emu()->get_code8(0);
 			UPDATE_EIP(1);

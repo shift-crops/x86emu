@@ -17,7 +17,7 @@ int main(int argc, char *argv[]){
 	while(!emu.is_halt() && emu.get_eip()){
 		bool is_protected = emu.is_protected();
 
-		while(!(is_protected ? instr32.parse(is_protected) : instr16.parse(is_protected)))
+		while(!(is_protected ? instr32.parse() : instr16.parse()))
 			is_protected ^= true;
 
 		if(is_protected)

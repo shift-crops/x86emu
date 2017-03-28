@@ -93,13 +93,16 @@ class Instruction {
 		} instr;
 
 		sgreg_t segment;
+		bool mode_protected;
 	private:
 		Emulator *emu;
 
 	public:
-		Instruction(Emulator *e) { emu = e; };
+		Instruction() {};
+		Instruction(Emulator *e, bool p) { emu = e; mode_protected = p; };
 	protected:
 		Emulator* get_emu() { return emu; };
+		bool is_protected() { return mode_protected; };
 };
 
 
@@ -111,7 +114,7 @@ class ExecInstr : protected virtual Instruction {
 	public:
 		bool exec(void);
 	protected:
-		ExecInstr(Emulator *e) : Instruction(e) {}; 
+		//ExecInstr(Emulator *e) : Instruction(e) {}; 
 		void set_rm32(uint32_t value);
 		uint32_t get_rm32(void);
 		void set_r32(uint32_t value);
@@ -137,6 +140,8 @@ class ExecInstr : protected virtual Instruction {
 
 	private:
 		uint32_t calc_modrm(void);
+		uint32_t calc_modrm16(void);
+		uint32_t calc_modrm32(void);
 		uint32_t calc_sib(void);
 };
 
@@ -163,11 +168,11 @@ class ParseInstr : protected virtual Instruction {
 		std::map<uint16_t, InstrFlags> chk;
 
 	public:
-		ParseInstr(Emulator *e) : Instruction(e) {}; 
-		bool parse(bool is_protected);
+		//ParseInstr(Emulator *e) : Instruction(e) {}; 
+		bool parse(void);
 	private:
 		bool parse_prefix_opcode(void);
-		void parse_modrm_sib_disp(bool is_protected);
+		void parse_modrm_sib_disp(void);
 };
 
 #endif

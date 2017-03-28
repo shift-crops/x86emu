@@ -3,7 +3,7 @@
 
 #define instr16(f) ((instrfunc_t)&Instr16::f)
 
-Instr16::Instr16(Emulator *e) : Instruction(e) {
+Instr16::Instr16(Emulator *e) : Instruction(e, false) {
 	int i;
 
 	// 0x00 : add_rm8_r8

@@ -10,7 +10,7 @@ enum reg32_t { EAX, ECX, EDX, EBX, ESP, EBP, ESI, EDI, GPREGS_COUNT };
 enum reg16_t { AX, CX, DX, BX, SP, BP, SI, DI };
 enum reg8_t { AL, CL, DL, BL, AH, CH, DH, BH };
 //enum reg8l_t { AL, CL, DL, BL, SPL, BPL, SIL, DIL };
-enum sgreg_t { ES, CS, SS, DS, FS, GS, SEGREGS_COUNT }; 
+enum sgreg_t { ES, CS, SS, DS, FS, GS, SGREGS_COUNT }; 
 enum dtreg_t { GDTR, LDTR, IDTR, DTREGS_COUNT }; 
 
 union GPRegister {
@@ -35,7 +35,7 @@ class Processor : public Eflags, public CR {
 		};
 
 		GPRegister gpregs[GPREGS_COUNT];
-		uint16_t sgregs[SEGREGS_COUNT];
+		uint16_t sgregs[SGREGS_COUNT];
 		DTRegister dtregs[DTREGS_COUNT];
 
 		bool halt;

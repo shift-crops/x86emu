@@ -19,7 +19,7 @@ void Memory::dump_mem(uint32_t addr, size_t size){
 	for(uint32_t idx=0; idx*0x10<size; idx++){
 		MSG("0x%08x : ", addr+idx*0x10);
 		for(uint8_t i=0; i<4; i++)
-			MSG("%08x ", (uint32_t)memory[addr+idx*0x10+i*4]);
+			MSG("%08x ", ((uint32_t*)memory)[(addr+idx*0x10)/4+i]);
 		MSG("\n");
 	}
 }

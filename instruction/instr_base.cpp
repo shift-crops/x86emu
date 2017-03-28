@@ -3,7 +3,7 @@
 
 #define instrbase(f) ((instrfunc_t)&InstrBase::f)
 
-InstrBase::InstrBase() : Instruction(NULL), ExecInstr(NULL), ParseInstr(NULL) {
+InstrBase::InstrBase() {
 	int i;
 
 	set_funcflag(0x00, instrbase(add_rm8_r8), CHK_MODRM);

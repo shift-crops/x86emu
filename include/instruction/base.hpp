@@ -64,6 +64,7 @@ class InstrBase : public ExecInstr , public ParseInstr {
 		//virtual void code_82(void) = 0;
 		virtual void code_83(void) = 0;
                 virtual void code_ff(void) = 0;
+                virtual void code_0f01(void) = 0;
 };
 
 class Instr16 : public InstrBase {
