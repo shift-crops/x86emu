@@ -6,9 +6,6 @@
 InstrBase::InstrBase() : Instruction(NULL), ExecInstr(NULL), ParseInstr(NULL) {
 	int i;
 
-	memset(instrfuncs, 0, sizeof(instrfuncs));
-	memset(chk, 0, sizeof(chk));
-
 	set_funcflag(0x00, instrbase(add_rm8_r8), CHK_MODRM);
 	set_funcflag(0x02, instrbase(add_r8_rm8), CHK_MODRM);
 	//set_funcflag(0x04, instrbase(add_al_imm8), CHK_IMM8);
@@ -54,9 +51,13 @@ InstrBase::InstrBase() : Instruction(NULL), ExecInstr(NULL), ParseInstr(NULL) {
 	set_funcflag(0xcf, instrbase(iret), 0);
 	set_funcflag(0xe4, instrbase(in_al_imm8), CHK_IMM8);
 	set_funcflag(0xe6, instrbase(out_imm8_al), CHK_IMM8);
+	set_funcflag(0xeb, instrbase(jmp), CHK_IMM8);
 	set_funcflag(0xec, instrbase(in_al_dx), 0);
 	set_funcflag(0xee, instrbase(out_dx_al), 0);
 	set_funcflag(0xf4, instrbase(hlt), 0);
+
+	set_funcflag(0x0f20, instrbase(mov_r32_crn), CHK_MODRM);
+	set_funcflag(0x0f22, instrbase(mov_crn_r32), CHK_MODRM);
 }
 
 
@@ -268,7 +269,7 @@ void InstrBase::out_imm8_al(void){
 	EMU->out_io8((uint8_t)IMM8, al);
 }
 
-void InstrBase::jmp_rel8(void){
+void InstrBase::jmp(void){
 	UPDATE_EIP(IMM8);
 }
 
@@ -290,4 +291,18 @@ void InstrBase::out_dx_al(void){
 
 void InstrBase::hlt(void){
 	EMU->do_halt(true);
+}
+
+void InstrBase::mov_r32_crn(void){
+	uint32_t crn;
+
+	crn = get_crn();
+	set_r32(crn);
+}
+
+void InstrBase::mov_crn_r32(void){
+	uint32_t r32;
+
+	r32 = get_r32();
+	set_crn(r32);
 }

@@ -9,21 +9,27 @@
 #define TYPE_INTERRUPT	6
 #define TYPE_TRAP	7
 
-struct IVT {			// Real Mode
-	uint16_t offset;
-	uint16_t segment;
+union IVT {			// Real Mode
+	uint32_t raw;
+	struct {
+		uint16_t offset;
+		uint16_t segment;
+	};
 };
 
-struct IDT {			// Protected Mode
-	uint16_t offset_l;
-	uint16_t selector;
-	uint8_t : 8;
-	uint8_t type : 3;
-	uint8_t D : 1;
-	uint8_t : 1;
-	uint8_t DPL : 2;
-	uint8_t P : 1;
-	uint16_t offset_h;
+union IDT {			// Protected Mode
+	uint64_t raw;
+	struct{
+		uint16_t offset_l;
+		uint16_t selector;
+		uint8_t : 8;
+		uint8_t type : 3;
+		uint8_t D : 1;
+		uint8_t : 1;
+		uint8_t DPL : 2;
+		uint8_t P : 1;
+		uint16_t offset_h;
+	};
 };
 
 class Interrupt : public virtual DataAccess {

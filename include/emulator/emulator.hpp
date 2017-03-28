@@ -10,7 +10,7 @@
 
 class Emulator : public Interrupt, public IO {
 	public:
-		Emulator(size_t size, uint32_t eip, uint16_t cs) : Hardware(size) { set_eip(eip); set_segreg(CS, cs); };
+		Emulator(size_t size, uint16_t cs, uint16_t ip) : Hardware(size) { set_sgreg(CS, cs); set_ip(ip); };
 
 		void load_binary(const char* fname, uint32_t addr, size_t size);
 };

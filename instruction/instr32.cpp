@@ -72,6 +72,7 @@ Instr32::Instr32(Emulator *e) : Instruction(e) {
 	// 0x8a : mov_r8_rm8
 	set_funcflag(0x8b, instr32(mov_r32_rm32), CHK_MODRM);
 	set_funcflag(0x8c, instr32(mov_rm32_sreg), CHK_MODRM);
+	set_funcflag(0x8d, instr32(lea_r32_m), CHK_MODRM);
 	// 0x8e : mov_sreg_rm16
 
 	// 0x90 : nop
@@ -96,14 +97,16 @@ Instr32::Instr32(Emulator *e) : Instruction(e) {
 	set_funcflag(0xe7, instr32(out_imm8_eax), CHK_IMM8);
 	set_funcflag(0xe8, instr32(call_rel32), CHK_IMM32);
 	set_funcflag(0xe9, instr32(jmp_rel32), CHK_IMM32);
-
-	set_funcflag(0xeb, instr32(jmp_rel8), CHK_IMM8);
+	set_funcflag(0xea, instr32(jmp_ptr16_32), CHK_PTR16 | CHK_IMM32);
+	// 0xeb : jmp
 	// 0xec : in_al_dx
 	set_funcflag(0xed, instr32(in_eax_dx), 0);
 	// 0xee : out_dx_al
 	set_funcflag(0xef, instr32(out_dx_eax), 0);
 
 	set_funcflag(0xff, instr32(code_ff), CHK_MODRM);
+
+	set_funcflag(0x0f01, instr32(code_0f01), CHK_MODRM);
 }
 
 void Instr32::add_rm32_r32(void){
@@ -342,6 +345,10 @@ void Instr32::mov_rm32_sreg(void){
 	set_rm32(sreg);
 }
 
+void Instr32::lea_r32_m(void){
+	set_r32(get_m());
+}
+
 void Instr32::xchg_r32_eax(void){
 	uint32_t r32, eax;
 
@@ -397,6 +404,11 @@ void Instr32::jmp_rel32(void){
 	UPDATE_EIP(IMM32);
 }
 
+void Instr32::jmp_ptr16_32(void){
+	EMU->set_sgreg(CS, PTR16);
+	SET_EIP(IMM32);
+}
+
 void Instr32::in_eax_dx(void){
 	uint16_t dx;
 
@@ -432,6 +444,15 @@ void Instr32::code_ff(void){
 			break;
 		default:
 			ERROR("not implemented: 0xff /%d\n", REG);
+	}
+}
+
+void Instr32::code_0f01(void){
+	switch(REG){
+		case 2: lgdt_m32();        break;
+		case 3: lidt_m32();        break;
+		default:
+			ERROR("not implemented: 0x0f01 /%d\n", REG);
 	}
 }
 
@@ -540,5 +561,17 @@ void Instr32::push_rm32(void){
 
 	rm32 = get_rm32();
 	PUSH32(rm32);
+}
+
+/******************************************************************/
+
+void Instr32::lgdt_m32(void){
+	if(!PREFIX) SEGMENT = DS;
+	EMU->set_dtreg(GDTR, EMU->get_data32(SEGMENT, DISP32+2), EMU->get_data16(SEGMENT, DISP32));
+}
+
+void Instr32::lidt_m32(void){
+	if(!PREFIX) SEGMENT = DS;
+	EMU->set_dtreg(IDTR, EMU->get_data32(SEGMENT, DISP32+2), EMU->get_data16(SEGMENT, DISP32));
 }
 

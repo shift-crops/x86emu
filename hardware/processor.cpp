@@ -5,6 +5,7 @@ Processor::Processor(void){
 	memset(gpregs, 0, sizeof(gpregs));
 	eip = 0;
 	halt = false;
+	mode_protected = false;
 }
 
 void Processor::dump_regs(void){

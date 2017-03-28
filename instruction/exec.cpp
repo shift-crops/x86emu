@@ -1,7 +1,7 @@
 #include "instruction/instruction.hpp"
 
 bool ExecInstr::exec(void){
-        if(!instrfuncs[OPCODE]){
+        if(!instrfuncs.count(OPCODE)){
                 ERROR("not implemented OPCODE 0x%02x", OPCODE);
 		return false;
 	}
@@ -76,12 +76,24 @@ uint8_t ExecInstr::get_r8(void){
 	return GET_GPREG(static_cast<reg8_t>(REG));
 }
 
+uint32_t ExecInstr::get_m(void){
+	return calc_modrm();
+}
+
 void ExecInstr::set_sreg(uint16_t value){
-	EMU->set_segreg(static_cast<segreg_t>(REG), value);
+	EMU->set_sgreg(static_cast<sgreg_t>(REG), value);
 }
 
 uint16_t ExecInstr::get_sreg(void){
-	return EMU->get_segreg(static_cast<segreg_t>(REG));
+	return EMU->get_sgreg(static_cast<sgreg_t>(REG));
+}
+
+void ExecInstr::set_crn(uint32_t value){
+	EMU->set_crn(REG, value);
+}
+
+uint32_t ExecInstr::get_crn(void){
+	return EMU->get_crn(REG);
 }
 
 uint32_t ExecInstr::calc_modrm(void){

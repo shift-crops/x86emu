@@ -7,17 +7,17 @@
 #define MEMORY_SIZE (1*MB)
 
 int main(int argc, char *argv[]){
-	Emulator emu(MEMORY_SIZE, 0xfff0, 0xf000);
+	Emulator emu(MEMORY_SIZE, 0xf000, 0xfff0);
 	Instr16 instr16(&emu);
 	Instr32 instr32(&emu);
 
 	emu.load_binary("bios/bios", 0xffff0, 0x10);
-	emu.load_binary(argv[1], 0xf7c00, 0x200);
+	emu.load_binary(argv[1], 0x7c00, 0x200);
 
 	while(!emu.is_halt() && emu.get_eip()){
 		bool is_protected = emu.is_protected();
 
-		while(!(is_protected ? instr32.parse() : instr16.parse()))
+		while(!(is_protected ? instr32.parse(is_protected) : instr16.parse(is_protected)))
 			is_protected ^= true;
 
 		if(is_protected)

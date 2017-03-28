@@ -1,6 +1,7 @@
 #ifndef _INSTRUCTION_H
 #define _INSTRUCTION_H
 
+#include <map>
 #include "common.hpp"
 #include "emulator/emulator.hpp"
 
@@ -23,12 +24,12 @@
 #define EFLAGS_ZF			EMU->is_zero()
 #define EFLAGS_SF			EMU->is_sign()
 #define EFLAGS_OF			EMU->is_overflow()
-#define READ_MEM32(addr)		EMU->get_data32(addr)
-#define READ_MEM16(addr)		EMU->get_data16(addr)
-#define READ_MEM8(addr)			EMU->get_data8(addr)
-#define WRITE_MEM32(addr, v)		EMU->put_data32(addr, v)
-#define WRITE_MEM16(addr, v)		EMU->put_data16(addr, v)
-#define WRITE_MEM8(addr, v)		EMU->put_data8(addr, v)
+#define READ_MEM32(addr)		EMU->get_data32(DS, addr)
+#define READ_MEM16(addr)		EMU->get_data16(DS, addr)
+#define READ_MEM8(addr)			EMU->get_data8(DS, addr)
+#define WRITE_MEM32(addr, v)		EMU->put_data32(DS, addr, v)
+#define WRITE_MEM16(addr, v)		EMU->put_data16(DS, addr, v)
+#define WRITE_MEM8(addr, v)		EMU->put_data8(DS, addr, v)
 #define PUSH32(v)			EMU->push32(v)
 #define PUSH16(v)			EMU->push16(v)
 #define POP32()				EMU->pop32()
@@ -45,10 +46,13 @@
 #define INDEX	(instr.sib.index)
 #define BASE	(instr.sib.base)
 #define DISP32	(instr.disp32)
-#define DISP8	(instr.disp8_s)
+#define DISP16	(instr.disp16)
+#define DISP8	(instr.disp8)
 #define IMM32	(instr.imm32)
 #define IMM16	(instr.imm16)
 #define IMM8	(instr.imm8)
+#define PTR16	(instr.ptr16)
+#define SEGMENT	(segment)
 
 struct ModRM {  
         uint8_t rm : 3; 
@@ -65,8 +69,8 @@ struct SIB {
 class Instruction {
 	protected:
 		struct {
-			uint32_t prefix : 8;
-			uint32_t opcode : 24;
+			uint16_t prefix;
+			uint16_t opcode;
 			union {
 				uint8_t _modrm;
 				struct ModRM modrm;
@@ -76,7 +80,8 @@ class Instruction {
 				struct SIB sib;
 			};
 			union {
-				int8_t disp8_s;
+				int8_t disp8;
+				int16_t disp16;
 				int32_t disp32;
 			};
 			union {
@@ -84,7 +89,10 @@ class Instruction {
 				int16_t imm16;
 				int32_t imm32;
 			};
+			int16_t ptr16;
 		} instr;
+
+		sgreg_t segment;
 	private:
 		Emulator *emu;
 
@@ -98,7 +106,7 @@ class Instruction {
 class ExecInstr : protected virtual Instruction {
 	protected:
 		typedef void (ExecInstr::*instrfunc_t)(void);
-		instrfunc_t instrfuncs[256];
+		std::map<uint16_t, instrfunc_t> instrfuncs;
 
 	public:
 		bool exec(void);
@@ -119,8 +127,13 @@ class ExecInstr : protected virtual Instruction {
 		void set_r8(uint8_t value);
 		uint8_t get_r8(void);
 
+		uint32_t get_m(void);
+
 		void set_sreg(uint16_t value);
 		uint16_t get_sreg(void);
+
+		void set_crn(uint32_t value);
+		uint32_t get_crn(void);
 
 	private:
 		uint32_t calc_modrm(void);
@@ -132,24 +145,29 @@ class ExecInstr : protected virtual Instruction {
 #define CHK_IMM32 	2
 #define CHK_IMM16 	4
 #define CHK_IMM8 	8
+#define CHK_PTR16 	16
+
+union InstrFlags {
+	uint8_t flags;
+	struct {
+		uint8_t modrm : 1;
+		uint8_t imm32 : 1;
+		uint8_t imm16 : 1;
+		uint8_t imm8 : 1;
+		uint8_t ptr16 : 1;
+	};
+};
 
 class ParseInstr : protected virtual Instruction {
 	protected:
-		union {
-			uint8_t flags;
-			struct {
-				uint8_t modrm : 1;
-				uint8_t imm32 : 1;
-				uint8_t imm16 : 1;
-				uint8_t imm8 : 1;
-			};
-		} chk[256];
+		std::map<uint16_t, InstrFlags> chk;
 
 	public:
 		ParseInstr(Emulator *e) : Instruction(e) {}; 
-		bool parse(void);
+		bool parse(bool is_protected);
 	private:
-		void parse_modrm_sib_disp(void);
+		bool parse_prefix_opcode(void);
+		void parse_modrm_sib_disp(bool is_protected);
 };
 
 #endif

@@ -63,21 +63,22 @@ class CR {
 			};
 		} cr4;
 
+		uint32_t* cr[5];
+
 	public:
-		CR() { set_cr0(0); set_cr1(0); set_cr2(0); set_cr3(0); set_cr4(0);};
+		CR() {
+			cr[0] = &cr0.raw;
+			cr[1] = &cr1.raw;
+			cr[2] = &cr2.raw;
+			cr[3] = &cr3.raw;
+			cr[4] = &cr4.raw;
+			for(int i=0; i<5; i++)
+				set_crn(i, 0);
+		};
 
-		uint32_t get_cr0(void) { return cr0.raw; };
-		uint32_t get_cr1(void) { return cr1.raw; };
-		uint32_t get_cr2(void) { return cr2.raw; };
-		uint32_t get_cr3(void) { return cr3.raw; };
-		uint32_t get_cr4(void) { return cr4.raw; };
-
-		void set_cr0(uint32_t v) { cr0.raw = v; };
-		void set_cr1(uint32_t v) { cr1.raw = v; };
-		void set_cr2(uint32_t v) { cr2.raw = v; };
-		void set_cr3(uint32_t v) { cr3.raw = v; };
-		void set_cr4(uint32_t v) { cr4.raw = v; };
-
+		uint32_t get_crn(int n) { return *cr[n]; };
+		void set_crn(int n, uint32_t v) { *cr[n] = v; };
+	protected:
 		bool is_protected(void) { return cr0.PE; };
 };
 
