@@ -22,6 +22,15 @@ union GPRegister {
 	};
 };
 
+union SGRegister {
+	uint16_t raw;
+	struct {
+		uint16_t RPL : 2;
+		uint16_t TI : 1;
+		uint16_t index : 13;
+	};
+};
+
 struct DTRegister {
 	uint16_t limit;
 	uint32_t base;
@@ -35,8 +44,9 @@ class Processor : public Eflags, public CR {
 		};
 
 		GPRegister gpregs[GPREGS_COUNT];
-		uint16_t sgregs[SGREGS_COUNT];
+		SGRegister sgregs[SGREGS_COUNT];
 		DTRegister dtregs[DTREGS_COUNT];
+		uint16_t tr;
 
 		bool halt;
 		bool mode_protected;
@@ -50,17 +60,19 @@ class Processor : public Eflags, public CR {
 		uint32_t get_gpreg(enum reg32_t n){ return gpregs[n].reg32; };
 		uint16_t get_gpreg(enum reg16_t n){ return gpregs[n].reg16; };
 		uint8_t get_gpreg(enum reg8_t n){ return n<AH ? gpregs[n].reg8_l : gpregs[n-AH].reg8_h; };
-		uint16_t get_sgreg(enum sgreg_t n){ return sgregs[n]; };
+		uint16_t get_sgreg(enum sgreg_t n){ return sgregs[n].raw; };
 		uint32_t get_dtreg_base(enum dtreg_t n){ return dtregs[n].base; };
 		uint16_t get_dtreg_limit(enum dtreg_t n){ return dtregs[n].limit; };
+		uint16_t get_tr(void){ return tr; };
 
 		void set_eip(uint32_t v){ eip = v; mode_protected = CR::is_protected(); }; // flush pipeline
 		void set_ip(uint16_t v){ ip = v; mode_protected = CR::is_protected(); };
 		void set_gpreg(enum reg32_t n, uint32_t v){ gpregs[n].reg32 = v; };
 		void set_gpreg(enum reg16_t n, uint16_t v){ gpregs[n].reg16 = v; };
 		void set_gpreg(enum reg8_t n, uint8_t v){ (n<AH ? gpregs[n].reg8_l : gpregs[n-AH].reg8_h) = v; };
-		void set_sgreg(enum sgreg_t n, uint16_t v){ sgregs[n] = v; };
+		void set_sgreg(enum sgreg_t n, uint16_t v){ sgregs[n].raw = v; };
 		void set_dtreg(enum dtreg_t n, uint32_t base, uint16_t limit){ dtregs[n].base = base; dtregs[n].limit = limit; };
+		void set_tr(uint16_t v){ tr = v; };
 
 		uint32_t update_eip(int32_t v){ return eip += v; };
 		uint32_t update_ip(int32_t v){ return ip += v; };

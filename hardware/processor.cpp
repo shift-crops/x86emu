@@ -18,6 +18,6 @@ void Processor::dump_regs(void){
 		MSG("%s = 0x%08x : 0x%04x (0x%02x/0x%02x)\n"
 			, gpreg_name[i], gpregs[i].reg32, gpregs[i].reg16, gpregs[i].reg8_h, gpregs[i].reg8_l);
 	for(int i=0; i<SGREGS_COUNT; i++)
-		MSG("%s=0x%04x ", sgreg_name[i], sgregs[i]);
+		MSG("%s=0x%04x ", sgreg_name[i], *((uint16_t*)&sgregs[i]));
 	MSG("\n");
 }

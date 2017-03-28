@@ -1,7 +1,7 @@
 #include "hardware/eflags.hpp"
 
 Eflags::Eflags(){
-	eflags.reg32 = 0x00000002;
+	eflags.reg32 = 0x00000202;
 }
 
 template uint32_t Eflags::update_eflags_add(uint32_t v1, uint32_t v2);

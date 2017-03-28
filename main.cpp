@@ -14,16 +14,24 @@ int main(int argc, char *argv[]){
 	emu.load_binary("bios/bios", 0xffff0, 0x10);
 	emu.load_binary(argv[1], 0x7c00, 0x200);
 
-	while(!emu.is_halt() && emu.get_eip()){
+	//while(!emu.is_halt() && emu.get_eip()){
+	while(!emu.is_halt()){
 		bool is_protected = emu.is_protected();
 
-		while(!(is_protected ? instr32.parse() : instr16.parse()))
-			is_protected ^= true;
+		try{
+			while(!(is_protected ? instr32.parse() : instr16.parse()))
+				is_protected ^= true;
 
-		if(is_protected)
-			instr32.exec();
-		else
-			instr16.exec();
+			if(is_protected)
+				instr32.exec();
+			else
+				instr16.exec();
+		}
+		catch(int n){
+			emu.dump_regs();
+			ERROR("Exception %d", n);
+			emu.interrupt_hundle(n, true);
+		}
 	}
 	emu.dump_mem(emu.get_gpreg(ESP)-0x40, 0x80);
 	emu.dump_regs();

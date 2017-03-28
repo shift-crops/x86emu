@@ -56,6 +56,7 @@ class InstrBase : public ExecInstr , public ParseInstr {
 		void in_al_dx(void);
 		void out_dx_al(void);
 		void hlt(void);
+		void ltr_rm16(void);
 		void mov_r32_crn(void);
 		void mov_crn_r32(void);
 
@@ -64,6 +65,7 @@ class InstrBase : public ExecInstr , public ParseInstr {
 		//virtual void code_82(void) = 0;
 		virtual void code_83(void) = 0;
                 virtual void code_ff(void) = 0;
+                virtual void code_0f00(void) = 0;
                 virtual void code_0f01(void) = 0;
 };
 
@@ -114,6 +116,7 @@ class Instr16 : public InstrBase {
 		//void code_82(void);
 		void code_83(void);
                 void code_ff(void);
+                void code_0f00(void);
                 void code_0f01(void);
 
 		// 0x83
@@ -185,6 +188,7 @@ class Instr32 : public InstrBase {
 		//void code_82(void);
 		void code_83(void);
                 void code_ff(void);
+                void code_0f00(void);
                 void code_0f01(void);
 
 		// 0x83

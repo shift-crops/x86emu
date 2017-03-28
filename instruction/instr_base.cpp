@@ -251,7 +251,7 @@ void InstrBase::mov_r8_imm8(void){
 }
 
 void InstrBase::int_imm8(void){
-	EMU->interrupt_hundle(IMM8);
+	EMU->interrupt_hundle(IMM8, false);
 }
 
 void InstrBase::iret(void){
@@ -291,6 +291,13 @@ void InstrBase::out_dx_al(void){
 
 void InstrBase::hlt(void){
 	EMU->do_halt(true);
+}
+
+void InstrBase::ltr_rm16(void){
+	uint16_t rm16;
+
+	rm16 = get_rm16();
+	EMU->set_tr(rm16);
 }
 
 void InstrBase::mov_r32_crn(void){

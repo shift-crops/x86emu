@@ -105,7 +105,7 @@ Instr16::Instr16(Emulator *e) : Instruction(e, false) {
 	set_funcflag(0xef, instr16(out_dx_ax), 0);
 
 	set_funcflag(0xff, instr16(code_ff), CHK_MODRM);
-
+	set_funcflag(0x0f00, instr16(code_0f00), CHK_MODRM);
 	set_funcflag(0x0f01, instr16(code_0f01), CHK_MODRM);
 }
 
@@ -443,6 +443,14 @@ void Instr16::code_ff(void){
 			break;
 		default:
 			ERROR("not implemented: 0xff /%d\n", REG);
+	}
+}
+
+void Instr16::code_0f00(void){
+	switch(REG){
+		case 3: ltr_rm16();        break;
+		default:
+			ERROR("not implemented: 0x0f00 /%d\n", REG);
 	}
 }
 

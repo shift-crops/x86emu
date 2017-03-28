@@ -5,10 +5,6 @@
 #include "common.hpp"
 #include "access.hpp"
 
-#define TYPE_TASK	5
-#define TYPE_INTERRUPT	6
-#define TYPE_TRAP	7
-
 union IVT {			// Real Mode
 	uint32_t raw;
 	struct {
@@ -17,28 +13,13 @@ union IVT {			// Real Mode
 	};
 };
 
-union IDT {			// Protected Mode
-	uint64_t raw;
-	struct{
-		uint16_t offset_l;
-		uint16_t selector;
-		uint8_t : 8;
-		uint8_t type : 3;
-		uint8_t D : 1;
-		uint8_t : 1;
-		uint8_t DPL : 2;
-		uint8_t P : 1;
-		uint16_t offset_h;
-	};
-};
-
 class Interrupt : public virtual DataAccess {
 	public:
 		Interrupt();
-		void interrupt_hundle(uint8_t n);
+		void interrupt_hundle(uint8_t n, bool hd_exp);
 		void iret(void);
 	private:
-		void save_regs(void);
+		void save_regs(bool chpl);
 		void restore_regs(void);
 };
 
