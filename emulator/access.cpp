@@ -37,8 +37,7 @@ uint32_t DataAccess::trans_v2l(acsmode_t mode, sgreg_t seg, uint32_t vaddr){
 
 
 		//INFO("dt_base=0x%04x, dt_limit=0x%02x, dt_index=0x%02x", dt_base, dt_limit, dt_index);
-		if(!dt_index || dt_index > dt_limit)
-			throw EXP_GP;
+		EXCEPTION(EXP_GP, !dt_index || dt_index > dt_limit);
 
 		read_data(&gdt, dt_base + dt_index, sizeof(SGDescriptor));
 
@@ -47,22 +46,18 @@ uint32_t DataAccess::trans_v2l(acsmode_t mode, sgreg_t seg, uint32_t vaddr){
 		if(gdt.G) limit <<= 12;
 
 		if(gdt.type.segc){
-			if(mode == MODE_WRITE || (mode == MODE_READ && !gdt.type.code.r))
-				throw EXP_GP;
-			if(sg.RPL > gdt.DPL && !(mode == MODE_EXEC && gdt.type.code.cnf))
-				throw EXP_GP;
+			EXCEPTION(EXP_GP, mode == MODE_WRITE || (mode == MODE_READ && !gdt.type.code.r));
+			EXCEPTION(EXP_GP, sg.RPL > gdt.DPL && !(mode == MODE_EXEC && gdt.type.code.cnf));
 		}
 		else{
-			if(mode == MODE_EXEC || (mode == MODE_WRITE && !gdt.type.data.w))
-				throw EXP_GP;
-			if(sg.RPL > gdt.DPL)
-				throw EXP_GP;
+			EXCEPTION(EXP_GP, mode == MODE_EXEC || (mode == MODE_WRITE && !gdt.type.data.w));
+			EXCEPTION(EXP_GP, sg.RPL > gdt.DPL);
+
 			if(gdt.type.data.exd)
 				base -= limit;
 		}
+		EXCEPTION(EXP_GP, vaddr > limit);
 
-		if(vaddr > limit)
-			throw EXP_GP;
 		laddr = base + vaddr;
 		//INFO("base=0x%04x, limit=0x%02x, laddr=0x%02x", base, limit, laddr);
 	}
@@ -106,5 +101,57 @@ uint16_t DataAccess::pop16(void){
 	update_gpreg(SP, 2);
 
 	return value;
+}
+
+uint32_t DataAccess::read_mem32_seg(sgreg_t seg, uint32_t addr){
+	uint32_t paddr;
+       
+	paddr = trans_v2p(MODE_READ, seg, addr);
+	return chk_memio(paddr) ? read_memio32(paddr) : read_mem32(paddr);
+}
+
+uint16_t DataAccess::read_mem16_seg(sgreg_t seg, uint32_t addr) {
+	uint32_t paddr;
+       
+	paddr = trans_v2p(MODE_READ, seg, addr);
+	return chk_memio(paddr) ? read_memio16(paddr) : read_mem16(paddr);
+}
+
+uint8_t DataAccess::read_mem8_seg(sgreg_t seg, uint32_t addr){
+	uint32_t paddr;
+       
+	paddr = trans_v2p(MODE_READ, seg, addr);
+	return chk_memio(paddr) ? read_memio8(paddr) : read_mem8(paddr);
+}
+
+void DataAccess::write_mem32_seg(sgreg_t seg, uint32_t addr, uint32_t v){
+	uint32_t paddr;
+       
+	paddr = trans_v2p(MODE_WRITE, seg, addr);
+	if(chk_memio(paddr))
+		write_memio32(paddr, v);
+	else
+		write_mem32(paddr, v);
+}
+
+void DataAccess::write_mem16_seg(sgreg_t seg, uint32_t addr, uint16_t v){
+	uint32_t paddr;
+       
+	paddr = trans_v2p(MODE_WRITE, seg, addr);
+	INFO("Write [0x%04x], 0x%04x", paddr, v);
+	if(chk_memio(paddr))
+		write_memio16(paddr, v);
+	else
+		write_mem16(paddr, v);
+}
+
+void DataAccess::write_mem8_seg(sgreg_t seg, uint32_t addr, uint8_t v){
+	uint32_t paddr;
+       
+	paddr = trans_v2p(MODE_WRITE, seg, addr);
+	if(chk_memio(paddr))
+		write_memio8(paddr, v);
+	else
+		write_mem8(paddr, v);
 }
 

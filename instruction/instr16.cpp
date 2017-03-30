@@ -59,10 +59,7 @@ Instr16::Instr16(Emulator *e) : Instruction(e, false) {
 	//set_funcflag(0x6b, instr16(imul_r16_rm16_imm8), CHK_MODRM|CHK_IMM8);
 
 	// 0x70-0x7f : jcc
-	//set_funcflag(0x80, instr16(code_80), CHK_MODRM | CHK_IMM8);
-	//set_funcflag(0x81, instr16(code_81), CHK_MODRM | CHK_IMM16);
-	//set_funcflag(0x82, instr16(code_82), CHK_MODRM | CHK_IMM8);
-	set_funcflag(0x83, instr16(code_83), CHK_MODRM | CHK_IMM8);
+
 	// 0x84 : test_rm8_r8
 	set_funcflag(0x85, instr16(test_rm16_r16), CHK_MODRM);
 	// 0x86 : xchg_r8_rm8
@@ -104,6 +101,17 @@ Instr16::Instr16(Emulator *e) : Instruction(e, false) {
 	// 0xee : out_dx_al
 	set_funcflag(0xef, instr16(out_dx_ax), 0);
 
+	set_funcflag(0x0faf, instr16(imul_r16_rm16), CHK_MODRM);
+	set_funcflag(0x0fb6, instr16(movzx_r16_rm8), CHK_MODRM);
+	set_funcflag(0x0fb7, instr16(movzx_r16_rm16), CHK_MODRM);
+	set_funcflag(0x0fbe, instr16(movsx_r16_rm8), CHK_MODRM);
+	set_funcflag(0x0fbf, instr16(movsx_r16_rm16), CHK_MODRM);
+
+	//set_funcflag(0x80, instr16(code_80), CHK_MODRM | CHK_IMM8);
+	//set_funcflag(0x81, instr16(code_81), CHK_MODRM | CHK_IMM16);
+	//set_funcflag(0x82, instr16(code_82), CHK_MODRM | CHK_IMM8);
+	set_funcflag(0x83, instr16(code_83), CHK_MODRM | CHK_IMM8);
+	set_funcflag(0xc1, instr16(code_c1), CHK_MODRM | CHK_IMM8);
 	set_funcflag(0xff, instr16(code_ff), CHK_MODRM);
 	set_funcflag(0x0f00, instr16(code_0f00), CHK_MODRM);
 	set_funcflag(0x0f01, instr16(code_0f01), CHK_MODRM);
@@ -256,57 +264,6 @@ void Instr16::push_imm8(void){
 	PUSH16(IMM8);
 }
 
-/*
-void Instr16::code_80(void){
-	switch(REG){
-		case 0:	add_rm8_imm8();		break;
-		case 1:	or_rm8_imm8();		break;
-		case 2:	adc_rm8_imm8();		break;
-		case 3:	sbb_rm8_imm8();		break;
-		case 4:	and_rm8_imm8();		break;
-		case 5:	sub_rm8_imm8();		break;
-		case 6:	xor_rm8_imm8();		break;
-		case 7:	cmp_rm8_imm8();		break;
-		default:
-			ERROR("not implemented: 0x80 /%d\n", REG);
-	}
-}
-
-void Instr16::code_81(void){
-	switch(REG){
-		case 0:	add_rm16_imm16();	break;
-		case 1:	or_rm16_imm16();	break;
-		case 2:	adc_rm16_imm16();	break;
-		case 3:	sbb_rm16_imm16();	break;
-		case 4:	and_rm16_imm16();	break;
-		case 5:	sub_rm16_imm16();	break;
-		case 6:	xor_rm16_imm16();	break;
-		case 7:	cmp_rm16_imm16();	break;
-		default:
-			ERROR("not implemented: 0x81 /%d\n", REG);
-	}
-}
-
-void Instr16::code_82(void){
-	code_80();
-}
-*/
-
-void Instr16::code_83(void){
-	switch(REG){
-		case 0:	add_rm16_imm8();	break;
-		case 1:	or_rm16_imm8();		break;
-		case 2:	adc_rm16_imm8();	break;
-		case 3:	sbb_rm16_imm8();	break;
-		case 4:	and_rm16_imm8();	break;
-		case 5:	sub_rm16_imm8();	break;
-		case 6:	xor_rm16_imm8();	break;
-		case 7:	cmp_rm16_imm8();	break;
-		default:
-			ERROR("not implemented: 0x83 /%d\n", REG);
-	}
-}
-
 void Instr16::test_rm16_r16(void){
 	uint16_t rm16, r16;
 
@@ -424,23 +381,112 @@ void Instr16::out_dx_ax(void){
 	EMU->out_io16(dx, ax);
 }
 
+void Instr16::imul_r16_rm16(void){
+	uint16_t r16, rm16;
+
+	r16 = get_r16();
+	rm16 = get_rm16();
+	set_r16(r16*rm16);
+	EFLAGS_UPDATE_MUL(r16, rm16);
+}
+
+void Instr16::movzx_r16_rm8(void){
+	uint8_t rm8;
+
+	rm8 = get_rm8();
+	set_r16(rm8);
+}
+
+void Instr16::movzx_r16_rm16(void){
+	uint16_t rm16;
+
+	rm16 = get_rm16();
+	set_r16(rm16);
+}
+
+void Instr16::movsx_r16_rm8(void){
+	int8_t rm8_s;
+
+	rm8_s = get_rm8();
+	set_r16(rm8_s);
+}
+
+void Instr16::movsx_r16_rm16(void){
+	int16_t rm16_s;
+
+	rm16_s = get_rm16();
+	set_r16(rm16_s);
+}
+
+/******************************************************************/
+/*
+void Instr16::code_80(void){
+	switch(REG){
+		case 0:	add_rm8_imm8();		break;
+		case 1:	or_rm8_imm8();		break;
+		case 2:	adc_rm8_imm8();		break;
+		case 3:	sbb_rm8_imm8();		break;
+		case 4:	and_rm8_imm8();		break;
+		case 5:	sub_rm8_imm8();		break;
+		case 6:	xor_rm8_imm8();		break;
+		case 7:	cmp_rm8_imm8();		break;
+		default:
+			ERROR("not implemented: 0x80 /%d\n", REG);
+	}
+}
+
+void Instr16::code_81(void){
+	switch(REG){
+		case 0:	add_rm16_imm16();	break;
+		case 1:	or_rm16_imm16();	break;
+		case 2:	adc_rm16_imm16();	break;
+		case 3:	sbb_rm16_imm16();	break;
+		case 4:	and_rm16_imm16();	break;
+		case 5:	sub_rm16_imm16();	break;
+		case 6:	xor_rm16_imm16();	break;
+		case 7:	cmp_rm16_imm16();	break;
+		default:
+			ERROR("not implemented: 0x81 /%d\n", REG);
+	}
+}
+
+void Instr16::code_82(void){
+	code_80();
+}
+*/
+
+void Instr16::code_83(void){
+	switch(REG){
+		case 0:	add_rm16_imm8();	break;
+		case 1:	or_rm16_imm8();		break;
+		case 2:	adc_rm16_imm8();	break;
+		case 3:	sbb_rm16_imm8();	break;
+		case 4:	and_rm16_imm8();	break;
+		case 5:	sub_rm16_imm8();	break;
+		case 6:	xor_rm16_imm8();	break;
+		case 7:	cmp_rm16_imm8();	break;
+		default:
+			ERROR("not implemented: 0x83 /%d\n", REG);
+	}
+}
+
+void Instr16::code_c1(void){
+	switch(REG){
+		case 4: shl_rm16_imm8();        break;
+		case 5: shr_rm16_imm8();        break;
+		//case 7: sar_rm16_imm8();        break;
+		default:
+			ERROR("not implemented: 0xc1 /%d\n", REG);
+	}
+}
+
 void Instr16::code_ff(void){
 	switch(REG){
-		case 0:
-			inc_rm16();
-			break;
-		case 1:
-			dec_rm16();
-			break;
-		case 2:
-			call_rm16();
-			break;
-		case 4:
-			jmp_rm16();
-			break;
-		case 6:
-			push_rm16();
-			break;
+		case 0:	inc_rm16();		break;
+		case 1:	dec_rm16();		break;
+		case 2:	call_rm16();		break;
+		case 4:	jmp_rm16();		break;
+		case 6:	push_rm16();		break;
 		default:
 			ERROR("not implemented: 0xff /%d\n", REG);
 	}
@@ -448,7 +494,7 @@ void Instr16::code_ff(void){
 
 void Instr16::code_0f00(void){
 	switch(REG){
-		case 3: ltr_rm16();        break;
+		case 3: ltr_rm16();		break;
 		default:
 			ERROR("not implemented: 0x0f00 /%d\n", REG);
 	}
@@ -456,8 +502,8 @@ void Instr16::code_0f00(void){
 
 void Instr16::code_0f01(void){
 	switch(REG){
-		case 2: lgdt_m16();        break;
-		case 3: lidt_m16();        break;
+		case 2: lgdt_m16();		break;
+		case 3: lidt_m16();		break;
 		default:
 			ERROR("not implemented: 0x0f01 /%d\n", REG);
 	}
@@ -529,6 +575,24 @@ void Instr16::cmp_rm16_imm8(void){
 
 	rm16 = get_rm16();
 	EFLAGS_UPDATE_SUB(rm16, IMM8);
+}
+
+/******************************************************************/
+
+void Instr16::shl_rm16_imm8(void){
+	uint16_t rm16;
+
+	rm16 = get_rm16();
+	set_rm16(rm16<<IMM8);
+	EFLAGS_UPDATE_SHL(rm16, IMM8);
+}
+
+void Instr16::shr_rm16_imm8(void){
+	uint16_t rm16;
+
+	rm16 = get_rm16();
+	set_rm16(rm16>>IMM8);
+	EFLAGS_UPDATE_SHR(rm16, IMM8);
 }
 
 /******************************************************************/

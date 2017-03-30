@@ -59,10 +59,7 @@ Instr32::Instr32(Emulator *e) : Instruction(e, true) {
 	//set_funcflag(0x6b, instr32(imul_r32_rm32_imm8), CHK_MODRM|CHK_IMM8);
 
 	// 0x70-0x7f : jcc
-	//set_funcflag(0x80, instr32(code_80), CHK_MODRM | CHK_IMM8);
-	//set_funcflag(0x81, instr32(code_81), CHK_MODRM | CHK_IMM32);
-	//set_funcflag(0x82, instr32(code_82), CHK_MODRM | CHK_IMM8);
-	set_funcflag(0x83, instr32(code_83), CHK_MODRM | CHK_IMM8);
+
 	// 0x84 : test_rm8_r8
 	set_funcflag(0x85, instr32(test_rm32_r32), CHK_MODRM);
 	// 0x86 : xchg_r8_rm8
@@ -104,6 +101,17 @@ Instr32::Instr32(Emulator *e) : Instruction(e, true) {
 	// 0xee : out_dx_al
 	set_funcflag(0xef, instr32(out_dx_eax), 0);
 
+	set_funcflag(0x0faf, instr32(imul_r32_rm32), CHK_MODRM);
+	set_funcflag(0x0fb6, instr32(movzx_r32_rm8), CHK_MODRM);
+	set_funcflag(0x0fb7, instr32(movzx_r32_rm16), CHK_MODRM);
+	set_funcflag(0x0fbe, instr32(movsx_r32_rm8), CHK_MODRM);
+	set_funcflag(0x0fbf, instr32(movsx_r32_rm16), CHK_MODRM);
+
+	//set_funcflag(0x80, instr32(code_80), CHK_MODRM | CHK_IMM8);
+	//set_funcflag(0x81, instr32(code_81), CHK_MODRM | CHK_IMM32);
+	//set_funcflag(0x82, instr32(code_82), CHK_MODRM | CHK_IMM8);
+	set_funcflag(0x83, instr32(code_83), CHK_MODRM | CHK_IMM8);
+	set_funcflag(0xc1, instr32(code_c1), CHK_MODRM | CHK_IMM8);
 	set_funcflag(0xff, instr32(code_ff), CHK_MODRM);
 	set_funcflag(0x0f00, instr32(code_0f00), CHK_MODRM);
 	set_funcflag(0x0f01, instr32(code_0f01), CHK_MODRM);
@@ -256,57 +264,6 @@ void Instr32::push_imm8(void){
 	PUSH32(IMM8);
 }
 
-/*
-void Instr32::code_80(void){
-	switch(REG){
-		case 0:	add_rm8_imm8();		break;
-		case 1:	or_rm8_imm8();		break;
-		case 2:	adc_rm8_imm8();		break;
-		case 3:	sbb_rm8_imm8();		break;
-		case 4:	and_rm8_imm8();		break;
-		case 5:	sub_rm8_imm8();		break;
-		case 6:	xor_rm8_imm8();		break;
-		case 7:	cmp_rm8_imm8();		break;
-		default:
-			ERROR("not implemented: 0x80 /%d\n", REG);
-	}
-}
-
-void Instr32::code_81(void){
-	switch(REG){
-		case 0:	add_rm32_imm32();	break;
-		case 1:	or_rm32_imm32();	break;
-		case 2:	adc_rm32_imm32();	break;
-		case 3:	sbb_rm32_imm32();	break;
-		case 4:	and_rm32_imm32();	break;
-		case 5:	sub_rm32_imm32();	break;
-		case 6:	xor_rm32_imm32();	break;
-		case 7:	cmp_rm32_imm32();	break;
-		default:
-			ERROR("not implemented: 0x81 /%d\n", REG);
-	}
-}
-
-void Instr32::code_82(void){
-	code_80();
-}
-*/
-
-void Instr32::code_83(void){
-	switch(REG){
-		case 0:	add_rm32_imm8();	break;
-		case 1:	or_rm32_imm8();		break;
-		case 2:	adc_rm32_imm8();	break;
-		case 3:	sbb_rm32_imm8();	break;
-		case 4:	and_rm32_imm8();	break;
-		case 5:	sub_rm32_imm8();	break;
-		case 6:	xor_rm32_imm8();	break;
-		case 7:	cmp_rm32_imm8();	break;
-		default:
-			ERROR("not implemented: 0x83 /%d\n", REG);
-	}
-}
-
 void Instr32::test_rm32_r32(void){
 	uint32_t rm32, r32;
 
@@ -425,23 +382,112 @@ void Instr32::out_dx_eax(void){
 	EMU->out_io32(dx, eax);
 }
 
+void Instr32::imul_r32_rm32(void){
+	uint16_t r32, rm32;
+
+	r32 = get_r32();
+	rm32 = get_rm32();
+	set_r32(r32*rm32);
+	EFLAGS_UPDATE_MUL(r32, rm32);
+}
+
+void Instr32::movzx_r32_rm8(void){
+	uint8_t rm8;
+
+	rm8 = get_rm8();
+	set_r32(rm8);
+}
+
+void Instr32::movzx_r32_rm16(void){
+	uint16_t rm16;
+
+	rm16 = get_rm16();
+	set_r32(rm16);
+}
+
+void Instr32::movsx_r32_rm8(void){
+	int8_t rm8_s;
+
+	rm8_s = get_rm8();
+	set_r32(rm8_s);
+}
+
+void Instr32::movsx_r32_rm16(void){
+	int16_t rm16_s;
+
+	rm16_s = get_rm16();
+	set_r32(rm16_s);
+}
+
+/******************************************************************/
+/*
+void Instr32::code_80(void){
+	switch(REG){
+		case 0:	add_rm8_imm8();		break;
+		case 1:	or_rm8_imm8();		break;
+		case 2:	adc_rm8_imm8();		break;
+		case 3:	sbb_rm8_imm8();		break;
+		case 4:	and_rm8_imm8();		break;
+		case 5:	sub_rm8_imm8();		break;
+		case 6:	xor_rm8_imm8();		break;
+		case 7:	cmp_rm8_imm8();		break;
+		default:
+			ERROR("not implemented: 0x80 /%d\n", REG);
+	}
+}
+
+void Instr32::code_81(void){
+	switch(REG){
+		case 0:	add_rm32_imm32();	break;
+		case 1:	or_rm32_imm32();	break;
+		case 2:	adc_rm32_imm32();	break;
+		case 3:	sbb_rm32_imm32();	break;
+		case 4:	and_rm32_imm32();	break;
+		case 5:	sub_rm32_imm32();	break;
+		case 6:	xor_rm32_imm32();	break;
+		case 7:	cmp_rm32_imm32();	break;
+		default:
+			ERROR("not implemented: 0x81 /%d\n", REG);
+	}
+}
+
+void Instr32::code_82(void){
+	code_80();
+}
+*/
+
+void Instr32::code_83(void){
+	switch(REG){
+		case 0:	add_rm32_imm8();	break;
+		case 1:	or_rm32_imm8();		break;
+		case 2:	adc_rm32_imm8();	break;
+		case 3:	sbb_rm32_imm8();	break;
+		case 4:	and_rm32_imm8();	break;
+		case 5:	sub_rm32_imm8();	break;
+		case 6:	xor_rm32_imm8();	break;
+		case 7:	cmp_rm32_imm8();	break;
+		default:
+			ERROR("not implemented: 0x83 /%d\n", REG);
+	}
+}
+
+void Instr32::code_c1(void){
+	switch(REG){
+		case 4: shl_rm32_imm8();        break;
+		case 5: shr_rm32_imm8();        break;
+		//case 7: sar_rm32_imm8();        break;
+		default:
+			ERROR("not implemented: 0xc1 /%d\n", REG);
+	}
+}
+
 void Instr32::code_ff(void){
 	switch(REG){
-		case 0:
-			inc_rm32();
-			break;
-		case 1:
-			dec_rm32();
-			break;
-		case 2:
-			call_rm32();
-			break;
-		case 4:
-			jmp_rm32();
-			break;
-		case 6:
-			push_rm32();
-			break;
+		case 0:	inc_rm32();		break;
+		case 1:	dec_rm32();		break;
+		case 2:	call_rm32();		break;
+		case 4:	jmp_rm32();		break;
+		case 6:	push_rm32();		break;
 		default:
 			ERROR("not implemented: 0xff /%d\n", REG);
 	}
@@ -449,7 +495,7 @@ void Instr32::code_ff(void){
 
 void Instr32::code_0f00(void){
 	switch(REG){
-		case 3: ltr_rm16();        break;
+		case 3: ltr_rm16();		break;
 		default:
 			ERROR("not implemented: 0x0f00 /%d\n", REG);
 	}
@@ -457,8 +503,8 @@ void Instr32::code_0f00(void){
 
 void Instr32::code_0f01(void){
 	switch(REG){
-		case 2: lgdt_m32();        break;
-		case 3: lidt_m32();        break;
+		case 2: lgdt_m32();		break;
+		case 3: lidt_m32();		break;
 		default:
 			ERROR("not implemented: 0x0f01 /%d\n", REG);
 	}
@@ -530,6 +576,24 @@ void Instr32::cmp_rm32_imm8(void){
 
 	rm32 = get_rm32();
 	EFLAGS_UPDATE_SUB(rm32, IMM8);
+}
+
+/******************************************************************/
+
+void Instr32::shl_rm32_imm8(void){
+	uint32_t rm32;
+
+	rm32 = get_rm32();
+	set_rm32(rm32<<IMM8);
+	EFLAGS_UPDATE_SHL(rm32, IMM8);
+}
+
+void Instr32::shr_rm32_imm8(void){
+	uint32_t rm32;
+
+	rm32 = get_rm32();
+	set_rm32(rm32>>IMM8);
+	EFLAGS_UPDATE_SHR(rm32, IMM8);
 }
 
 /******************************************************************/

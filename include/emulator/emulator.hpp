@@ -8,7 +8,7 @@
 #include "interrupt.hpp"
 #include "io.hpp"
 
-class Emulator : public Interrupt, public IO {
+class Emulator : public virtual DataAccess, public Interrupt {
 	public:
 		Emulator(size_t size, uint16_t cs, uint16_t ip) : Hardware(size) { set_sgreg(CS, cs); set_ip(ip); };
 

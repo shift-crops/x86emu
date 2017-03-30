@@ -10,9 +10,10 @@ SUB_OBJS += instruction/instruction.a
 SUB_OBJS += device/device.a
 
 CXXFLAGS := -Wall -MMD -I./include
+#LDFLAGS  := -lglut -lGL -lpthread
 
 $(TARGET): $(OBJS) $(SUB_OBJS)
-	$(CXX) $(CXXFLAGS) $^ -o $@
+	$(CXX) $(CXXFLAGS) $^ -o $@ $(LDFLAGS)
 
 -include $(DEPS)
 
@@ -27,6 +28,7 @@ all:
 	make -C emulator
 	make -C instruction
 	make -C device
+	make -C bios
 	make $(TARGET)
 
 clean:
@@ -34,4 +36,5 @@ clean:
 	make clean -C emulator
 	make clean -C instruction
 	make clean -C device
+	make clean -C bios
 	$(RM) $(DEPS) $(OBJS) $(TARGET)

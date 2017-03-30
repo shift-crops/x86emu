@@ -5,7 +5,7 @@
 #include "common.hpp"
 #include "device_io.hpp"
 
-class COM : public DeviceIO {
+class COM : public PortIO {
 	public:
 		uint8_t in8(void);
 		void out8(uint8_t v);

@@ -19,17 +19,20 @@
 #define EFLAGS_UPDATE_OR(v1, v2)	EMU->update_eflags_or(v1, v2)
 #define EFLAGS_UPDATE_AND(v1, v2)	EMU->update_eflags_and(v1, v2)
 #define EFLAGS_UPDATE_SUB(v1, v2)	EMU->update_eflags_sub(v1, v2)
+#define EFLAGS_UPDATE_MUL(v1, v2)	EMU->update_eflags_mul(v1, v2)
+#define EFLAGS_UPDATE_SHL(v1, v2)	EMU->update_eflags_shl(v1, v2)
+#define EFLAGS_UPDATE_SHR(v1, v2)	EMU->update_eflags_shr(v1, v2)
 #define EFLAGS_CF			EMU->is_carry()
 #define EFLAGS_PF			EMU->is_parity()
 #define EFLAGS_ZF			EMU->is_zero()
 #define EFLAGS_SF			EMU->is_sign()
 #define EFLAGS_OF			EMU->is_overflow()
-#define READ_MEM32(addr)		EMU->get_data32(DS, addr)
-#define READ_MEM16(addr)		EMU->get_data16(DS, addr)
-#define READ_MEM8(addr)			EMU->get_data8(DS, addr)
-#define WRITE_MEM32(addr, v)		EMU->put_data32(DS, addr, v)
-#define WRITE_MEM16(addr, v)		EMU->put_data16(DS, addr, v)
-#define WRITE_MEM8(addr, v)		EMU->put_data8(DS, addr, v)
+#define READ_MEM32(addr)		EMU->get_data32(PREFIX ? SEGMENT : DS, addr)
+#define READ_MEM16(addr)		EMU->get_data16(PREFIX ? SEGMENT : DS, addr)
+#define READ_MEM8(addr)			EMU->get_data8(PREFIX ? SEGMENT : DS, addr)
+#define WRITE_MEM32(addr, v)		EMU->put_data32(PREFIX ? SEGMENT : DS, addr, v)
+#define WRITE_MEM16(addr, v)		EMU->put_data16(PREFIX ? SEGMENT : DS, addr, v)
+#define WRITE_MEM8(addr, v)		EMU->put_data8(PREFIX ? SEGMENT : DS, addr, v)
 #define PUSH32(v)			EMU->push32(v)
 #define PUSH16(v)			EMU->push16(v)
 #define POP32()				EMU->pop32()
@@ -93,9 +96,10 @@ class Instruction {
 		} instr;
 
 		sgreg_t segment;
-		bool mode_protected;
+		bool chsz_ad;
 	private:
 		Emulator *emu;
+		bool mode_protected;
 
 	public:
 		Instruction() {};
@@ -152,6 +156,10 @@ class ExecInstr : protected virtual Instruction {
 #define CHK_IMM8 	8
 #define CHK_PTR16 	16
 
+#define CHSZ_NONE	0
+#define CHSZ_OP		1
+#define CHSZ_AD		2
+
 union InstrFlags {
 	uint8_t flags;
 	struct {
@@ -169,9 +177,10 @@ class ParseInstr : protected virtual Instruction {
 
 	public:
 		//ParseInstr(Emulator *e) : Instruction(e) {}; 
-		bool parse(void);
+		void parse(void);
+		uint8_t chk_chsz(void);
 	private:
-		bool parse_prefix_opcode(void);
+		void parse_prefix_opcode(void);
 		void parse_modrm_sib_disp(void);
 };
 

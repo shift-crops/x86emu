@@ -7,49 +7,6 @@
 #include "hardware/cr.hpp"
 #include "hardware/memory.hpp"
 
-
-struct TSS {
-	uint32_t T : 1;
-	uint32_t : 15;
-	uint32_t io_base : 16;
-	uint32_t selector : 16;
-	uint32_t : 16;
-	uint32_t gs : 16;
-	uint32_t : 16;
-	uint32_t fs : 16;
-	uint32_t : 16;
-	uint32_t ds : 16;
-	uint32_t : 16;
-	uint32_t ss : 16;
-	uint32_t : 16;
-	uint32_t cs : 16;
-	uint32_t : 16;
-	uint32_t es : 16;
-	uint32_t : 16;
-	uint32_t edi;
-	uint32_t esi;
-	uint32_t ebp;
-	uint32_t esp;
-	uint32_t ebx;
-	uint32_t edx;
-	uint32_t ecx;
-	uint32_t eax;
-	uint32_t eflags;
-	uint32_t eip;
-	uint32_t cr3;
-	uint32_t ss2 : 16;
-	uint32_t : 16;
-	uint32_t esp2;
-	uint32_t ss1 : 16;
-	uint32_t : 16;
-	uint32_t esp1;
-	uint32_t ss0 : 16;
-	uint32_t : 16;
-	uint32_t esp0;
-	uint32_t backlink : 16;
-	uint32_t : 16;
-};
-
 Interrupt::Interrupt(){
 }
 
@@ -71,18 +28,14 @@ void Interrupt::interrupt_hundle(uint8_t n, bool hd_exp){
 		idt_limit = get_dtreg_limit(IDTR);
 		idt_offset = n<<3;
 
-		if(idt_offset > idt_limit)
-			throw EXP_GP;
+		EXCEPTION(EXP_GP, idt_offset > idt_limit);
 
 		read_data(&idt, idt_base + idt_offset, sizeof(INTDescriptor));
 		RPL = ((SGRegister*)&(idt.selector))->RPL;
 
-		if(!idt.P)
-			throw EXP_NP;
-		if(CPL < RPL)
-			throw EXP_GP;
-		if(!hd_exp && CPL > idt.DPL)
-			throw EXP_GP;
+		EXCEPTION(EXP_NP, !idt.P);
+		EXCEPTION(EXP_GP, CPL < RPL);
+		EXCEPTION(EXP_GP, !hd_exp && CPL > idt.DPL);
 
 		if(idt.type == TYPE_INTERRUPT)
 			set_interruptable(false);
@@ -176,9 +129,10 @@ void Interrupt::restore_regs(void){
 
 			esp = pop32();
 			ss = pop32();
+			INFO("restore_regs (CS : 0x%04x->0x%04x, ESP : 0x%08x->0x%08x, SS : 0x%08x->0x%04x)"
+					, cs0.raw, cs.raw, get_gpreg(ESP), esp, get_sgreg(SS), ss);
 			set_gpreg(ESP, esp);
 			set_sgreg(SS, ss);
-			INFO("restore_regs (CS : 0x%04x->0x%04x, ESP : 0x%08x, SS : 0x%04x)", cs0.RPL, cs.RPL, esp, ss);
 		}
 	}
 	else{

@@ -6,7 +6,7 @@
 #include "device_io.hpp"
 #include "hardware/memory.hpp"
 
-class SysControl : public DeviceIO {
+class SysControl : public PortIO {
 	private:
 		Memory *mem;
 	public:

@@ -4,11 +4,14 @@
 #include <stdint.h>
 #include "common.hpp"
 #include "hardware/hardware.hpp"
+#include "io.hpp"
 
 enum acsmode_t { MODE_READ, MODE_WRITE, MODE_EXEC };
 
-class DataAccess : public virtual Hardware {
+class DataAccess : public virtual Hardware, public IO {
 	public:
+		DataAccess() : IO(this) {};
+
 		uint8_t get_data8(sgreg_t seg, uint32_t addr){ return read_mem8_seg(seg, addr); };
 		uint16_t get_data16(sgreg_t seg, uint32_t addr){ return read_mem16_seg(seg, addr); };
 		uint32_t get_data32(sgreg_t seg, uint32_t addr){ return read_mem32_seg(seg, addr); };
@@ -30,12 +33,12 @@ class DataAccess : public virtual Hardware {
 		uint32_t trans_v2p(acsmode_t mode, sgreg_t seg, uint32_t vaddr);
 		uint32_t trans_v2l(acsmode_t mode, sgreg_t seg, uint32_t vaddr);
 
-		uint32_t read_mem32_seg(sgreg_t seg, uint32_t addr) { return read_mem32(trans_v2p(MODE_READ, seg, addr)); };
-		uint16_t read_mem16_seg(sgreg_t seg, uint32_t addr) { return read_mem16(trans_v2p(MODE_READ, seg, addr)); };
-		uint8_t read_mem8_seg(sgreg_t seg, uint32_t addr) { return read_mem8(trans_v2p(MODE_READ, seg, addr)); };
-		void write_mem32_seg(sgreg_t seg, uint32_t addr, uint32_t v) { write_mem32(trans_v2p(MODE_WRITE, seg, addr), v); };
-		void write_mem16_seg(sgreg_t seg, uint32_t addr, uint16_t v) { write_mem16(trans_v2p(MODE_WRITE, seg, addr), v); };
-		void write_mem8_seg(sgreg_t seg, uint32_t addr, uint8_t v) { write_mem8(trans_v2p(MODE_WRITE, seg, addr), v); };
+		uint32_t read_mem32_seg(sgreg_t seg, uint32_t addr);
+		uint16_t read_mem16_seg(sgreg_t seg, uint32_t addr);
+		uint8_t read_mem8_seg(sgreg_t seg, uint32_t addr);
+		void write_mem32_seg(sgreg_t seg, uint32_t addr, uint32_t v);
+		void write_mem16_seg(sgreg_t seg, uint32_t addr, uint16_t v);
+		void write_mem8_seg(sgreg_t seg, uint32_t addr, uint8_t v);
 		uint32_t exec_mem32_seg(sgreg_t seg, uint32_t addr) { return read_mem32(trans_v2p(MODE_EXEC, seg, addr)); };
 		uint16_t exec_mem16_seg(sgreg_t seg, uint32_t addr) { return read_mem16(trans_v2p(MODE_EXEC, seg, addr)); };
 		uint8_t exec_mem8_seg(sgreg_t seg, uint32_t addr) { return read_mem8(trans_v2p(MODE_EXEC, seg, addr)); };

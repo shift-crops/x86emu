@@ -20,4 +20,6 @@
 #define EXP_MC 18
 #define EXP_XF 19
 
+#define EXCEPTION(n, c)		if(c){ WARN("exception interrupt %d (%s)", n, #c); throw n; }
+
 #endif

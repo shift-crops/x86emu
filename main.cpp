@@ -11,7 +11,8 @@ int main(int argc, char *argv[]){
 	Instr16 instr16(&emu);
 	Instr32 instr32(&emu);
 
-	emu.load_binary("bios/bios", 0xffff0, 0x10);
+	emu.load_binary("bios/crt0.bin", 0xffff0, 0x10);
+	emu.load_binary("bios/bios.bin", 0xf0000, 0x400);
 	emu.load_binary(argv[1], 0x7c00, 0x200);
 
 	//while(!emu.is_halt() && emu.get_eip()){
@@ -19,13 +20,29 @@ int main(int argc, char *argv[]){
 		bool is_protected = emu.is_protected();
 
 		try{
-			while(!(is_protected ? instr32.parse() : instr16.parse()))
-				is_protected ^= true;
+			uint8_t chsz;
+			bool chsz_op, chsz_ad;
 
-			if(is_protected)
+			chsz = (is_protected ? instr32.chk_chsz() : instr16.chk_chsz());
+			chsz_op = chsz & CHSZ_OP;
+			chsz_ad = chsz & CHSZ_AD;
+
+			if(is_protected ^ chsz_op){
+				instr32.set_chsz_ad(!(is_protected ^ chsz_ad));
+				instr32.parse();
 				instr32.exec();
-			else
+			}
+			else{
+				instr16.set_chsz_ad(is_protected ^ chsz_ad);
+				instr16.parse();
 				instr16.exec();
+			}
+/*
+		emu.dump_regs();
+		if((emu.get_sgreg(SS)<<4)+emu.get_gpreg(ESP)>0x40)
+			emu.dump_mem((emu.get_sgreg(SS)<<4)+emu.get_gpreg(ESP)-0x40, 0x80);
+		MSG("\n");
+*/
 		}
 		catch(int n){
 			emu.dump_regs();
@@ -33,6 +50,6 @@ int main(int argc, char *argv[]){
 			emu.interrupt_hundle(n, true);
 		}
 	}
-	emu.dump_mem(emu.get_gpreg(ESP)-0x40, 0x80);
 	emu.dump_regs();
+	emu.dump_mem((emu.get_sgreg(SS)<<4)+emu.get_gpreg(ESP)-0x40, 0x80);
 }

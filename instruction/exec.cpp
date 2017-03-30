@@ -36,7 +36,7 @@ uint32_t ExecInstr::get_r32(void){
 void ExecInstr::set_rm16(uint16_t value){
 	if(MOD == 3)
 		SET_GPREG(static_cast<reg16_t>(RM), value);
-	else 
+	else
 		WRITE_MEM16(calc_modrm(), value);
 }
 
@@ -100,7 +100,7 @@ uint32_t ExecInstr::get_crn(void){
 uint32_t ExecInstr::calc_modrm(void){
 	assert(MOD != 3);
 
-	if(is_protected())
+	if(is_protected() ^ chsz_ad)
 		return calc_modrm32();
 	else
 		return calc_modrm16();
@@ -173,12 +173,23 @@ uint32_t ExecInstr::calc_modrm32(void){
 }
 
 uint32_t ExecInstr::calc_sib(void){
+	uint32_t base = 0;
+
+	if(BASE == 5 && MOD == 0)
+		base += DISP32;
+	else if(BASE != 4)
+		base += GET_GPREG(static_cast<reg32_t>(BASE));
+	else if(INDEX != 4 || SCALE != 0)	// BASE == 4, INDEX ==4, SCALE == 0 : [esp]
+		ERROR("not implemented SIB (base = %d, index = %d, scale = %d)\n", BASE, INDEX, SCALE);
+
+	return base + GET_GPREG(static_cast<reg32_t>(INDEX)) * (1<<SCALE);
+/*
 	if(BASE!=5 && INDEX!=4)
 		return GET_GPREG(static_cast<reg32_t>(BASE)) + GET_GPREG(static_cast<reg32_t>(INDEX)) * (1<<SCALE);
 	else if(BASE==4 && INDEX==4 && SCALE==0)
 		return GET_GPREG(static_cast<reg32_t>(ESP));
-
-	ERROR("not implemented SIB (base = %d, index = %d, scale = %d)\n", BASE, INDEX, SCALE);
-	return -1;
+//	else if(BASE==5 && MOD==0)
+//		return DISP32 + GET_GPREG(static_cast<reg32_t>(INDEX)) * (1<<SCALE);
+*/
 }
 

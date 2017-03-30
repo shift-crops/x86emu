@@ -2,16 +2,34 @@
 #include <map>
 #include "instruction/instruction.hpp"
 
-bool ParseInstr::parse(void){
+uint8_t ParseInstr::chk_chsz(void){
+	uint8_t code, chsz;
+
+	while(true){
+		code = get_emu()->get_code8(0);
+		switch(code){
+			case 0x66:
+				chsz |= CHSZ_OP;
+				UPDATE_EIP(1);
+				break;
+			case 0x67:
+				chsz |= CHSZ_AD;
+				UPDATE_EIP(1);
+				break;
+			default:
+				return chsz;
+		}
+	}
+}
+
+void ParseInstr::parse(void){
 	memset(&instr, 0, sizeof(instr));
 
-	if(!parse_prefix_opcode())
-		return false;
+	parse_prefix_opcode();
 
 	if(!chk.count(OPCODE)){
 		DEBUG_MSG("\n");
-		ERROR("");
-		return true;
+		ERROR("no opecode : %x", OPCODE);
 	}
 
 	if(chk[OPCODE].modrm)
@@ -19,32 +37,30 @@ bool ParseInstr::parse(void){
 
 	if(chk[OPCODE].imm32){
 		IMM32 = get_emu()->get_code32(0);
-		DEBUG_MSG("imm32:%d ", IMM32);
+		DEBUG_MSG("imm32:0x%02x ", IMM32);
 		UPDATE_EIP(4);
 	}
 	else if(chk[OPCODE].imm16){
 		IMM16 = get_emu()->get_code16(0);
-		DEBUG_MSG("imm16:%d ", IMM16);
+		DEBUG_MSG("imm16:0x%02x ", IMM16);
 		UPDATE_EIP(2);
 	}
 	else if(chk[OPCODE].imm8){
 		IMM8 = (int8_t)get_emu()->get_code8(0);
-		DEBUG_MSG("imm8:%d ", IMM8);
+		DEBUG_MSG("imm8:0x%02x ", IMM8);
 		UPDATE_EIP(1);
 	}
 
 	if(chk[OPCODE].ptr16){
 		PTR16 = get_emu()->get_code16(0);
-		DEBUG_MSG("ptr16:%d", PTR16);
+		DEBUG_MSG("ptr16:0x%02x", PTR16);
 		UPDATE_EIP(2);
 	}
 
 	DEBUG_MSG("\n");
-
-	return true;
 }
 
-bool ParseInstr::parse_prefix_opcode(void){
+void ParseInstr::parse_prefix_opcode(void){
 	uint8_t code;
 
 	code = get_emu()->get_code8(0);
@@ -72,13 +88,6 @@ bool ParseInstr::parse_prefix_opcode(void){
 next:			PREFIX = code;
 			code = get_emu()->get_code8(0);
 			UPDATE_EIP(1);
-			break;
-		case 0x66:
-			// size
-			if(get_emu()->get_code8(0) == 0x67)
-				UPDATE_EIP(1);
-		case 0x67:
-			return false;
 	}
 
 	OPCODE = code;
@@ -90,47 +99,45 @@ next:			PREFIX = code;
 	}
 
 	if(is_protected())
-		DEBUG_MSG("EIP:0x%04x opcode:%02x ", GET_EIP()-1, OPCODE);
+		DEBUG_MSG("CS:%04x EIP:0x%04x opcode:%02x ", EMU->get_sgreg(CS), GET_EIP()-1, OPCODE);
 	else
-		DEBUG_MSG("IP:0x%02x opcode:%02x ", GET_IP()-1, OPCODE);
-
-	return true;
+		DEBUG_MSG("CS:%04x  IP:0x%04x opcode:%02x ", EMU->get_sgreg(CS), GET_IP()-1, OPCODE);
 }
 
 void ParseInstr::parse_modrm_sib_disp(void){
 	_MODRM = get_emu()->get_code8(0);
 	UPDATE_EIP(1);
 
-	DEBUG_MSG("[mod:%d reg:%d rm:%d] ", MOD, REG, RM);
+	DEBUG_MSG("[mod:0x%02x reg:0x%02x rm:0x%02x] ", MOD, REG, RM);
 
-	if(is_protected()){
+	if(is_protected() ^ chsz_ad){
 		if (MOD != 3 && RM == 4) {
 			_SIB = get_emu()->get_code8(0);
 			UPDATE_EIP(1);
-			DEBUG_MSG("[scale:%d index:%d base:%d] ", SCALE, INDEX, BASE);
+			DEBUG_MSG("[scale:0x%02x index:0x%02x base:0x%02x] ", SCALE, INDEX, BASE);
 		}
 
-		if ((MOD == 0 && RM == 5) || MOD == 2) {
+		if (MOD == 2 || (MOD == 0 && RM == 5) || (MOD == 0 && BASE == 5)) {
 			DISP32 = get_emu()->get_code32(0);
 			UPDATE_EIP(4);
-			DEBUG_MSG("disp32:%d ", DISP32);
+			DEBUG_MSG("disp32:0x%02x ", DISP32);
 		}
 		else if (MOD == 1) {
 			DISP8 = (int8_t)get_emu()->get_code8(0);
 			UPDATE_EIP(1);
-			DEBUG_MSG("disp8:%d ", DISP8);
+			DEBUG_MSG("disp8:0x%02x ", DISP8);
 		}
 	}
 	else{
 		if ((MOD == 0 && RM == 6) || MOD == 2) {
 			DISP16 = get_emu()->get_code32(0);
 			UPDATE_EIP(2);
-			DEBUG_MSG("disp16:%d ", DISP16);
+			DEBUG_MSG("disp16:0x%02x ", DISP16);
 		}
 		else if (MOD == 1) {
 			DISP8 = (int8_t)get_emu()->get_code8(0);
 			UPDATE_EIP(1);
-			DEBUG_MSG("disp8:%d ", DISP8);
+			DEBUG_MSG("disp8:0x%02x ", DISP8);
 		}
 	}
 }

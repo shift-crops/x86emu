@@ -45,8 +45,9 @@ InstrBase::InstrBase() {
 	set_funcflag(0x88, instrbase(mov_rm8_r8), CHK_MODRM);
 	set_funcflag(0x8a, instrbase(mov_r8_rm8), CHK_MODRM);
 	set_funcflag(0x8e, instrbase(mov_sreg_rm16), CHK_MODRM);
-	set_funcflag(0x90, instrbase(nop), CHK_MODRM);
+	set_funcflag(0x90, instrbase(nop), 0);
 	for (i=0; i<8; i++)	set_funcflag(0xb0+i, instrbase(mov_r8_imm8) ,CHK_IMM8);
+	set_funcflag(0xc6, instrbase(mov_rm8_imm8), CHK_MODRM | CHK_IMM8);
 	set_funcflag(0xcd, instrbase(int_imm8), CHK_IMM8);
 	set_funcflag(0xcf, instrbase(iret), 0);
 	set_funcflag(0xe4, instrbase(in_al_imm8), CHK_IMM8);
@@ -248,6 +249,10 @@ void InstrBase::mov_r8_imm8(void){
 
 	reg = OPCODE & ((1<<3)-1);
 	SET_GPREG(static_cast<reg8_t>(reg), IMM8);
+}
+
+void InstrBase::mov_rm8_imm8(void){
+	set_rm8(IMM8);
 }
 
 void InstrBase::int_imm8(void){

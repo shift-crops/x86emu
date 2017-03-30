@@ -16,7 +16,7 @@ void debug_print(const int type, const char *file, const char *function, int lin
 	TypeSet ts = typeset[type];
 
 	if(ts.name)
-		dprintf(ts.fd, "[%s] (%s %s %d) ", ts.name, file, function, line);
+		dprintf(ts.fd, "[%s] %s (%s:%d) ", ts.name, function, file, line);
 
 	va_start(ap, fmt);
 	vdprintf(ts.fd, fmt, ap);

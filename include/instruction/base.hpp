@@ -8,6 +8,7 @@
 class InstrBase : public ExecInstr , public ParseInstr {
 	public:
 		InstrBase();
+		void set_chsz_ad(bool ad){ chsz_ad = ad; };
 	protected:
 		void set_funcflag(uint16_t opcode, instrfunc_t func, uint8_t flags){ instrfuncs[opcode] = func; chk[opcode].flags = flags; };
 
@@ -48,6 +49,7 @@ class InstrBase : public ExecInstr , public ParseInstr {
 		void mov_sreg_rm16(void);
 		void nop(void);
                 void mov_r8_imm8(void);
+                void mov_rm8_imm8(void);
                 void int_imm8(void);
                 void iret(void);
 		void in_al_imm8(void);
@@ -110,11 +112,17 @@ class Instr16 : public InstrBase {
                 void jmp_ptr16_16(void);
 		void in_ax_dx(void);
 		void out_dx_ax(void);
+		void imul_r16_rm16(void);
+		void movzx_r16_rm8(void);
+		void movzx_r16_rm16(void);
+		void movsx_r16_rm8(void);
+		void movsx_r16_rm16(void);
 
 		//void code_80(void);
 		//void code_81(void);
 		//void code_82(void);
 		void code_83(void);
+                void code_c1(void);
                 void code_ff(void);
                 void code_0f00(void);
                 void code_0f01(void);
@@ -128,6 +136,10 @@ class Instr16 : public InstrBase {
 		void sub_rm16_imm8(void);
 		void xor_rm16_imm8(void);
 		void cmp_rm16_imm8(void);
+
+		//0xc1
+		void shl_rm16_imm8(void);
+		void shr_rm16_imm8(void);
 
 		//0xff
 		void inc_rm16(void);
@@ -182,11 +194,17 @@ class Instr32 : public InstrBase {
                 void jmp_ptr16_32(void);
 		void in_eax_dx(void);
 		void out_dx_eax(void);
+		void imul_r32_rm32(void);
+		void movzx_r32_rm8(void);
+		void movzx_r32_rm16(void);
+		void movsx_r32_rm8(void);
+		void movsx_r32_rm16(void);
 
 		//void code_80(void);
 		//void code_81(void);
 		//void code_82(void);
 		void code_83(void);
+		void code_c1(void);
                 void code_ff(void);
                 void code_0f00(void);
                 void code_0f01(void);
@@ -200,6 +218,10 @@ class Instr32 : public InstrBase {
 		void sub_rm32_imm8(void);
 		void xor_rm32_imm8(void);
 		void cmp_rm32_imm8(void);
+
+		//0xc1
+		void shl_rm32_imm8(void);
+		void shr_rm32_imm8(void);
 
 		//0xff
 		void inc_rm32(void);
