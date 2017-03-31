@@ -637,13 +637,13 @@ void Instr16::push_rm16(void){
 /******************************************************************/
 
 void Instr16::lgdt_m16(void){
-	if(!PREFIX) SEGMENT = DS;
 	//INFO("DISP16:0x%04x data:0x%04x", DISP16, EMU->get_data32(SEGMENT, DISP16+2));
-	EMU->set_dtreg(GDTR, EMU->get_data32(SEGMENT, DISP16+2)&((1<<24)-1), EMU->get_data16(SEGMENT, DISP16));
+	SEGMENT = DS;
+	EMU->set_dtreg(GDTR, READ_MEM32(DISP16+2)&((1<<24)-1), READ_MEM16(DISP16));
 }
 
 void Instr16::lidt_m16(void){
-	if(!PREFIX) SEGMENT = DS;
-	EMU->set_dtreg(IDTR, EMU->get_data32(SEGMENT, DISP16+2)&((1<<24)-1), EMU->get_data16(SEGMENT, DISP16));
+	SEGMENT = DS;
+	EMU->set_dtreg(IDTR, READ_MEM32(DISP16+2)&((1<<24)-1), READ_MEM16(DISP16));
 }
 

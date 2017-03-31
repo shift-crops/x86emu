@@ -140,6 +140,7 @@ uint32_t ExecInstr::calc_modrm16(void){
 		else
 			addr += GET_GPREG(SI);
 	}
+	SEGMENT = DS;
 
 	return addr;
 }
@@ -166,6 +167,7 @@ uint32_t ExecInstr::calc_modrm32(void){
 				break;
 			}
 		default:
+			SEGMENT = (RM == 5) ? SS : DS;
 			addr += GET_GPREG(static_cast<reg32_t>(RM));
 	}
 
@@ -173,14 +175,22 @@ uint32_t ExecInstr::calc_modrm32(void){
 }
 
 uint32_t ExecInstr::calc_sib(void){
-	uint32_t base = 0;
+	uint32_t base;
 
 	if(BASE == 5 && MOD == 0)
-		base += DISP32;
-	else if(BASE != 4)
-		base += GET_GPREG(static_cast<reg32_t>(BASE));
-	else if(INDEX != 4 || SCALE != 0)	// BASE == 4, INDEX ==4, SCALE == 0 : [esp]
-		ERROR("not implemented SIB (base = %d, index = %d, scale = %d)\n", BASE, INDEX, SCALE);
+		base = DISP32;
+	else if(BASE == 4){
+		if(SCALE == 0){		// BASE == 4, INDEX ==4, SCALE == 0 : [esp]
+			SEGMENT = SS;
+			base = 0;
+		}
+		else
+			ERROR("not implemented SIB (base = %d, index = %d, scale = %d)\n", BASE, INDEX, SCALE);
+	}
+	else{
+		SEGMENT = (RM == 5) ? SS : DS;
+		base = GET_GPREG(static_cast<reg32_t>(BASE));
+	}
 
 	return base + GET_GPREG(static_cast<reg32_t>(INDEX)) * (1<<SCALE);
 /*

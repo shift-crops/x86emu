@@ -638,12 +638,12 @@ void Instr32::push_rm32(void){
 /******************************************************************/
 
 void Instr32::lgdt_m32(void){
-	if(!PREFIX) SEGMENT = DS;
-	EMU->set_dtreg(GDTR, EMU->get_data32(SEGMENT, DISP32+2), EMU->get_data16(SEGMENT, DISP32));
+	SEGMENT = DS;
+	EMU->set_dtreg(GDTR, READ_MEM32(DISP32+2), READ_MEM16(DISP32));
 }
 
 void Instr32::lidt_m32(void){
-	if(!PREFIX) SEGMENT = DS;
-	EMU->set_dtreg(IDTR, EMU->get_data32(SEGMENT, DISP32+2), EMU->get_data16(SEGMENT, DISP32));
+	SEGMENT = DS;
+	EMU->set_dtreg(IDTR, READ_MEM32(DISP32+2), READ_MEM16(DISP32));
 }
 

@@ -27,35 +27,36 @@
 #define EFLAGS_ZF			EMU->is_zero()
 #define EFLAGS_SF			EMU->is_sign()
 #define EFLAGS_OF			EMU->is_overflow()
-#define READ_MEM32(addr)		EMU->get_data32(PREFIX ? SEGMENT : DS, addr)
-#define READ_MEM16(addr)		EMU->get_data16(PREFIX ? SEGMENT : DS, addr)
-#define READ_MEM8(addr)			EMU->get_data8(PREFIX ? SEGMENT : DS, addr)
-#define WRITE_MEM32(addr, v)		EMU->put_data32(PREFIX ? SEGMENT : DS, addr, v)
-#define WRITE_MEM16(addr, v)		EMU->put_data16(PREFIX ? SEGMENT : DS, addr, v)
-#define WRITE_MEM8(addr, v)		EMU->put_data8(PREFIX ? SEGMENT : DS, addr, v)
+#define READ_MEM32(addr)		EMU->get_data32(get_segment(), addr)
+#define READ_MEM16(addr)		EMU->get_data16(get_segment(), addr)
+#define READ_MEM8(addr)			EMU->get_data8(get_segment(), addr)
+#define WRITE_MEM32(addr, v)		EMU->put_data32(get_segment(), addr, v)
+#define WRITE_MEM16(addr, v)		EMU->put_data16(get_segment(), addr, v)
+#define WRITE_MEM8(addr, v)		EMU->put_data8(get_segment(), addr, v)
 #define PUSH32(v)			EMU->push32(v)
 #define PUSH16(v)			EMU->push16(v)
 #define POP32()				EMU->pop32()
 #define POP16()				EMU->pop16()
 
-#define PREFIX	(instr.prefix)
-#define OPCODE	(instr.opcode)
-#define _MODRM	(instr._modrm)
-#define MOD	(instr.modrm.mod)
-#define REG	(instr.modrm.reg)
-#define RM	(instr.modrm.rm)
-#define _SIB	(instr._sib)
-#define SCALE	(instr.sib.scale)
-#define INDEX	(instr.sib.index)
-#define BASE	(instr.sib.base)
-#define DISP32	(instr.disp32)
-#define DISP16	(instr.disp16)
-#define DISP8	(instr.disp8)
-#define IMM32	(instr.imm32)
-#define IMM16	(instr.imm16)
-#define IMM8	(instr.imm8)
-#define PTR16	(instr.ptr16)
-#define SEGMENT	(segment)
+#define PREFIX		(instr.prefix)
+#define OPCODE		(instr.opcode)
+#define _MODRM		(instr._modrm)
+#define MOD		(instr.modrm.mod)
+#define REG		(instr.modrm.reg)
+#define RM		(instr.modrm.rm)
+#define _SIB		(instr._sib)
+#define SCALE		(instr.sib.scale)
+#define INDEX		(instr.sib.index)
+#define BASE		(instr.sib.base)
+#define DISP32		(instr.disp32)
+#define DISP16		(instr.disp16)
+#define DISP8		(instr.disp8)
+#define IMM32		(instr.imm32)
+#define IMM16		(instr.imm16)
+#define IMM8		(instr.imm8)
+#define PTR16		(instr.ptr16)
+#define PRE_SEGMENT	(pre_segment)
+#define SEGMENT		(segment)
 
 struct ModRM {  
         uint8_t rm : 3; 
@@ -95,7 +96,7 @@ class Instruction {
 			int16_t ptr16;
 		} instr;
 
-		sgreg_t segment;
+		sgreg_t segment, pre_segment;
 		bool chsz_ad;
 	private:
 		Emulator *emu;
@@ -105,8 +106,9 @@ class Instruction {
 		Instruction() {};
 		Instruction(Emulator *e, bool p) { emu = e; mode_protected = p; };
 	protected:
-		Emulator* get_emu() { return emu; };
-		bool is_protected() { return mode_protected; };
+		Emulator* get_emu(void) { return emu; };
+		bool is_protected(void) { return mode_protected; };
+		sgreg_t get_segment(void) { return instr.prefix ? pre_segment : segment; };
 };
 
 

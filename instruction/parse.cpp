@@ -69,22 +69,22 @@ void ParseInstr::parse_prefix_opcode(void){
 	// prefix
 	switch(code){
 		case 0x26:
-			SEGMENT = ES;
+			PRE_SEGMENT = ES;
 			goto next;
 		case 0x2e:
-			SEGMENT = CS;
+			PRE_SEGMENT = CS;
 			goto next;
 		case 0x36:
-			SEGMENT = SS;
+			PRE_SEGMENT = SS;
 			goto next;
 		case 0x3e:
-			SEGMENT = DS;
+			PRE_SEGMENT = DS;
 			goto next;
 		case 0x64:
-			SEGMENT = FS;
+			PRE_SEGMENT = FS;
 			goto next;
 		case 0x65:
-			SEGMENT = GS;
+			PRE_SEGMENT = GS;
 next:			PREFIX = code;
 			code = get_emu()->get_code8(0);
 			UPDATE_EIP(1);

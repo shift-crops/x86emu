@@ -138,7 +138,7 @@ void DataAccess::write_mem16_seg(sgreg_t seg, uint32_t addr, uint16_t v){
 	uint32_t paddr;
        
 	paddr = trans_v2p(MODE_WRITE, seg, addr);
-	INFO("Write [0x%04x], 0x%04x", paddr, v);
+	INFO("Write : 0x%04x(0x%04x)", paddr, v);
 	if(chk_memio(paddr))
 		write_memio16(paddr, v);
 	else

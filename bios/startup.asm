@@ -5,6 +5,7 @@ BITS 16
 start:
 	mov ax, cs
 	mov ds, ax
+	mov ax, 0x400
 	mov ss, ax
 	mov sp, 0x2000
 
