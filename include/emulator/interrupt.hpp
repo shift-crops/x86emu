@@ -2,6 +2,8 @@
 #define _INTERRUPT_H
 
 #include <stdint.h>
+#include <queue>
+#include <map>
 #include "common.hpp"
 #include "access.hpp"
 
@@ -56,9 +58,12 @@ struct TSS {
 };
 
 class Interrupt : public virtual DataAccess {
+	private:
+		std::queue< std::pair<uint8_t, bool> > intr_q;
+
 	public:
-		Interrupt();
-		void interrupt_hundle(uint8_t n, bool hd_exp);
+		void hundle_interrupt(void);
+		void queue_interrupt(uint8_t n, bool hard) { intr_q.push(std::make_pair(n, hard)); } ;
 		void iret(void);
 	private:
 		void save_regs(bool chpl);

@@ -37,12 +37,12 @@ void ParseInstr::parse(void){
 
 	if(chk[OPCODE].imm32){
 		IMM32 = get_emu()->get_code32(0);
-		DEBUG_MSG("imm32:0x%02x ", IMM32);
+		DEBUG_MSG("imm32:0x%08x ", IMM32);
 		UPDATE_EIP(4);
 	}
 	else if(chk[OPCODE].imm16){
 		IMM16 = get_emu()->get_code16(0);
-		DEBUG_MSG("imm16:0x%02x ", IMM16);
+		DEBUG_MSG("imm16:0x%04x ", IMM16);
 		UPDATE_EIP(2);
 	}
 	else if(chk[OPCODE].imm8){
@@ -53,7 +53,7 @@ void ParseInstr::parse(void){
 
 	if(chk[OPCODE].ptr16){
 		PTR16 = get_emu()->get_code16(0);
-		DEBUG_MSG("ptr16:0x%02x", PTR16);
+		DEBUG_MSG("ptr16:0x%04x", PTR16);
 		UPDATE_EIP(2);
 	}
 
@@ -110,34 +110,40 @@ void ParseInstr::parse_modrm_sib_disp(void){
 
 	DEBUG_MSG("[mod:0x%02x reg:0x%02x rm:0x%02x] ", MOD, REG, RM);
 
-	if(is_protected() ^ chsz_ad){
-		if (MOD != 3 && RM == 4) {
-			_SIB = get_emu()->get_code8(0);
-			UPDATE_EIP(1);
-			DEBUG_MSG("[scale:0x%02x index:0x%02x base:0x%02x] ", SCALE, INDEX, BASE);
-		}
+	if(is_protected() ^ chsz_ad)
+		parse_modrm32();
+	else
+		parse_modrm16();
+}
 
-		if (MOD == 2 || (MOD == 0 && RM == 5) || (MOD == 0 && BASE == 5)) {
-			DISP32 = get_emu()->get_code32(0);
-			UPDATE_EIP(4);
-			DEBUG_MSG("disp32:0x%02x ", DISP32);
-		}
-		else if (MOD == 1) {
-			DISP8 = (int8_t)get_emu()->get_code8(0);
-			UPDATE_EIP(1);
-			DEBUG_MSG("disp8:0x%02x ", DISP8);
-		}
+void ParseInstr::parse_modrm32(void){
+	if (MOD != 3 && RM == 4) {
+		_SIB = get_emu()->get_code8(0);
+		UPDATE_EIP(1);
+		DEBUG_MSG("[scale:0x%02x index:0x%02x base:0x%02x] ", SCALE, INDEX, BASE);
 	}
-	else{
-		if ((MOD == 0 && RM == 6) || MOD == 2) {
-			DISP16 = get_emu()->get_code32(0);
-			UPDATE_EIP(2);
-			DEBUG_MSG("disp16:0x%02x ", DISP16);
-		}
-		else if (MOD == 1) {
-			DISP8 = (int8_t)get_emu()->get_code8(0);
-			UPDATE_EIP(1);
-			DEBUG_MSG("disp8:0x%02x ", DISP8);
-		}
+
+	if (MOD == 2 || (MOD == 0 && RM == 5) || (MOD == 0 && BASE == 5)) {
+		DISP32 = get_emu()->get_code32(0);
+		UPDATE_EIP(4);
+		DEBUG_MSG("disp32:0x%08x ", DISP32);
+	}
+	else if (MOD == 1) {
+		DISP8 = (int8_t)get_emu()->get_code8(0);
+		UPDATE_EIP(1);
+		DEBUG_MSG("disp8:0x%02x ", DISP8);
+	}
+}
+
+void ParseInstr::parse_modrm16(void){
+	if ((MOD == 0 && RM == 6) || MOD == 2) {
+		DISP16 = get_emu()->get_code32(0);
+		UPDATE_EIP(2);
+		DEBUG_MSG("disp16:0x%04x ", DISP16);
+	}
+	else if (MOD == 1) {
+		DISP8 = (int8_t)get_emu()->get_code8(0);
+		UPDATE_EIP(1);
+		DEBUG_MSG("disp8:0x%02x ", DISP8);
 	}
 }

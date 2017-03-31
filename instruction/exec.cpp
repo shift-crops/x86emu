@@ -90,6 +90,7 @@ uint16_t ExecInstr::get_sreg(void){
 }
 
 void ExecInstr::set_crn(uint32_t value){
+	INFO("set CR%d = %x", REG, value);
 	EMU->set_crn(REG, value);
 }
 

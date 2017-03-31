@@ -57,18 +57,31 @@ class InstrBase : public ExecInstr , public ParseInstr {
                 void jmp(void);
 		void in_al_dx(void);
 		void out_dx_al(void);
+		void cli(void);
+		void sti(void);
 		void hlt(void);
 		void ltr_rm16(void);
 		void mov_r32_crn(void);
 		void mov_crn_r32(void);
 
-		//virtual void code_80(void) = 0;
-		//virtual void code_81(void) = 0;
-		//virtual void code_82(void) = 0;
+		void code_80(void);
+		virtual void code_81(void) = 0;
+		void code_82(void);
 		virtual void code_83(void) = 0;
                 virtual void code_ff(void) = 0;
                 virtual void code_0f00(void) = 0;
                 virtual void code_0f01(void) = 0;
+
+		// 0x80, 0x82
+		void add_rm8_imm8(void);
+		void or_rm8_imm8(void);
+		void adc_rm8_imm8(void);
+		void sbb_rm8_imm8(void);
+		void and_rm8_imm8(void);
+		void sub_rm8_imm8(void);
+		void xor_rm8_imm8(void);
+		void cmp_rm8_imm8(void);
+
 };
 
 class Instr16 : public InstrBase {
@@ -77,14 +90,19 @@ class Instr16 : public InstrBase {
         private:
 		void add_rm16_r16(void);
 		void add_r16_rm16(void);
+		void add_ax_imm16(void);
 		void or_rm16_r16(void);
 		void or_r16_rm16(void);
+		void or_ax_imm16(void);
 		void and_rm16_r16(void);
 		void and_r16_rm16(void);
+		void and_ax_imm16(void);
 		void sub_rm16_r16(void);
 		void sub_r16_rm16(void);
+		void sub_ax_imm16(void);
 		void xor_rm16_r16(void);
 		void xor_r16_rm16(void);
+		void xor_ax_imm16(void);
 		void cmp_rm16_r16(void);
 		void cmp_r16_rm16(void);
 		void cmp_ax_imm16(void);
@@ -118,14 +136,22 @@ class Instr16 : public InstrBase {
 		void movsx_r16_rm8(void);
 		void movsx_r16_rm16(void);
 
-		//void code_80(void);
-		//void code_81(void);
-		//void code_82(void);
+		void code_81(void);
 		void code_83(void);
                 void code_c1(void);
                 void code_ff(void);
                 void code_0f00(void);
                 void code_0f01(void);
+
+		// 0x81
+		void add_rm16_imm16(void);
+		void or_rm16_imm16(void);
+		void adc_rm16_imm16(void);
+		void sbb_rm16_imm16(void);
+		void and_rm16_imm16(void);
+		void sub_rm16_imm16(void);
+		void xor_rm16_imm16(void);
+		void cmp_rm16_imm16(void);
 
 		// 0x83
 		void add_rm16_imm8(void);
@@ -159,14 +185,19 @@ class Instr32 : public InstrBase {
         private:
 		void add_rm32_r32(void);
 		void add_r32_rm32(void);
+		void add_eax_imm32(void);
 		void or_rm32_r32(void);
 		void or_r32_rm32(void);
+		void or_eax_imm32(void);
 		void and_rm32_r32(void);
 		void and_r32_rm32(void);
+		void and_eax_imm32(void);
 		void sub_rm32_r32(void);
 		void sub_r32_rm32(void);
+		void sub_eax_imm32(void);
 		void xor_rm32_r32(void);
 		void xor_r32_rm32(void);
+		void xor_eax_imm32(void);
 		void cmp_rm32_r32(void);
 		void cmp_r32_rm32(void);
 		void cmp_eax_imm32(void);
@@ -200,14 +231,22 @@ class Instr32 : public InstrBase {
 		void movsx_r32_rm8(void);
 		void movsx_r32_rm16(void);
 
-		//void code_80(void);
-		//void code_81(void);
-		//void code_82(void);
+		void code_81(void);
 		void code_83(void);
 		void code_c1(void);
                 void code_ff(void);
                 void code_0f00(void);
                 void code_0f01(void);
+
+		// 0x81
+		void add_rm32_imm32(void);
+		void or_rm32_imm32(void);
+		void adc_rm32_imm32(void);
+		void sbb_rm32_imm32(void);
+		void and_rm32_imm32(void);
+		void sub_rm32_imm32(void);
+		void xor_rm32_imm32(void);
+		void cmp_rm32_imm32(void);
 
 		// 0x83
 		void add_rm32_imm8(void);

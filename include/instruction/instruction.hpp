@@ -184,6 +184,8 @@ class ParseInstr : protected virtual Instruction {
 	private:
 		void parse_prefix_opcode(void);
 		void parse_modrm_sib_disp(void);
+		void parse_modrm16(void);
+		void parse_modrm32(void);
 };
 
 #endif

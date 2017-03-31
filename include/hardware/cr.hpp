@@ -80,6 +80,8 @@ class CR {
 		void set_crn(int n, uint32_t v) { *cr[n] = v; };
 	protected:
 		bool is_protected(void) { return cr0.PE; };
+		bool is_ena_paging(void) { return cr0.PG; };
+		uint32_t get_pdir_base(void) { return cr3.PageDirBase; };
 };
 
 #endif

@@ -1,5 +1,5 @@
 extern bios_main
-global start, put_esmem, bs_test
+global start, put_esmem
 
 BITS 16
 start:
@@ -25,19 +25,3 @@ put_esmem:
 	pop edi
 	o32 leave
 	o32 ret
-
-bs_test:
-	mov dx, 0x03f8
-	mov si, msghello
-puts_loop:
-	mov al, [si]
-	inc si
-	cmp al, 0
-	je puts_end
-	out dx, al
-	jmp puts_loop
-puts_end:
-	iret
-
-msghello:
-	db "Hello, World", 0x0a, 0x00

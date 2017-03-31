@@ -1,6 +1,6 @@
 #include "emulator/access.hpp"
 #include "emulator/exception.hpp"
-#include "emulator/descriptor.hpp"
+#include "emulator/structs.hpp"
 #include "hardware/processor.hpp"
 #include "hardware/cr.hpp"
 
@@ -9,12 +9,30 @@ uint32_t DataAccess::trans_v2p(acsmode_t mode, sgreg_t seg, uint32_t vaddr){
 
 	laddr = trans_v2l(mode, seg, vaddr);
 
-//	if(is_protected()){
-//	}
-//	else
+	if(is_ena_paging()){
+		uint32_t pdir_base, ptbl_base;
+		uint16_t pdir_index, ptbl_index, page_offset;
+		PDE pde;
+		PTE pte;
+
+		EXCEPTION(EXP_GP, !is_protected());
+
+		pdir_index = laddr >> 22;
+		ptbl_index = (laddr >> 12) & ((1<<10)-1);
+		page_offset = laddr & ((1<<12)-1);
+
+		pdir_base = get_pdir_base() << 12;
+		read_data(&pde, pdir_base + pdir_index*sizeof(PDE), sizeof(PDE));
+		ptbl_base = pde.ptbl_base << 12;
+		read_data(&pte, ptbl_base + ptbl_index*sizeof(PTE), sizeof(PTE));
+
+		//INFO("pdir_base=0x%04x, ptbl_base=0x%04x, page_base=0x%04x", pdir_base, ptbl_base, (pte.page_base << 12));
+		paddr = (pte.page_base << 12) + page_offset;
+	}
+	else
 		paddr = laddr;
 
-	if(chk_a20gate())
+	if(!chk_a20gate())
 		paddr &= (1<<20)-1;
 
 	return paddr;
@@ -32,9 +50,9 @@ uint32_t DataAccess::trans_v2l(acsmode_t mode, sgreg_t seg, uint32_t vaddr){
 		*((uint16_t*)&sg) = get_sgreg(seg);
 		dt_index = sg.index << 3;
 
+		// TODO
 		dt_base = get_dtreg_base(sg.TI ? LDTR : GDTR);
 		dt_limit = get_dtreg_limit(sg.TI ? LDTR : GDTR);
-
 
 		//INFO("dt_base=0x%04x, dt_limit=0x%02x, dt_index=0x%02x", dt_base, dt_limit, dt_index);
 		EXCEPTION(EXP_GP, !dt_index || dt_index > dt_limit);
@@ -128,6 +146,7 @@ void DataAccess::write_mem32_seg(sgreg_t seg, uint32_t addr, uint32_t v){
 	uint32_t paddr;
        
 	paddr = trans_v2p(MODE_WRITE, seg, addr);
+	//INFO("Write : 0x%04x(0x%04x)", paddr, v);
 	if(chk_memio(paddr))
 		write_memio32(paddr, v);
 	else
@@ -138,7 +157,7 @@ void DataAccess::write_mem16_seg(sgreg_t seg, uint32_t addr, uint16_t v){
 	uint32_t paddr;
        
 	paddr = trans_v2p(MODE_WRITE, seg, addr);
-	INFO("Write : 0x%04x(0x%04x)", paddr, v);
+	//INFO("Write : 0x%04x(0x%04x)", paddr, v);
 	if(chk_memio(paddr))
 		write_memio16(paddr, v);
 	else
@@ -149,6 +168,7 @@ void DataAccess::write_mem8_seg(sgreg_t seg, uint32_t addr, uint8_t v){
 	uint32_t paddr;
        
 	paddr = trans_v2p(MODE_WRITE, seg, addr);
+	//INFO("Write : 0x%04x(0x%04x)", paddr, v);
 	if(chk_memio(paddr))
 		write_memio8(paddr, v);
 	else

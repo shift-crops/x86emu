@@ -1,18 +1,23 @@
+#include <map>
 #include "emulator/interrupt.hpp"
 #include "emulator/access.hpp"
 #include "emulator/exception.hpp"
-#include "emulator/descriptor.hpp"
+#include "emulator/structs.hpp"
 #include "hardware/processor.hpp"
 #include "hardware/eflags.hpp"
 #include "hardware/cr.hpp"
 #include "hardware/memory.hpp"
 
-Interrupt::Interrupt(){
-}
-
-void Interrupt::interrupt_hundle(uint8_t n, bool hd_exp){
-	if(!is_interruptable())
+void Interrupt::hundle_interrupt(void){
+	std::pair<uint8_t, bool> intr;
+	if(!is_interruptable() || intr_q.empty())
 		return;
+
+	intr = intr_q.front();
+	intr_q.pop();
+
+	uint8_t n = intr.first;
+	bool hard = intr.second;
 
 	if(is_protected()){
 		INTDescriptor idt;
@@ -35,7 +40,7 @@ void Interrupt::interrupt_hundle(uint8_t n, bool hd_exp){
 
 		EXCEPTION(EXP_NP, !idt.P);
 		EXCEPTION(EXP_GP, CPL < RPL);
-		EXCEPTION(EXP_GP, !hd_exp && CPL > idt.DPL);
+		EXCEPTION(EXP_GP, !hard && CPL > idt.DPL);
 
 		if(idt.type == TYPE_INTERRUPT)
 			set_interruptable(false);
@@ -129,7 +134,7 @@ void Interrupt::restore_regs(void){
 
 			esp = pop32();
 			ss = pop32();
-			INFO("restore_regs (CS : 0x%04x->0x%04x, ESP : 0x%08x->0x%08x, SS : 0x%08x->0x%04x)"
+			INFO("restore_regs (CS : 0x%04x->0x%04x, ESP : 0x%08x->0x%08x, SS : 0x%04x->0x%04x)"
 					, cs0.raw, cs.raw, get_gpreg(ESP), esp, get_sgreg(SS), ss);
 			set_gpreg(ESP, esp);
 			set_sgreg(SS, ss);

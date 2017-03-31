@@ -23,6 +23,8 @@ int main(int argc, char *argv[]){
 			uint8_t chsz;
 			bool chsz_op, chsz_ad;
 
+			emu.hundle_interrupt();
+
 			chsz = (is_protected ? instr32.chk_chsz() : instr16.chk_chsz());
 			chsz_op = chsz & CHSZ_OP;
 			chsz_ad = chsz & CHSZ_AD;
@@ -37,18 +39,19 @@ int main(int argc, char *argv[]){
 				instr16.parse();
 				instr16.exec();
 			}
-/*
-		emu.dump_regs();
-		if((emu.get_sgreg(SS)<<4)+emu.get_gpreg(ESP)>0x40)
-			emu.dump_mem((emu.get_sgreg(SS)<<4)+emu.get_gpreg(ESP)-0x40, 0x80);
-		MSG("\n");
-*/
 		}
 		catch(int n){
 			emu.dump_regs();
 			ERROR("Exception %d", n);
-			emu.interrupt_hundle(n, true);
+			emu.queue_interrupt(n, true);
 		}
+		/*
+		emu.dump_regs();
+		if((emu.get_sgreg(SS)<<4)+emu.get_gpreg(ESP)>0x40)
+			emu.dump_mem((emu.get_sgreg(SS)<<4)+emu.get_gpreg(ESP)-0x40, 0x80);
+		MSG("\n");
+		*/
+
 	}
 	emu.dump_regs();
 	emu.dump_mem((emu.get_sgreg(SS)<<4)+emu.get_gpreg(ESP)-0x40, 0x80);

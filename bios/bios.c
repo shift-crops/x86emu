@@ -1,17 +1,4 @@
-#define uint8_t	 unsigned char
-#define uint16_t unsigned short
-#define uint32_t unsigned long
-
-typedef struct {
-	uint16_t offset;
-	uint16_t segment;
-} IVT;
-
-extern uint16_t bs_test;
-
-void put_esmem(void* vaddr, uint16_t v);
-void init_ivt(void);
-void set_ivt(int n, uint32_t offset, uint16_t cs);
+#include "bios.h"
 
 int bios_main(void){
 	init_ivt();
@@ -20,7 +7,7 @@ int bios_main(void){
 }
 
 void init_ivt(void){
-	set_ivt(0x10, (uint32_t)(&bs_test), 0xf000);
+	set_ivt(0x10, (uint32_t)bsv_test, 0xf000);
 }
 
 void set_ivt(int n, uint32_t offset, uint16_t cs){

@@ -1,5 +1,5 @@
-#ifndef _DESCRIPTOR_H
-#define _DESCRIPTOR_H
+#ifndef _STRUCTS_H
+#define _STRUCTS_H
 
 struct SGDescriptor {
 	uint16_t limit_l;
@@ -76,5 +76,32 @@ struct TSSDescriptor {
 	uint8_t base_h;
 };
 
+struct PDE {
+	uint32_t P : 1;
+	uint32_t RW : 1;
+	uint32_t US : 1;
+	uint32_t PWT : 1;
+	uint32_t PCD : 1;
+	uint32_t PA : 1;
+	uint32_t : 1;
+	uint32_t PS : 1;
+	uint32_t PG : 1;
+	uint32_t : 3;
+	uint32_t ptbl_base : 20;
+};
+
+struct PTE {
+	uint32_t P : 1;
+	uint32_t RW : 1;
+	uint32_t US : 1;
+	uint32_t PWT : 1;
+	uint32_t PCD : 1;
+	uint32_t PA : 1;
+	uint32_t : 1;
+	uint32_t PAT : 1;
+	uint32_t PG : 1;
+	uint32_t : 3;
+	uint32_t page_base : 20;
+};
 
 #endif

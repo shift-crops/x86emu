@@ -11,35 +11,35 @@ Instr32::Instr32(Emulator *e) : Instruction(e, true) {
 	// 0x02 : add_r8_rm8
 	set_funcflag(0x03, instr32(add_r32_rm32), CHK_MODRM);
 	// 0x04 : add_al_imm8
-	//set_funcflag(0x05, instr32(add_eax_imm32), CHK_IMM32);
+	set_funcflag(0x05, instr32(add_eax_imm32), CHK_IMM32);
 
 	// 0x08 : or_rm8_r8
 	set_funcflag(0x09, instr32(or_rm32_r32), CHK_MODRM);
-	set_funcflag(0x0a, instr32(or_r8_rm8), CHK_MODRM);
+	// 0x0a : or_r8_rm8
 	set_funcflag(0x0b, instr32(or_r32_rm32), CHK_MODRM);
-	//set_funcflag(0x0c, instr32(or_al_imm8), CHK_IMM8);
-	//set_funcflag(0x0d, instr32(or_eax_imm32), CHK_IMM32);
+	// 0x0c : or_al_imm8
+	set_funcflag(0x0d, instr32(or_eax_imm32), CHK_IMM32);
 
 	// 0x20 : and_rm8_r8
 	set_funcflag(0x21, instr32(and_rm32_r32), CHK_MODRM);
 	// 0x22 : and_r8_rm8
 	set_funcflag(0x23, instr32(and_r32_rm32), CHK_MODRM);
 	// 0x24 : and_al_imm8
-	//set_funcflag(0x25, instr32(and_eax_imm32), CHK_IMM32);
+	set_funcflag(0x25, instr32(and_eax_imm32), CHK_IMM32);
 
 	// 0x28 : sub_rm8_r8
 	set_funcflag(0x29, instr32(sub_rm32_r32), CHK_MODRM);
 	// 0x2a : sub_r8_rm8
 	set_funcflag(0x2b, instr32(sub_r32_rm32), CHK_MODRM);
 	// 0x2c : sub_al_imm8
-	//set_funcflag(0x2d, instr32(sub_eax_imm32), CHK_IMM32);
+	set_funcflag(0x2d, instr32(sub_eax_imm32), CHK_IMM32);
 
 	// 0x30 : xor_rm8_r8
 	set_funcflag(0x31, instr32(xor_rm32_r32), CHK_MODRM);
 	// 0x32 : xor_r8_rm8
 	set_funcflag(0x33, instr32(xor_r32_rm32), CHK_MODRM);
-	//set_funcflag(0x34, instr32(xor_al_imm8), CHK_IMM8);
-	//set_funcflag(0x35, instr32(xor_eax_imm32), CHK_IMM32);
+	// 0x34 : xor_al_imm8
+	set_funcflag(0x35, instr32(xor_eax_imm32), CHK_IMM32);
 
 	// 0x38 : cmp_rm8_r8
 	set_funcflag(0x39, instr32(cmp_rm32_r32), CHK_MODRM);
@@ -107,9 +107,9 @@ Instr32::Instr32(Emulator *e) : Instruction(e, true) {
 	set_funcflag(0x0fbe, instr32(movsx_r32_rm8), CHK_MODRM);
 	set_funcflag(0x0fbf, instr32(movsx_r32_rm16), CHK_MODRM);
 
-	//set_funcflag(0x80, instr32(code_80), CHK_MODRM | CHK_IMM8);
-	//set_funcflag(0x81, instr32(code_81), CHK_MODRM | CHK_IMM32);
-	//set_funcflag(0x82, instr32(code_82), CHK_MODRM | CHK_IMM8);
+	// 0x80 : code_80
+	set_funcflag(0x81, instr32(code_81), CHK_MODRM | CHK_IMM32);
+	// 0x82 : code_82
 	set_funcflag(0x83, instr32(code_83), CHK_MODRM | CHK_IMM8);
 	set_funcflag(0xc1, instr32(code_c1), CHK_MODRM | CHK_IMM8);
 	set_funcflag(0xff, instr32(code_ff), CHK_MODRM);
@@ -135,6 +135,14 @@ void Instr32::add_r32_rm32(void){
 	EFLAGS_UPDATE_ADD(r32, rm32);
 }
 
+void Instr32::add_eax_imm32(void){
+	uint32_t eax;
+
+	eax = GET_GPREG(EAX);
+	SET_GPREG(EAX, eax+IMM32);
+	EFLAGS_UPDATE_ADD(eax, IMM32);
+}
+
 void Instr32::or_rm32_r32(void){
 	uint32_t rm32, r32;
 
@@ -153,6 +161,14 @@ void Instr32::or_r32_rm32(void){
 	EFLAGS_UPDATE_OR(r32, rm32);
 }
 
+void Instr32::or_eax_imm32(void){
+	uint32_t eax;
+
+	eax = GET_GPREG(EAX);
+	SET_GPREG(EAX, eax|IMM32);
+	EFLAGS_UPDATE_OR(eax, IMM32);
+}
+
 void Instr32::and_rm32_r32(void){
 	uint32_t rm32, r32;
 
@@ -167,8 +183,16 @@ void Instr32::and_r32_rm32(void){
 
 	r32 = get_r32();
 	rm32 = get_rm32();
-	set_r32(r32|rm32);
+	set_r32(r32&rm32);
 	EFLAGS_UPDATE_AND(r32, rm32);
+}
+
+void Instr32::and_eax_imm32(void){
+	uint32_t eax;
+
+	eax = GET_GPREG(EAX);
+	SET_GPREG(EAX, eax&IMM32);
+	EFLAGS_UPDATE_AND(eax, IMM32);
 }
 
 void Instr32::sub_rm32_r32(void){
@@ -189,6 +213,14 @@ void Instr32::sub_r32_rm32(void){
 	EFLAGS_UPDATE_SUB(r32, rm32);
 }
 
+void Instr32::sub_eax_imm32(void){
+	uint32_t eax;
+
+	eax = GET_GPREG(EAX);
+	SET_GPREG(EAX, eax-IMM32);
+	EFLAGS_UPDATE_SUB(eax, IMM32);
+}
+
 void Instr32::xor_rm32_r32(void){
 	uint32_t rm32, r32;
 
@@ -203,6 +235,13 @@ void Instr32::xor_r32_rm32(void){
 	r32 = get_r32();
 	rm32 = get_rm32();
 	set_r32(r32^rm32);
+}
+
+void Instr32::xor_eax_imm32(void){
+	uint32_t eax;
+
+	eax = GET_GPREG(EAX);
+	SET_GPREG(EAX, eax^IMM32);
 }
 
 void Instr32::cmp_rm32_r32(void){
@@ -420,21 +459,6 @@ void Instr32::movsx_r32_rm16(void){
 }
 
 /******************************************************************/
-/*
-void Instr32::code_80(void){
-	switch(REG){
-		case 0:	add_rm8_imm8();		break;
-		case 1:	or_rm8_imm8();		break;
-		case 2:	adc_rm8_imm8();		break;
-		case 3:	sbb_rm8_imm8();		break;
-		case 4:	and_rm8_imm8();		break;
-		case 5:	sub_rm8_imm8();		break;
-		case 6:	xor_rm8_imm8();		break;
-		case 7:	cmp_rm8_imm8();		break;
-		default:
-			ERROR("not implemented: 0x80 /%d\n", REG);
-	}
-}
 
 void Instr32::code_81(void){
 	switch(REG){
@@ -450,11 +474,6 @@ void Instr32::code_81(void){
 			ERROR("not implemented: 0x81 /%d\n", REG);
 	}
 }
-
-void Instr32::code_82(void){
-	code_80();
-}
-*/
 
 void Instr32::code_83(void){
 	switch(REG){
@@ -508,6 +527,74 @@ void Instr32::code_0f01(void){
 		default:
 			ERROR("not implemented: 0x0f01 /%d\n", REG);
 	}
+}
+
+/******************************************************************/
+
+void Instr32::add_rm32_imm32(void){
+	uint32_t rm32;
+
+	rm32 = get_rm32();
+	set_rm32(rm32+IMM32);
+	EFLAGS_UPDATE_ADD(rm32, IMM32);
+}
+
+void Instr32::or_rm32_imm32(void){
+	uint32_t rm32;
+
+	rm32 = get_rm32();
+	set_rm32(rm32|IMM32);
+	EFLAGS_UPDATE_OR(rm32, IMM32);
+}
+
+void Instr32::adc_rm32_imm32(void){
+	uint32_t rm32;
+	uint8_t cf;
+
+	rm32 = get_rm32();
+	cf = EFLAGS_CF;
+	set_rm32(rm32+IMM32+cf);
+	EFLAGS_UPDATE_ADD(rm32, IMM32+cf);
+}
+
+void Instr32::sbb_rm32_imm32(void){
+	uint32_t rm32;
+	uint8_t cf;
+
+	rm32 = get_rm32();
+	cf = EFLAGS_CF;
+	set_rm32(rm32-IMM32-cf);
+	EFLAGS_UPDATE_SUB(rm32, IMM32+cf);
+}
+
+void Instr32::and_rm32_imm32(void){
+	uint32_t rm32;
+
+	rm32 = get_rm32();
+	set_rm32(rm32&IMM32);
+	EFLAGS_UPDATE_AND(rm32, IMM32);
+}
+
+void Instr32::sub_rm32_imm32(void){
+	uint32_t rm32;
+
+	rm32 = get_rm32();
+	set_rm32(rm32-IMM32);
+	EFLAGS_UPDATE_SUB(rm32, IMM32);
+}
+
+void Instr32::xor_rm32_imm32(void){
+	uint32_t rm32;
+
+	rm32 = get_rm32();
+	set_rm32(rm32^IMM32);
+}
+
+void Instr32::cmp_rm32_imm32(void){
+	uint32_t rm32;
+
+	rm32 = get_rm32();
+	EFLAGS_UPDATE_SUB(rm32, IMM32);
 }
 
 /******************************************************************/
