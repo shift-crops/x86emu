@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 #include "common.hpp"
-#include "device_io.hpp"
+#include "dev_io.hpp"
 #include "hardware/memory.hpp"
 
 class SysControl : public PortIO {
@@ -11,8 +11,8 @@ class SysControl : public PortIO {
 		Memory *mem;
 	public:
 		SysControl(Memory *m) { mem = m; };
-		uint8_t in8(void);
-		void out8(uint8_t v);
+		uint8_t in8(uint16_t addr);
+		void out8(uint16_t addr, uint8_t v);
 };
 
 #endif

@@ -10,14 +10,16 @@
 
 void Interrupt::hundle_interrupt(void){
 	std::pair<uint8_t, bool> intr;
-	if(!is_interruptable() || intr_q.empty())
+	uint8_t n;
+	bool hard;
+
+	if(intr_q.empty())
 		return;
 
 	intr = intr_q.front();
 	intr_q.pop();
-
-	uint8_t n = intr.first;
-	bool hard = intr.second;
+	n = intr.first;
+	hard = intr.second;
 
 	if(is_protected()){
 		INTDescriptor idt;
@@ -42,12 +44,13 @@ void Interrupt::hundle_interrupt(void){
 		EXCEPTION(EXP_GP, CPL < RPL);
 		EXCEPTION(EXP_GP, !hard && CPL > idt.DPL);
 
-		if(idt.type == TYPE_INTERRUPT)
-			set_interruptable(false);
-
 		save_regs(CPL ^ RPL);
 		set_eip((idt.offset_h << 16) + idt.offset_l);
 		set_sgreg(CS, idt.selector);
+
+		if(idt.type == TYPE_INTERRUPT)
+			set_interruptable(false);
+
 		INFO("int 0x%02x [CPL : %d, DPL : %d RPL : %d] (EIP : 0x%04x, CS : 0x%04x)"
 				, n, CPL, idt.DPL, RPL, (idt.offset_h << 16) + idt.offset_l, idt.selector);
 	}
@@ -55,23 +58,37 @@ void Interrupt::hundle_interrupt(void){
 		IVT ivt;
 		ivt.raw = read_mem32(n*4);
 
-		set_interruptable(false);
-
 		save_regs(false);
 		set_ip(ivt.offset);
 		set_sgreg(CS, ivt.segment);
+
+		set_interruptable(false);
 		INFO("int 0x%02x (IP : 0x%04x, CS : 0x%04x)", n, ivt.offset, ivt.segment);
 	}
 }
 
 void Interrupt::iret(void){
 	restore_regs();
-	set_interruptable(true);
 
 	if(is_protected())
 		INFO("iret (EIP : 0x%08x, CS : 0x%04x)", get_eip(), get_sgreg(CS));
 	else
 		INFO("iret (IP : 0x%04x, CS : 0x%04x)", get_ip(), get_sgreg(CS));
+}
+
+bool Interrupt::chk_irq(void){
+	int8_t n_intr;
+
+	if(!is_interruptable())
+		return false;
+	if(!pic_m || !pic_m->chk_intreq())
+		return false;
+
+	n_intr = pic_m->get_nintr();
+        if(n_intr < 0)
+		n_intr = pic_s->get_nintr();
+	queue_interrupt(n_intr, true);
+	return true;
 }
 
 void Interrupt::save_regs(bool chpl){
@@ -146,3 +163,4 @@ void Interrupt::restore_regs(void){
 		set_flags(pop16());
 	}
 }
+

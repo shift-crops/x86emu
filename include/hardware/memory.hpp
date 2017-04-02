@@ -31,8 +31,8 @@ class Memory {
 		void write_mem16(uint32_t addr, uint16_t v){ CHECK_RANGE(addr, 2); *((uint16_t*)&memory[addr]) = v; };
 		void write_mem8(uint32_t addr, uint8_t v){ CHECK_RANGE(addr, 1); memory[addr] = v; };
 
-		bool chk_a20gate(void) { return a20_gate; };
-		void ena_a20gate(bool ena) { a20_gate = ena; };
+		bool is_ena_a20gate(void) { return a20_gate; };
+		void set_a20gate(bool ena) { a20_gate = ena; };
 };
 
 #endif

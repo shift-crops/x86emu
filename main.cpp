@@ -13,18 +13,20 @@ int main(int argc, char *argv[]){
 
 	emu.load_binary("bios/crt0.bin", 0xffff0, 0x10);
 	emu.load_binary("bios/bios.bin", 0xf0000, 0x400);
-	emu.load_binary(argv[1], 0x7c00, 0x200);
+	emu.load_binary(argv[1], 0x7c00, 0x800);
 
 	//while(!emu.is_halt() && emu.get_eip()){
-	while(!emu.is_halt()){
-		bool is_protected = emu.is_protected();
+	while(true){
+		bool is_protected;
+		uint8_t chsz;
+		bool chsz_op, chsz_ad;
 
 		try{
-			uint8_t chsz;
-			bool chsz_op, chsz_ad;
-
+			if(emu.chk_irq())	emu.do_halt(false);
+			if(emu.is_halt())	continue;
 			emu.hundle_interrupt();
 
+			is_protected = emu.is_protected();
 			chsz = (is_protected ? instr32.chk_chsz() : instr16.chk_chsz());
 			chsz_op = chsz & CHSZ_OP;
 			chsz_ad = chsz & CHSZ_AD;
@@ -51,8 +53,5 @@ int main(int argc, char *argv[]){
 			emu.dump_mem((emu.get_sgreg(SS)<<4)+emu.get_gpreg(ESP)-0x40, 0x80);
 		MSG("\n");
 		*/
-
 	}
-	emu.dump_regs();
-	emu.dump_mem((emu.get_sgreg(SS)<<4)+emu.get_gpreg(ESP)-0x40, 0x80);
 }

@@ -322,13 +322,13 @@ void InstrBase::mov_r32_crn(void){
 	uint32_t crn;
 
 	crn = get_crn();
-	set_rm32(crn);		// set_r32
+	SET_GPREG(static_cast<reg32_t>(RM), crn);	// set_r32
 }
 
 void InstrBase::mov_crn_r32(void){
 	uint32_t r32;
 
-	r32 = get_rm32();	// get_r32
+	r32 = GET_GPREG(static_cast<reg32_t>(RM));	// get_r32
 	set_crn(r32);
 }
 

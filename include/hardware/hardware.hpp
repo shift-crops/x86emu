@@ -6,10 +6,11 @@
 #include "processor.hpp"
 #include "memory.hpp"
 #include "eflags.hpp"
+#include "io.hpp"
 
 class Emulator;
 
-class Hardware : public Processor, public Memory {
+class Hardware : public Processor, public Memory, public IO {
 	friend Emulator;
 
 	public:

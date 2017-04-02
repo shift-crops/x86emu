@@ -12,10 +12,13 @@ uint32_t DataAccess::trans_v2p(acsmode_t mode, sgreg_t seg, uint32_t vaddr){
 	if(is_ena_paging()){
 		uint32_t pdir_base, ptbl_base;
 		uint16_t pdir_index, ptbl_index, page_offset;
+		uint8_t cpl;
 		PDE pde;
 		PTE pte;
 
 		EXCEPTION(EXP_GP, !is_protected());
+
+		cpl = get_sgreg(CS)&3;
 
 		pdir_index = laddr >> 22;
 		ptbl_index = (laddr >> 12) & ((1<<10)-1);
@@ -23,8 +26,15 @@ uint32_t DataAccess::trans_v2p(acsmode_t mode, sgreg_t seg, uint32_t vaddr){
 
 		pdir_base = get_pdir_base() << 12;
 		read_data(&pde, pdir_base + pdir_index*sizeof(PDE), sizeof(PDE));
+		EXCEPTION_WITH(EXP_PF, !pde.P, set_crn(2, laddr));
+		EXCEPTION_WITH(EXP_PF, !pde.RW && mode == MODE_WRITE, set_crn(2, laddr));
+		EXCEPTION_WITH(EXP_PF, !pde.US && cpl>2, set_crn(2, laddr));
+
 		ptbl_base = pde.ptbl_base << 12;
 		read_data(&pte, ptbl_base + ptbl_index*sizeof(PTE), sizeof(PTE));
+		EXCEPTION_WITH(EXP_PF, !pte.P, set_crn(2, laddr));
+		EXCEPTION_WITH(EXP_PF, !pte.RW && mode == MODE_WRITE, set_crn(2, laddr));
+		EXCEPTION_WITH(EXP_PF, !pte.US && cpl>2, set_crn(2, laddr));
 
 		//INFO("pdir_base=0x%04x, ptbl_base=0x%04x, page_base=0x%04x", pdir_base, ptbl_base, (pte.page_base << 12));
 		paddr = (pte.page_base << 12) + page_offset;
@@ -32,7 +42,7 @@ uint32_t DataAccess::trans_v2p(acsmode_t mode, sgreg_t seg, uint32_t vaddr){
 	else
 		paddr = laddr;
 
-	if(!chk_a20gate())
+	if(!is_ena_a20gate())
 		paddr &= (1<<20)-1;
 
 	return paddr;
@@ -146,7 +156,6 @@ void DataAccess::write_mem32_seg(sgreg_t seg, uint32_t addr, uint32_t v){
 	uint32_t paddr;
        
 	paddr = trans_v2p(MODE_WRITE, seg, addr);
-	//INFO("Write : 0x%04x(0x%04x)", paddr, v);
 	if(chk_memio(paddr))
 		write_memio32(paddr, v);
 	else
@@ -157,7 +166,6 @@ void DataAccess::write_mem16_seg(sgreg_t seg, uint32_t addr, uint16_t v){
 	uint32_t paddr;
        
 	paddr = trans_v2p(MODE_WRITE, seg, addr);
-	//INFO("Write : 0x%04x(0x%04x)", paddr, v);
 	if(chk_memio(paddr))
 		write_memio16(paddr, v);
 	else

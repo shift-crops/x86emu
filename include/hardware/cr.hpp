@@ -76,8 +76,8 @@ class CR {
 				set_crn(i, 0);
 		};
 
-		uint32_t get_crn(int n) { return *cr[n]; };
-		void set_crn(int n, uint32_t v) { *cr[n] = v; };
+		uint32_t get_crn(uint8_t n) { if(n >= sizeof(cr)) ERROR(""); return *cr[n]; };
+		void set_crn(uint8_t n, uint32_t v) { if(n >= sizeof(cr)) ERROR(""); *cr[n] = v; };
 	protected:
 		bool is_protected(void) { return cr0.PE; };
 		bool is_ena_paging(void) { return cr0.PG; };

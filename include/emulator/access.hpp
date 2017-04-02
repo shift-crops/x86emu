@@ -4,14 +4,11 @@
 #include <stdint.h>
 #include "common.hpp"
 #include "hardware/hardware.hpp"
-#include "io.hpp"
 
 enum acsmode_t { MODE_READ, MODE_WRITE, MODE_EXEC };
 
-class DataAccess : public virtual Hardware, public IO {
+class DataAccess : public virtual Hardware {
 	public:
-		DataAccess() : IO(this) {};
-
 		uint8_t get_data8(sgreg_t seg, uint32_t addr){ return read_mem8_seg(seg, addr); };
 		uint16_t get_data16(sgreg_t seg, uint32_t addr){ return read_mem16_seg(seg, addr); };
 		uint32_t get_data32(sgreg_t seg, uint32_t addr){ return read_mem32_seg(seg, addr); };

@@ -1,10 +1,10 @@
 TARGET := emulator.a
 
-SRCS := emulator.cpp access.cpp interrupt.cpp io.cpp
+SRCS := emulator.cpp access.cpp interrupt.cpp pic.cpp
 OBJS := $(SRCS:.cpp=.o)
 DEPS := $(SRCS:.cpp=.d)
 
-CXXFLAGS := -Wall -MMD -I../include
+CXXFLAGS := -Wall -MMD -std=c++11 -I../include
 
 all: $(TARGET)
 

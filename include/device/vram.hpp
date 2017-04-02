@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 #include "common.hpp"
-#include "device_io.hpp"
+#include "dev_io.hpp"
 #include "display.hpp"
 
 class VRAM : public MemoryIO {
