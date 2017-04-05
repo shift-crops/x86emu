@@ -40,6 +40,9 @@ void Interrupt::hundle_interrupt(void){
 		read_data(&idt, idt_base + idt_offset, sizeof(INTDescriptor));
 		RPL = ((SGRegister*)&(idt.selector))->RPL;
 
+		INFO("int 0x%02x [CPL : %d, DPL : %d RPL : %d] (EIP : 0x%04x, CS : 0x%04x)"
+				, n, CPL, idt.DPL, RPL, (idt.offset_h << 16) + idt.offset_l, idt.selector);
+
 		EXCEPTION(EXP_NP, !idt.P);
 		EXCEPTION(EXP_GP, CPL < RPL);
 		EXCEPTION(EXP_GP, !hard && CPL > idt.DPL);
@@ -50,9 +53,6 @@ void Interrupt::hundle_interrupt(void){
 
 		if(idt.type == TYPE_INTERRUPT)
 			set_interruptable(false);
-
-		INFO("int 0x%02x [CPL : %d, DPL : %d RPL : %d] (EIP : 0x%04x, CS : 0x%04x)"
-				, n, CPL, idt.DPL, RPL, (idt.offset_h << 16) + idt.offset_l, idt.selector);
 	}
 	else{
 		IVT ivt;
@@ -62,7 +62,7 @@ void Interrupt::hundle_interrupt(void){
 		set_ip(ivt.offset);
 		set_sgreg(CS, ivt.segment);
 
-		set_interruptable(false);
+		//set_interruptable(false);
 		INFO("int 0x%02x (IP : 0x%04x, CS : 0x%04x)", n, ivt.offset, ivt.segment);
 	}
 }

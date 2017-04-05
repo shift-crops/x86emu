@@ -9,7 +9,7 @@
 
 class Emulator : public virtual DataAccess, public Interrupt {
 	public:
-		Emulator(size_t size, uint16_t cs, uint16_t ip);
+		Emulator(size_t size, uint16_t cs, uint16_t ip, const char *disk_name);
 		void load_binary(const char* fname, uint32_t addr, size_t size);
 };
 

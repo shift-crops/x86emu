@@ -6,5 +6,6 @@
 #include "vram.hpp"
 #include "picreg.hpp"
 #include "pit.hpp"
+#include "fdd.hpp"
 
 #endif

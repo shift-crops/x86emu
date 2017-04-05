@@ -53,6 +53,9 @@ Instr16::Instr16(Emulator *e) : Instruction(e, false) {
 	for (i=0; i<8; i++)	set_funcflag(0x50+i, instr16(push_r16) ,0);
 	for (i=0; i<8; i++)	set_funcflag(0x58+i, instr16(pop_r16) ,0);
 
+	set_funcflag(0x60, instr16(pusha), 0);
+	set_funcflag(0x61, instr16(popa), 0);
+
 	set_funcflag(0x68, instr16(push_imm16), CHK_IMM16);
 	//set_funcflag(0x69, instr16(imul_r16_rm16_imm16), CHK_MODRM|CHK_IMM16);
 	set_funcflag(0x6a, instr16(push_imm8), CHK_IMM8);
@@ -293,6 +296,36 @@ void Instr16::pop_r16(void){
 
 	reg = OPCODE & ((1<<3)-1);
 	SET_GPREG(static_cast<reg16_t>(reg), POP16());
+}
+
+void Instr16::pusha(void){
+	uint16_t sp;
+	
+	sp = GET_GPREG(SP);
+
+	PUSH16(GET_GPREG(AX));
+	PUSH16(GET_GPREG(CX));
+	PUSH16(GET_GPREG(DX));
+	PUSH16(GET_GPREG(BX));
+	PUSH16(sp);
+	PUSH16(GET_GPREG(BP));
+	PUSH16(GET_GPREG(SI));
+	PUSH16(GET_GPREG(DI));
+}
+
+void Instr16::popa(void){
+	uint16_t sp;
+
+	SET_GPREG(DI, POP16());
+	SET_GPREG(SI, POP16());
+	SET_GPREG(BP, POP16());
+	sp = POP16();
+	SET_GPREG(BX, POP16());
+	SET_GPREG(DX, POP16());
+	SET_GPREG(CX, POP16());
+	SET_GPREG(AX, POP16());
+
+	SET_GPREG(SP, sp);
 }
 
 void Instr16::push_imm16(void){

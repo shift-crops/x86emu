@@ -124,15 +124,20 @@ uint32_t ExecInstr::calc_modrm16(void){
 		case 1:
 		case 7:
 			addr += GET_GPREG(BX);
+			SEGMENT = DS;
 			break;
 		case 2:
 		case 3:
 		case 6:
 			if(MOD == 0 && RM == 6)
 				addr += DISP16;
-			else
+			else{
 				addr += GET_GPREG(BP);
+				SEGMENT = SS;
+			}
 			break;
+		default:
+			SEGMENT = DS;
 	}
 
 	if(RM < 6){
@@ -141,7 +146,6 @@ uint32_t ExecInstr::calc_modrm16(void){
 		else
 			addr += GET_GPREG(SI);
 	}
-	SEGMENT = DS;
 
 	return addr;
 }

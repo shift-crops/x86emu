@@ -11,6 +11,8 @@ typedef struct {
 } IVT;
 
 extern void bsv_test(void);
+extern void bsv_disk(void);
+extern void bsv_irq_disk(void);
 
 void put_esmem(void* vaddr, uint16_t v);
 void init_ivt(void);

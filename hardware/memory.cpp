@@ -25,16 +25,14 @@ void Memory::dump_mem(uint32_t addr, size_t size){
 }
 
 size_t Memory::read_data(void *dst, uint32_t src_addr, size_t size){
-	if(src_addr + size > mem_size)
-		size = mem_size - src_addr;
+	CHECK_RANGE(src_addr, size);
 
 	memcpy(dst, &memory[src_addr], size);
 	return size;
 }
 
 size_t Memory::write_data(uint32_t dst_addr, void *src, size_t size){
-	if(dst_addr + size > mem_size)
-		size = mem_size - dst_addr;
+	CHECK_RANGE(dst_addr, size);
 
 	memcpy(&memory[dst_addr], src, size);
 	return size;

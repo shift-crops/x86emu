@@ -30,6 +30,7 @@ all:
 	make -C instruction
 	make -C device
 	make -C bios
+	make -C sample
 	make $(TARGET)
 
 clean:
@@ -38,4 +39,5 @@ clean:
 	make clean -C instruction
 	make clean -C device
 	make clean -C bios
+	make clean -C sample
 	$(RM) $(DEPS) $(OBJS) $(TARGET)

@@ -7,15 +7,16 @@
 #define MEMORY_SIZE (1*MB)
 
 int main(int argc, char *argv[]){
-	Emulator emu(MEMORY_SIZE, 0xf000, 0xfff0);
+	Emulator emu(MEMORY_SIZE, 0xf000, 0xfff0, argc<2 ? "sample/kernel.img": argv[1]);
 	Instr16 instr16(&emu);
 	Instr32 instr32(&emu);
 
-	emu.load_binary("bios/crt0.bin", 0xffff0, 0x10);
 	emu.load_binary("bios/bios.bin", 0xf0000, 0x400);
-	emu.load_binary(argv[1], 0x7c00, 0x800);
+	emu.load_binary("bios/crt0.bin", 0xffff0, 0x10);
+	//emu.load_binary(argv[1], 0x10000, 0x480);
 
 	//while(!emu.is_halt() && emu.get_eip()){
+	//while(!emu.is_halt()){
 	while(true){
 		bool is_protected;
 		uint8_t chsz;
@@ -44,6 +45,7 @@ int main(int argc, char *argv[]){
 		}
 		catch(int n){
 			emu.dump_regs();
+			emu.dump_mem(emu.get_crn(3)+0x1000, 0x80);
 			ERROR("Exception %d", n);
 			emu.queue_interrupt(n, true);
 		}
@@ -54,4 +56,5 @@ int main(int argc, char *argv[]){
 		MSG("\n");
 		*/
 	}
+	emu.dump_regs();
 }

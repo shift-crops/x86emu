@@ -14,15 +14,19 @@ class InstrBase : public ExecInstr , public ParseInstr {
 
 		void add_rm8_r8(void);
 		void add_r8_rm8(void);
+		void add_al_imm8(void);
 		void or_rm8_r8(void);
 		void or_r8_rm8(void);
 		void or_al_imm8(void);
 		void and_rm8_r8(void);
 		void and_r8_rm8(void);
+		void and_al_imm8(void);
 		void sub_rm8_r8(void);
 		void sub_r8_rm8(void);
+		void sub_al_imm8(void);
 		void xor_rm8_r8(void);
 		void xor_r8_rm8(void);
+		void xor_al_imm8(void);
 		void cmp_rm8_r8(void);
 		void cmp_r8_rm8(void);
 		void cmp_al_imm8(void);
@@ -48,6 +52,7 @@ class InstrBase : public ExecInstr , public ParseInstr {
 		void mov_r8_rm8(void);
 		void mov_sreg_rm16(void);
 		void nop(void);
+		void test_al_imm8(void);
                 void mov_r8_imm8(void);
                 void mov_rm8_imm8(void);
                 void int_imm8(void);
@@ -110,6 +115,8 @@ class Instr16 : public InstrBase {
 		void dec_r16(void);
 		void push_r16(void);
 		void pop_r16(void);
+		void pusha(void);
+		void popa(void);
 		void push_imm16(void);
 		void push_imm8(void);
 		void test_rm16_r16(void);
@@ -205,6 +212,8 @@ class Instr32 : public InstrBase {
 		void dec_r32(void);
 		void push_r32(void);
 		void pop_r32(void);
+		void pushad(void);
+		void popad(void);
 		void push_imm32(void);
 		void push_imm8(void);
 		void test_rm32_r32(void);

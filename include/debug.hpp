@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <unistd.h>
 
-#define DEBUG
+//#define DEBUG
 
 enum {F_ERROR, F_WARN, F_INFO, F_MSG};
 typedef struct {

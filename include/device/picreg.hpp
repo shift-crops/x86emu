@@ -6,6 +6,18 @@
 #include "dev_io.hpp"
 #include "emulator/pic.hpp"
 
+union OCW2 {
+	uint8_t raw;
+	struct {
+		uint8_t L : 1;
+		uint8_t : 2;
+		uint8_t EOI : 1;
+		uint8_t SL : 1;
+		uint8_t R : 1;
+	};
+};
+
+
 class PICReg : public PortIO {
 	private:
 		PIC *pic;

@@ -6,8 +6,8 @@ IO::~IO(){
 	std::map<uint16_t, PortIO*>::iterator it_p;
 	std::map<uint32_t, MemoryIO*>::iterator it_m;
 
-	for(it_p = port_io.begin(); it_p != port_io.end(); it_p++)
-		delete it_p->second;
+//	for(it_p = port_io.begin(); it_p != port_io.end(); it_p++)
+//		delete it_p->second;
 	port_io.clear();
 
 	for(it_m = mem_io.begin(); it_m != mem_io.end(); it_m++)

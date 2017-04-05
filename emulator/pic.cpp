@@ -7,12 +7,6 @@ PIC::PIC(PIC* master) {
 		irq[i] = NULL;
 	irr = 0;
 	isr = 0;
-	/*
-	ic[0] = &ic1.raw;
-	ic[1] = &ic2.raw;
-	ic[2] = &ic3.raw;
-	ic[3] = &ic4.raw;
-	*/
 	init_icn = 1;
 };
 
@@ -23,7 +17,7 @@ int8_t PIC::get_nintr(void){
 	for(i=0; i<MAX_IRQ && !((irr>>i)&1); i++);
 	if(i == MAX_IRQ)
 		return -1;
-	//INFO("IRQ %d", i);
+	INFO("IRQ %d", i);
 
 	if(ic4.AEOI)	isr |= 1<<i;
 	irr ^= 1<<i;
@@ -41,6 +35,9 @@ int8_t PIC::get_nintr(void){
 
 bool PIC::chk_intreq(void){
 	int i;
+
+	if(init_icn)
+		return false;
 
 	if(irr)
 		return false;

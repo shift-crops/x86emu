@@ -53,6 +53,9 @@ Instr32::Instr32(Emulator *e) : Instruction(e, true) {
 	for (i=0; i<8; i++)	set_funcflag(0x50+i, instr32(push_r32) ,0);
 	for (i=0; i<8; i++)	set_funcflag(0x58+i, instr32(pop_r32) ,0);
 
+	set_funcflag(0x60, instr32(pushad), 0);
+	set_funcflag(0x61, instr32(popad), 0);
+
 	set_funcflag(0x68, instr32(push_imm32), CHK_IMM32);
 	//set_funcflag(0x69, instr32(imul_r32_rm32_imm32), CHK_MODRM|CHK_IMM32);
 	set_funcflag(0x6a, instr32(push_imm8), CHK_IMM8);
@@ -293,6 +296,36 @@ void Instr32::pop_r32(void){
 
 	reg = OPCODE & ((1<<3)-1);
 	SET_GPREG(static_cast<reg32_t>(reg), POP32());
+}
+
+void Instr32::pushad(void){
+	uint32_t esp;
+	
+	esp = GET_GPREG(ESP);
+
+	PUSH32(GET_GPREG(EAX));
+	PUSH32(GET_GPREG(ECX));
+	PUSH32(GET_GPREG(EDX));
+	PUSH32(GET_GPREG(EBX));
+	PUSH32(esp);
+	PUSH32(GET_GPREG(EBP));
+	PUSH32(GET_GPREG(ESI));
+	PUSH32(GET_GPREG(EDI));
+}
+
+void Instr32::popad(void){
+	uint32_t esp;
+
+	SET_GPREG(EDI, POP32());
+	SET_GPREG(ESI, POP32());
+	SET_GPREG(EBP, POP32());
+	esp = POP32();
+	SET_GPREG(EBX, POP32());
+	SET_GPREG(EDX, POP32());
+	SET_GPREG(ECX, POP32());
+	SET_GPREG(EAX, POP32());
+
+	SET_GPREG(ESP, esp);
 }
 
 void Instr32::push_imm32(void){

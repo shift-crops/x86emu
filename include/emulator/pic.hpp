@@ -67,7 +67,6 @@ class PIC : public IRQ {
 			};
 		} ic4;
 
-		//uint8_t* ic[4];
 		uint8_t init_icn;
 
 	public:
@@ -76,7 +75,6 @@ class PIC : public IRQ {
 		int8_t get_nintr(void);
 		bool chk_intreq(void);
 	private:
-		//void set_icn(uint8_t n, uint8_t cw) { if(n<1 || n>sizeof(ic)) ERROR(""); *ic[n-1] = cw; };
 		bool chk_m2s_pic(uint8_t n) { return !ic1.SNGL && !pic_m && ic3.raw&(1<<n); };	// this : master
 };
 
