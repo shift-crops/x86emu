@@ -1,16 +1,24 @@
 #ifndef _PIC_H
 #define _PIC_H
 
-#include <stdint.h>
 #include "common.hpp"
-#include "device/dev_irq.hpp"
+#include "dev_irq.hpp"
+#include "dev_io.hpp"
 
 #define MAX_IRQ 8
 
-class PICReg;
+union OCW2 {
+	uint8_t raw;
+	struct {
+		uint8_t L : 1;
+		uint8_t : 2;
+		uint8_t EOI : 1;
+		uint8_t SL : 1;
+		uint8_t R : 1;
+	};
+};
 
-class PIC : public IRQ {
-	friend PICReg;
+class PIC : public IRQ, public PortIO {
 	private:
 		PIC *pic_m;
 		IRQ *irq[MAX_IRQ];
@@ -74,8 +82,12 @@ class PIC : public IRQ {
 		void set_irq(uint8_t n, IRQ *dev) { if(n<MAX_IRQ) irq[n] = dev; else ERROR("IRQ out of bound : %d", n); };
 		int8_t get_nintr(void);
 		bool chk_intreq(void);
+		uint8_t in8(uint16_t addr);
+		void out8(uint16_t addr, uint8_t v);
 	private:
 		bool chk_m2s_pic(uint8_t n) { return !ic1.SNGL && !pic_m && ic3.raw&(1<<n); };	// this : master
+		void set_command(uint8_t v);
+		void set_data(uint8_t v);
 };
 
 #endif

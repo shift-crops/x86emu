@@ -22,7 +22,7 @@ VRAM* Display::get_vram(vram_t m){
 uint8_t *Display::get_image(void){
 	VRAM *vram = get_vram(mode);
 
-	for(int i=0; i<320*200; i++){
+	for(int i=0; i<size_x*size_y; i++){
 		uint8_t *rgb = rgb_palette[vram->read8(i)];
 		image[i*3] = rgb[0];
 		image[i*3+1] = rgb[1];

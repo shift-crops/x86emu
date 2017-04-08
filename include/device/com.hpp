@@ -1,7 +1,6 @@
 #ifndef _COM_H
 #define _COM_H
 
-#include <stdint.h>
 #include "common.hpp"
 #include "dev_io.hpp"
 

@@ -1,8 +1,6 @@
 #ifndef _PIT_H
 #define _PIT_H
 
-//#include <thread>
-#include <stdint.h>
 #include "common.hpp"
 #include "dev_irq.hpp"
 #include "dev_io.hpp"
@@ -22,17 +20,12 @@ class PIT : public IRQ, public PortIO {
 		uint16_t count[3];
 		uint16_t def[3];
 		bool first;
-		//std::thread th;
 	public:
-		PIT() { count[0] = def[0] = 0xffff;};
-		/*
-		PIT() { th = std::thread(&PIT::worker, this); };
-		~PIT() { th.join(); };
-		void worker(void);
-		*/
+		PIT();
 		uint8_t in8(uint16_t addr);
 		void out8(uint16_t addr, uint8_t v);
-		bool chk_intreq(void);
+		//bool chk_intreq(void);
+		void counter(void);
 };
 
 #endif

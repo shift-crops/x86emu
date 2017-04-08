@@ -1,7 +1,6 @@
 #ifndef _CR_H
 #define _CR_H
 
-#include <stdint.h>
 #include "common.hpp"
 
 class CR {

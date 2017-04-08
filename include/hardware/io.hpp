@@ -1,7 +1,6 @@
 #ifndef _IO_H
 #define _IO_H
 
-#include <stdint.h>
 #include <map>
 #include "common.hpp" 
 #include "memory.hpp" 

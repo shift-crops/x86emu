@@ -1,7 +1,6 @@
 #ifndef _DEV_IO_H
 #define _DEV_IO_H
 
-#include <stdint.h>
 #include "common.hpp"
 #include "hardware/memory.hpp"
 

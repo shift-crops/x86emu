@@ -57,9 +57,9 @@ Instr16::Instr16(Emulator *e) : Instruction(e, false) {
 	set_funcflag(0x61, instr16(popa), 0);
 
 	set_funcflag(0x68, instr16(push_imm16), CHK_IMM16);
-	//set_funcflag(0x69, instr16(imul_r16_rm16_imm16), CHK_MODRM|CHK_IMM16);
+	set_funcflag(0x69, instr16(imul_r16_rm16_imm16), CHK_MODRM|CHK_IMM16);
 	set_funcflag(0x6a, instr16(push_imm8), CHK_IMM8);
-	//set_funcflag(0x6b, instr16(imul_r16_rm16_imm8), CHK_MODRM|CHK_IMM8);
+	set_funcflag(0x6b, instr16(imul_r16_rm16_imm8), CHK_MODRM|CHK_IMM8);
 
 	// 0x70-0x7f : jcc
 
@@ -106,9 +106,28 @@ Instr16::Instr16(Emulator *e) : Instruction(e, false) {
 	// 0xee : out_dx_al
 	set_funcflag(0xef, instr16(out_dx_ax), 0);
 
+	set_funcflag(0x0f80, instr16(jo_rel16), CHK_IMM16);
+	set_funcflag(0x0f81, instr16(jno_rel16), CHK_IMM16);
+	set_funcflag(0x0f82, instr16(jb_rel16), CHK_IMM16);
+	set_funcflag(0x0f83, instr16(jnb_rel16), CHK_IMM16);
+	set_funcflag(0x0f84, instr16(jz_rel16), CHK_IMM16);
+	set_funcflag(0x0f85, instr16(jnz_rel16), CHK_IMM16);
+	set_funcflag(0x0f86, instr16(jbe_rel16), CHK_IMM16);
+	set_funcflag(0x0f87, instr16(ja_rel16), CHK_IMM16);
+	set_funcflag(0x0f88, instr16(js_rel16), CHK_IMM16);
+	set_funcflag(0x0f89, instr16(jns_rel16), CHK_IMM16);
+	set_funcflag(0x0f8a, instr16(jp_rel16), CHK_IMM16);
+	set_funcflag(0x0f8b, instr16(jnp_rel16), CHK_IMM16);
+	set_funcflag(0x0f8c, instr16(jl_rel16), CHK_IMM16);
+	set_funcflag(0x0f8d, instr16(jnl_rel16), CHK_IMM16);
+	set_funcflag(0x0f8e, instr16(jle_rel16), CHK_IMM16);
+	set_funcflag(0x0f8f, instr16(jnle_rel16), CHK_IMM16);
+
 	set_funcflag(0x0faf, instr16(imul_r16_rm16), CHK_MODRM);
+
 	set_funcflag(0x0fb6, instr16(movzx_r16_rm8), CHK_MODRM);
 	set_funcflag(0x0fb7, instr16(movzx_r16_rm16), CHK_MODRM);
+
 	set_funcflag(0x0fbe, instr16(movsx_r16_rm8), CHK_MODRM);
 	set_funcflag(0x0fbf, instr16(movsx_r16_rm16), CHK_MODRM);
 
@@ -334,8 +353,24 @@ void Instr16::push_imm16(void){
 	PUSH16(IMM16);
 }
 
+void Instr16::imul_r16_rm16_imm16(void){
+	int16_t rm16_s;
+
+	rm16_s = get_rm16();
+	set_r16(rm16_s*IMM16);
+	EFLAGS_UPDATE_IMUL(rm16_s, IMM16);
+}
+
 void Instr16::push_imm8(void){
 	PUSH16(IMM8);
+}
+
+void Instr16::imul_r16_rm16_imm8(void){
+	int16_t rm16_s;
+
+	rm16_s = get_rm16();
+	set_r16(rm16_s*IMM8);
+	EFLAGS_UPDATE_IMUL(rm16_s, IMM8);
 }
 
 void Instr16::test_rm16_r16(void){
@@ -471,13 +506,36 @@ void Instr16::out_dx_ax(void){
 	EMU->out_io16(dx, ax);
 }
 
-void Instr16::imul_r16_rm16(void){
-	uint16_t r16, rm16;
+#define JCC_REL16(cc, is_flag) \
+void Instr16::j ## cc ## _rel16(void){ \
+	if(is_flag) \
+		UPDATE_EIP(IMM16); \
+}
 
-	r16 = get_r16();
-	rm16 = get_rm16();
-	set_r16(r16*rm16);
-	EFLAGS_UPDATE_MUL(r16, rm16);
+JCC_REL16(o, EFLAGS_OF)
+JCC_REL16(no, !EFLAGS_OF)
+JCC_REL16(b, EFLAGS_CF)
+JCC_REL16(nb, !EFLAGS_CF)
+JCC_REL16(z, EFLAGS_ZF)
+JCC_REL16(nz, !EFLAGS_ZF)
+JCC_REL16(be, EFLAGS_CF || EFLAGS_ZF)
+JCC_REL16(a, !(EFLAGS_CF || EFLAGS_ZF))
+JCC_REL16(s, EFLAGS_SF)
+JCC_REL16(ns, !EFLAGS_SF)
+JCC_REL16(p, EFLAGS_PF)
+JCC_REL16(np, !EFLAGS_PF)
+JCC_REL16(l, EFLAGS_SF != EFLAGS_OF)
+JCC_REL16(nl, EFLAGS_SF == EFLAGS_OF)
+JCC_REL16(le, EFLAGS_ZF || (EFLAGS_SF != EFLAGS_OF))
+JCC_REL16(nle, !EFLAGS_ZF && (EFLAGS_SF == EFLAGS_OF))
+
+void Instr16::imul_r16_rm16(void){
+	int16_t r16_s, rm16_s;
+
+	r16_s = get_r16();
+	rm16_s = get_rm16();
+	set_r16(r16_s*rm16_s);
+	EFLAGS_UPDATE_IMUL(r16_s, rm16_s);
 }
 
 void Instr16::movzx_r16_rm8(void){

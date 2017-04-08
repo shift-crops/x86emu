@@ -1,6 +1,7 @@
 #ifndef _COMMON_H
 #define _COMMON_H
 
+#include <stdint.h>
 #include "debug.hpp"
 
 #define KB	1024

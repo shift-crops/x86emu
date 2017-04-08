@@ -1,12 +1,7 @@
 #include <map>
 #include "emulator/interrupt.hpp"
-#include "emulator/access.hpp"
 #include "emulator/exception.hpp"
 #include "emulator/structs.hpp"
-#include "hardware/processor.hpp"
-#include "hardware/eflags.hpp"
-#include "hardware/cr.hpp"
-#include "hardware/memory.hpp"
 
 void Interrupt::hundle_interrupt(void){
 	std::pair<uint8_t, bool> intr;

@@ -1,7 +1,6 @@
 #ifndef _SYSCONTROL_H
 #define _SYSCONTROL_H
 
-#include <stdint.h>
 #include "common.hpp"
 #include "dev_io.hpp"
 #include "hardware/memory.hpp"

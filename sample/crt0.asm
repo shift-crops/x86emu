@@ -23,8 +23,8 @@ start:
 	or eax, 0x80000000
 	mov cr0, eax
 
-	; timer
 	cli
+	; timer
 	mov al, 0x34
 	out 0x43, al
 	mov al, 0x9c
@@ -34,11 +34,9 @@ start:
 
 	in al, 0x21
 	and al, 0xfe
-	out 0x21, al
-	sti
+	;out 0x21, al
 
 	; keyboard / mouse
-	cli
 	in al, 0x21
 	and al, 0xfd
 	out 0x21, al

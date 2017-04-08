@@ -1,4 +1,12 @@
+#include <thread>
 #include "device/pit.hpp"
+
+PIT::PIT(){
+	count[0] = def[0] = 0xffff;
+
+	std::thread th = std::thread(&PIT::counter, this);
+	th.detach();
+};
 
 uint8_t PIT::in8(uint16_t addr){
 	uint8_t rgn = addr&0x3;
@@ -54,7 +62,7 @@ void PIT::out8(uint16_t addr, uint8_t v){
 			break;
 	}
 }
-
+/*
 bool PIT::chk_intreq(void){
 	//INFO("counter = 0x%04x", count[0]);
 	if(cwr.BCD){
@@ -71,4 +79,12 @@ bool PIT::chk_intreq(void){
 	}
 
 	return false;
+}
+*/
+
+void PIT::counter(void){
+	while(true){
+		std::this_thread::sleep_for(std::chrono::milliseconds(100*def[0]/119318));
+		intr = true;
+	}
 }

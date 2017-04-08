@@ -106,6 +106,22 @@ template <class T> uint32_t Eflags::update_eflags_mul(T v1, uint32_t v2){
 	return eflags.reg32;
 }
 
+template uint32_t Eflags::update_eflags_imul(int32_t v1, int32_t v2);
+template uint32_t Eflags::update_eflags_imul(int16_t v1, int32_t v2);
+template uint32_t Eflags::update_eflags_imul(int8_t v1, int32_t v2);
+template <class T> uint32_t Eflags::update_eflags_imul(T v1, int32_t v2){
+	int64_t result;
+	uint8_t size;
+
+	result = v1 * v2;
+	size = sizeof(T)*8;
+
+	set_carry((result >> size) != -1);
+	set_overflow((result >> size) != -1);
+
+	return eflags.reg32;
+}
+
 template uint32_t Eflags::update_eflags_shl(uint32_t v, uint8_t c);
 template uint32_t Eflags::update_eflags_shl(uint16_t v, uint8_t c);
 template uint32_t Eflags::update_eflags_shl(uint8_t v, uint8_t c);

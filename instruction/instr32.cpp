@@ -57,9 +57,9 @@ Instr32::Instr32(Emulator *e) : Instruction(e, true) {
 	set_funcflag(0x61, instr32(popad), 0);
 
 	set_funcflag(0x68, instr32(push_imm32), CHK_IMM32);
-	//set_funcflag(0x69, instr32(imul_r32_rm32_imm32), CHK_MODRM|CHK_IMM32);
+	set_funcflag(0x69, instr32(imul_r32_rm32_imm32), CHK_MODRM|CHK_IMM32);
 	set_funcflag(0x6a, instr32(push_imm8), CHK_IMM8);
-	//set_funcflag(0x6b, instr32(imul_r32_rm32_imm8), CHK_MODRM|CHK_IMM8);
+	set_funcflag(0x6b, instr32(imul_r32_rm32_imm8), CHK_MODRM|CHK_IMM8);
 
 	// 0x70-0x7f : jcc
 
@@ -106,9 +106,28 @@ Instr32::Instr32(Emulator *e) : Instruction(e, true) {
 	// 0xee : out_dx_al
 	set_funcflag(0xef, instr32(out_dx_eax), 0);
 
+	set_funcflag(0x0f80, instr32(jo_rel32), CHK_IMM32);
+	set_funcflag(0x0f81, instr32(jno_rel32), CHK_IMM32);
+	set_funcflag(0x0f82, instr32(jb_rel32), CHK_IMM32);
+	set_funcflag(0x0f83, instr32(jnb_rel32), CHK_IMM32);
+	set_funcflag(0x0f84, instr32(jz_rel32), CHK_IMM32);
+	set_funcflag(0x0f85, instr32(jnz_rel32), CHK_IMM32);
+	set_funcflag(0x0f86, instr32(jbe_rel32), CHK_IMM32);
+	set_funcflag(0x0f87, instr32(ja_rel32), CHK_IMM32);
+	set_funcflag(0x0f88, instr32(js_rel32), CHK_IMM32);
+	set_funcflag(0x0f89, instr32(jns_rel32), CHK_IMM32);
+	set_funcflag(0x0f8a, instr32(jp_rel32), CHK_IMM32);
+	set_funcflag(0x0f8b, instr32(jnp_rel32), CHK_IMM32);
+	set_funcflag(0x0f8c, instr32(jl_rel32), CHK_IMM32);
+	set_funcflag(0x0f8d, instr32(jnl_rel32), CHK_IMM32);
+	set_funcflag(0x0f8e, instr32(jle_rel32), CHK_IMM32);
+	set_funcflag(0x0f8f, instr32(jnle_rel32), CHK_IMM32);
+
 	set_funcflag(0x0faf, instr32(imul_r32_rm32), CHK_MODRM);
+
 	set_funcflag(0x0fb6, instr32(movzx_r32_rm8), CHK_MODRM);
 	set_funcflag(0x0fb7, instr32(movzx_r32_rm16), CHK_MODRM);
+
 	set_funcflag(0x0fbe, instr32(movsx_r32_rm8), CHK_MODRM);
 	set_funcflag(0x0fbf, instr32(movsx_r32_rm16), CHK_MODRM);
 
@@ -334,8 +353,24 @@ void Instr32::push_imm32(void){
 	PUSH32(IMM32);
 }
 
+void Instr32::imul_r32_rm32_imm32(void){
+	int32_t rm32_s;
+
+	rm32_s = get_rm32();
+	set_r32(rm32_s*IMM32);
+	EFLAGS_UPDATE_IMUL(rm32_s, IMM32);
+}
+
 void Instr32::push_imm8(void){
 	PUSH32(IMM8);
+}
+
+void Instr32::imul_r32_rm32_imm8(void){
+	int32_t rm32_s;
+
+	rm32_s = get_rm32();
+	set_r32(rm32_s*IMM8);
+	EFLAGS_UPDATE_IMUL(rm32_s, IMM8);
 }
 
 void Instr32::test_rm32_r32(void){
@@ -472,13 +507,36 @@ void Instr32::out_dx_eax(void){
 	EMU->out_io32(dx, eax);
 }
 
-void Instr32::imul_r32_rm32(void){
-	uint16_t r32, rm32;
+#define JCC_REL32(cc, is_flag) \
+void Instr32::j ## cc ## _rel32(void){ \
+	if(is_flag) \
+		UPDATE_EIP(IMM32); \
+}
 
-	r32 = get_r32();
-	rm32 = get_rm32();
-	set_r32(r32*rm32);
-	EFLAGS_UPDATE_MUL(r32, rm32);
+JCC_REL32(o, EFLAGS_OF)
+JCC_REL32(no, !EFLAGS_OF)
+JCC_REL32(b, EFLAGS_CF)
+JCC_REL32(nb, !EFLAGS_CF)
+JCC_REL32(z, EFLAGS_ZF)
+JCC_REL32(nz, !EFLAGS_ZF)
+JCC_REL32(be, EFLAGS_CF || EFLAGS_ZF)
+JCC_REL32(a, !(EFLAGS_CF || EFLAGS_ZF))
+JCC_REL32(s, EFLAGS_SF)
+JCC_REL32(ns, !EFLAGS_SF)
+JCC_REL32(p, EFLAGS_PF)
+JCC_REL32(np, !EFLAGS_PF)
+JCC_REL32(l, EFLAGS_SF != EFLAGS_OF)
+JCC_REL32(nl, EFLAGS_SF == EFLAGS_OF)
+JCC_REL32(le, EFLAGS_ZF || (EFLAGS_SF != EFLAGS_OF))
+JCC_REL32(nle, !EFLAGS_ZF && (EFLAGS_SF == EFLAGS_OF))
+
+void Instr32::imul_r32_rm32(void){
+	int16_t r32_s, rm32_s;
+
+	r32_s = get_r32();
+	rm32_s = get_rm32();
+	set_r32(r32_s*rm32_s);
+	EFLAGS_UPDATE_IMUL(r32_s, rm32_s);
 }
 
 void Instr32::movzx_r32_rm8(void){

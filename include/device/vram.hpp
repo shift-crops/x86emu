@@ -1,7 +1,6 @@
 #ifndef _VRAM_H
 #define _VRAM_H
 
-#include <stdint.h>
 #include "common.hpp"
 #include "dev_io.hpp"
 

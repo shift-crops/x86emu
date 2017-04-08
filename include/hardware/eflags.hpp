@@ -1,7 +1,6 @@
 #ifndef _EFLAGS_H
 #define _EFLAGS_H
 
-#include <stdint.h>
 #include "common.hpp"
 
 class Eflags {
@@ -61,6 +60,7 @@ class Eflags {
 		template <class T> uint32_t update_eflags_and(T v1, uint32_t v2);
 		template <class T> uint32_t update_eflags_sub(T v1, uint32_t v2);
 		template <class T> uint32_t update_eflags_mul(T v1, uint32_t v2);
+		template <class T> uint32_t update_eflags_imul(T v1, int32_t v2);
 		template <class T> uint32_t update_eflags_shl(T v, uint8_t c);
 		template <class T> uint32_t update_eflags_shr(T v, uint8_t c);
 	private:

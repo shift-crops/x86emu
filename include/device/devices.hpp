@@ -3,7 +3,7 @@
 
 #include "com.hpp"
 #include "syscontrol.hpp"
-#include "picreg.hpp"
+#include "pic.hpp"
 #include "pit.hpp"
 #include "fdd.hpp"
 #include "display.hpp"

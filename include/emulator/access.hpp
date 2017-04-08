@@ -1,7 +1,6 @@
 #ifndef _DATA_ACCESS_H
 #define _DATA_ACCESS_H
 
-#include <stdint.h>
 #include "common.hpp"
 #include "hardware/hardware.hpp"
 

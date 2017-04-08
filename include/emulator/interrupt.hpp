@@ -1,12 +1,11 @@
 #ifndef _INTERRUPT_H
 #define _INTERRUPT_H
 
-#include <stdint.h>
 #include <queue>
 #include <map>
 #include "common.hpp"
 #include "access.hpp"
-#include "pic.hpp"
+#include "device/pic.hpp"
 
 union IVT {			// Real Mode
 	uint32_t raw;

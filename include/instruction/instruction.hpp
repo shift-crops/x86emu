@@ -20,6 +20,7 @@
 #define EFLAGS_UPDATE_AND(v1, v2)	EMU->update_eflags_and(v1, v2)
 #define EFLAGS_UPDATE_SUB(v1, v2)	EMU->update_eflags_sub(v1, v2)
 #define EFLAGS_UPDATE_MUL(v1, v2)	EMU->update_eflags_mul(v1, v2)
+#define EFLAGS_UPDATE_IMUL(v1, v2)	EMU->update_eflags_imul(v1, v2)
 #define EFLAGS_UPDATE_SHL(v1, v2)	EMU->update_eflags_shl(v1, v2)
 #define EFLAGS_UPDATE_SHR(v1, v2)	EMU->update_eflags_shr(v1, v2)
 #define EFLAGS_CF			EMU->is_carry()

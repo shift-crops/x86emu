@@ -1,7 +1,6 @@
 #ifndef _PROCESSOR_H
 #define _PROCESSOR_H
 
-#include <stdint.h>
 #include "common.hpp"
 #include "eflags.hpp"
 #include "cr.hpp"

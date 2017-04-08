@@ -1,33 +1,56 @@
+#include <thread>
 #include <stdio.h>
 #include <string.h>
+#include <GLFW/glfw3.h>
 #include "common.hpp"
 #include "instruction/base.hpp"
 #include "emulator/emulator.hpp"
 
 #define MEMORY_SIZE (1*MB)
 
+void run_emulator(const char *image_name, bool use_bios);
+
 int main(int argc, char *argv[]){
-	Emulator emu(MEMORY_SIZE, 0xf000, 0xfff0, argc<2 ? "sample/kernel.img": argv[1]);
+	glfwInit();
+
+	/*
+	std::thread th1 = std::thread(run_emulator, argc<2 ? "sample/kernel.img": argv[1], true);
+	std::thread th2 = std::thread(run_emulator, argc<2 ? "sample/kernel.img": argv[1], true);
+	th1.join();
+	th2.join();
+	*/
+	run_emulator(argc<2 ? "sample/kernel.img": argv[1], true);
+	//run_emulator(argc<2 ? "sample/kernel.bin": argv[1], false);
+
+	glfwTerminate();
+}
+
+void run_emulator(const char *image_name, bool use_bios){
+	Emulator emu = use_bios ? Emulator(MEMORY_SIZE, 0xf000, 0xfff0, image_name) : Emulator(MEMORY_SIZE, 0x1000, 0x0000, NULL);
 	Instr16 instr16(&emu);
 	Instr32 instr32(&emu);
 
-	emu.load_binary("bios/bios.bin", 0xf0000, 0x400);
-	emu.load_binary("bios/crt0.bin", 0xffff0, 0x10);
-	//emu.load_binary(argv[1], 0x10000, 0x480);
+	if(use_bios){
+		emu.load_binary("bios/bios.bin", 0xf0000, 0x400);
+		emu.load_binary("bios/crt0.bin", 0xffff0, 0x10);
+	}
+	else
+		emu.load_binary(image_name, 0x10000, 0x800);
 
-	//while(!emu.is_halt() && emu.get_eip()){
 	//while(!emu.is_halt()){
-	//while(emu.get_eip()){
-	while(true){
+	//while(true){
+	while(emu.running()){
 		bool is_protected;
 		uint8_t chsz;
 		bool chsz_op, chsz_ad;
 
 		try{
 			if(emu.chk_irq())	emu.do_halt(false);
-			if(emu.is_halt())	continue;
+			if(emu.is_halt()){
+				std::this_thread::sleep_for(std::chrono::microseconds(100));
+				continue;
+			}
 			emu.hundle_interrupt();
-			alarm(10);
 
 			is_protected = emu.is_protected();
 			chsz = (is_protected ? instr32.chk_chsz() : instr16.chk_chsz());
@@ -57,5 +80,4 @@ int main(int argc, char *argv[]){
 		MSG("\n");
 		*/
 	}
-	emu.dump_regs();
 }

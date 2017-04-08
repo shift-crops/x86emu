@@ -24,22 +24,22 @@ InstrBase::InstrBase() {
 	set_funcflag(0x38, instrbase(cmp_rm8_r8), CHK_MODRM);
 	set_funcflag(0x3a, instrbase(cmp_r8_rm8), CHK_MODRM);
 	set_funcflag(0x3c, instrbase(cmp_al_imm8), CHK_IMM8);
-	set_funcflag(0x70, instrbase(jo), CHK_IMM8);
-	set_funcflag(0x71, instrbase(jno), CHK_IMM8);
-	set_funcflag(0x72, instrbase(jb), CHK_IMM8);
-	set_funcflag(0x73, instrbase(jnb), CHK_IMM8);
-	set_funcflag(0x74, instrbase(jz), CHK_IMM8);
-	set_funcflag(0x75, instrbase(jnz), CHK_IMM8);
-	set_funcflag(0x76, instrbase(jbe), CHK_IMM8);
-	set_funcflag(0x77, instrbase(ja), CHK_IMM8);
-	set_funcflag(0x78, instrbase(js), CHK_IMM8);
-	set_funcflag(0x79, instrbase(jns), CHK_IMM8);
-	set_funcflag(0x7a, instrbase(jp), CHK_IMM8);
-	set_funcflag(0x7b, instrbase(jnp), CHK_IMM8);
-	set_funcflag(0x7c, instrbase(jl), CHK_IMM8);
-	set_funcflag(0x7d, instrbase(jnl), CHK_IMM8);
-	set_funcflag(0x7e, instrbase(jle), CHK_IMM8);
-	set_funcflag(0x7f, instrbase(jnle), CHK_IMM8);
+	set_funcflag(0x70, instrbase(jo_rel8), CHK_IMM8);
+	set_funcflag(0x71, instrbase(jno_rel8), CHK_IMM8);
+	set_funcflag(0x72, instrbase(jb_rel8), CHK_IMM8);
+	set_funcflag(0x73, instrbase(jnb_rel8), CHK_IMM8);
+	set_funcflag(0x74, instrbase(jz_rel8), CHK_IMM8);
+	set_funcflag(0x75, instrbase(jnz_rel8), CHK_IMM8);
+	set_funcflag(0x76, instrbase(jbe_rel8), CHK_IMM8);
+	set_funcflag(0x77, instrbase(ja_rel8), CHK_IMM8);
+	set_funcflag(0x78, instrbase(js_rel8), CHK_IMM8);
+	set_funcflag(0x79, instrbase(jns_rel8), CHK_IMM8);
+	set_funcflag(0x7a, instrbase(jp_rel8), CHK_IMM8);
+	set_funcflag(0x7b, instrbase(jnp_rel8), CHK_IMM8);
+	set_funcflag(0x7c, instrbase(jl_rel8), CHK_IMM8);
+	set_funcflag(0x7d, instrbase(jnl_rel8), CHK_IMM8);
+	set_funcflag(0x7e, instrbase(jle_rel8), CHK_IMM8);
+	set_funcflag(0x7f, instrbase(jnle_rel8), CHK_IMM8);
 	set_funcflag(0x84, instrbase(test_rm8_r8), CHK_MODRM);
 	set_funcflag(0x86, instrbase(xchg_r8_rm8), CHK_MODRM);
 	set_funcflag(0x88, instrbase(mov_rm8_r8), CHK_MODRM);
@@ -62,22 +62,22 @@ InstrBase::InstrBase() {
 
 	set_funcflag(0x0f20, instrbase(mov_r32_crn), CHK_MODRM);
 	set_funcflag(0x0f22, instrbase(mov_crn_r32), CHK_MODRM);
-	set_funcflag(0x0f90, instrbase(seto), CHK_MODRM);
-	set_funcflag(0x0f91, instrbase(setno), CHK_MODRM);
-	set_funcflag(0x0f92, instrbase(setb), CHK_MODRM);
-	set_funcflag(0x0f93, instrbase(setnb), CHK_MODRM);
-	set_funcflag(0x0f94, instrbase(setz), CHK_MODRM);
-	set_funcflag(0x0f95, instrbase(setnz), CHK_MODRM);
-	set_funcflag(0x0f96, instrbase(setbe), CHK_MODRM);
-	set_funcflag(0x0f97, instrbase(seta), CHK_MODRM);
-	set_funcflag(0x0f98, instrbase(sets), CHK_MODRM);
-	set_funcflag(0x0f99, instrbase(setns), CHK_MODRM);
-	set_funcflag(0x0f9a, instrbase(setp), CHK_MODRM);
-	set_funcflag(0x0f9b, instrbase(setnp), CHK_MODRM);
-	set_funcflag(0x0f9c, instrbase(setl), CHK_MODRM);
-	set_funcflag(0x0f9d, instrbase(setnl), CHK_MODRM);
-	set_funcflag(0x0f9e, instrbase(setle), CHK_MODRM);
-	set_funcflag(0x0f9f, instrbase(setnle), CHK_MODRM);
+	set_funcflag(0x0f90, instrbase(seto_rm8), CHK_MODRM);
+	set_funcflag(0x0f91, instrbase(setno_rm8), CHK_MODRM);
+	set_funcflag(0x0f92, instrbase(setb_rm8), CHK_MODRM);
+	set_funcflag(0x0f93, instrbase(setnb_rm8), CHK_MODRM);
+	set_funcflag(0x0f94, instrbase(setz_rm8), CHK_MODRM);
+	set_funcflag(0x0f95, instrbase(setnz_rm8), CHK_MODRM);
+	set_funcflag(0x0f96, instrbase(setbe_rm8), CHK_MODRM);
+	set_funcflag(0x0f97, instrbase(seta_rm8), CHK_MODRM);
+	set_funcflag(0x0f98, instrbase(sets_rm8), CHK_MODRM);
+	set_funcflag(0x0f99, instrbase(setns_rm8), CHK_MODRM);
+	set_funcflag(0x0f9a, instrbase(setp_rm8), CHK_MODRM);
+	set_funcflag(0x0f9b, instrbase(setnp_rm8), CHK_MODRM);
+	set_funcflag(0x0f9c, instrbase(setl_rm8), CHK_MODRM);
+	set_funcflag(0x0f9d, instrbase(setnl_rm8), CHK_MODRM);
+	set_funcflag(0x0f9e, instrbase(setle_rm8), CHK_MODRM);
+	set_funcflag(0x0f9f, instrbase(setnle_rm8), CHK_MODRM);
 
 
 	set_funcflag(0x80, instrbase(code_80), CHK_MODRM | CHK_IMM8);
@@ -236,7 +236,7 @@ void InstrBase::cmp_al_imm8(void){
 }
 
 #define JCC_REL8(cc, is_flag) \
-void InstrBase::j ## cc(void){ \
+void InstrBase::j ## cc ## _rel8(void){ \
 	if(is_flag) \
 		UPDATE_EIP(IMM8); \
 }
@@ -389,27 +389,27 @@ void InstrBase::mov_crn_r32(void){
 	set_crn(r32);
 }
 
-#define SETCC_REL8(cc, is_flag) \
-void InstrBase::set ## cc(void){ \
+#define SETCC_RM8(cc, is_flag) \
+void InstrBase::set ## cc ## _rm8(void){ \
 	SET_GPREG(static_cast<reg32_t>(RM), is_flag); \
 }
 
-SETCC_REL8(o, EFLAGS_OF)
-SETCC_REL8(no, !EFLAGS_OF)
-SETCC_REL8(b, EFLAGS_CF)
-SETCC_REL8(nb, !EFLAGS_CF)
-SETCC_REL8(z, EFLAGS_ZF)
-SETCC_REL8(nz, !EFLAGS_ZF)
-SETCC_REL8(be, EFLAGS_CF || EFLAGS_ZF)
-SETCC_REL8(a, !(EFLAGS_CF || EFLAGS_ZF))
-SETCC_REL8(s, EFLAGS_SF)
-SETCC_REL8(ns, !EFLAGS_SF)
-SETCC_REL8(p, EFLAGS_PF)
-SETCC_REL8(np, !EFLAGS_PF)
-SETCC_REL8(l, EFLAGS_SF != EFLAGS_OF)
-SETCC_REL8(nl, EFLAGS_SF == EFLAGS_OF)
-SETCC_REL8(le, EFLAGS_ZF || (EFLAGS_SF != EFLAGS_OF))
-SETCC_REL8(nle, !EFLAGS_ZF && (EFLAGS_SF == EFLAGS_OF))
+SETCC_RM8(o, EFLAGS_OF)
+SETCC_RM8(no, !EFLAGS_OF)
+SETCC_RM8(b, EFLAGS_CF)
+SETCC_RM8(nb, !EFLAGS_CF)
+SETCC_RM8(z, EFLAGS_ZF)
+SETCC_RM8(nz, !EFLAGS_ZF)
+SETCC_RM8(be, EFLAGS_CF || EFLAGS_ZF)
+SETCC_RM8(a, !(EFLAGS_CF || EFLAGS_ZF))
+SETCC_RM8(s, EFLAGS_SF)
+SETCC_RM8(ns, !EFLAGS_SF)
+SETCC_RM8(p, EFLAGS_PF)
+SETCC_RM8(np, !EFLAGS_PF)
+SETCC_RM8(l, EFLAGS_SF != EFLAGS_OF)
+SETCC_RM8(nl, EFLAGS_SF == EFLAGS_OF)
+SETCC_RM8(le, EFLAGS_ZF || (EFLAGS_SF != EFLAGS_OF))
+SETCC_RM8(nle, !EFLAGS_ZF && (EFLAGS_SF == EFLAGS_OF))
 
 /******************************************************************/
 
