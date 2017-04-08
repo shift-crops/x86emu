@@ -4,18 +4,23 @@
 #include <stdint.h>
 #include <map>
 #include "common.hpp" 
+#include "memory.hpp" 
 #include "device/dev_io.hpp" 
 
 class IO {
 	private:
+		Memory *memory;
 		std::map<uint16_t, PortIO*> port_io;
 		std::map<uint32_t, MemoryIO*> mem_io;
 		std::map<uint32_t, size_t> mem_io_map;
 
 	public:
+		IO(Memory *mem) { memory = mem; };
 		~IO();
 		void set_portio(uint32_t addr, PortIO *dev) { port_io[addr&(~((1<<2)-1))] = dev; };
-		void set_memio(uint32_t addr, size_t len, MemoryIO *dev) { mem_io[addr] = dev; mem_io_map[addr] = len; };
+		void set_memio(uint32_t addr, size_t len, MemoryIO *dev) {
+			mem_io[addr] = dev; mem_io_map[addr] = len; dev->set_mem(memory, addr, len);
+		};
 
 		uint32_t in_io32(uint16_t addr);
 		uint16_t in_io16(uint16_t addr);

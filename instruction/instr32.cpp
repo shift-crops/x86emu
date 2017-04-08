@@ -72,11 +72,13 @@ Instr32::Instr32(Emulator *e) : Instruction(e, true) {
 	// 0x8a : mov_r8_rm8
 	set_funcflag(0x8b, instr32(mov_r32_rm32), CHK_MODRM);
 	set_funcflag(0x8c, instr32(mov_rm32_sreg), CHK_MODRM);
-	set_funcflag(0x8d, instr32(lea_r32_m), CHK_MODRM);
+	set_funcflag(0x8d, instr32(lea_r32_m32), CHK_MODRM);
 	// 0x8e : mov_sreg_rm16
 
 	// 0x90 : nop
 	for (i=1; i<8; i++)	set_funcflag(0x90+i, instr32(xchg_r32_eax) ,CHK_IMM32);
+	set_funcflag(0x99, instr32(cdq), 0);
+	set_funcflag(0x9a, instr32(callf_ptr16_32), CHK_PTR16 | CHK_IMM32);
 
 	// 0xb0-0xb7 : mov_r8_imm
 	for (i=0; i<8; i++)	set_funcflag(0xb8+i, instr32(mov_r32_imm32) ,CHK_IMM32);
@@ -97,7 +99,7 @@ Instr32::Instr32(Emulator *e) : Instruction(e, true) {
 	set_funcflag(0xe7, instr32(out_imm8_eax), CHK_IMM8);
 	set_funcflag(0xe8, instr32(call_rel32), CHK_IMM32);
 	set_funcflag(0xe9, instr32(jmp_rel32), CHK_IMM32);
-	set_funcflag(0xea, instr32(jmp_ptr16_32), CHK_PTR16 | CHK_IMM32);
+	set_funcflag(0xea, instr32(jmpf_ptr16_32), CHK_PTR16 | CHK_IMM32);
 	// 0xeb : jmp
 	// 0xec : in_al_dx
 	set_funcflag(0xed, instr32(in_eax_dx), 0);
@@ -374,8 +376,11 @@ void Instr32::mov_rm32_sreg(void){
 	set_rm32(sreg);
 }
 
-void Instr32::lea_r32_m(void){
-	set_r32(get_m());
+void Instr32::lea_r32_m32(void){
+	uint32_t m32;
+
+	m32 = get_m();
+	set_r32(m32);
 }
 
 void Instr32::xchg_r32_eax(void){
@@ -385,6 +390,19 @@ void Instr32::xchg_r32_eax(void){
 	eax = GET_GPREG(EAX);
 	set_r32(eax);
 	SET_GPREG(EAX, r32);
+}
+
+void Instr32::cdq(void){
+	uint32_t eax;
+
+	eax = GET_GPREG(EAX);
+	SET_GPREG(EDX, eax&(1<<31) ? -1 : 0);
+}
+
+void Instr32::callf_ptr16_32(void){
+	EMU->set_sgreg(CS, PTR16);
+	PUSH32(GET_EIP());
+	SET_EIP(IMM32);
 }
 
 void Instr32::mov_r32_imm32(void){
@@ -433,7 +451,7 @@ void Instr32::jmp_rel32(void){
 	UPDATE_EIP(IMM32);
 }
 
-void Instr32::jmp_ptr16_32(void){
+void Instr32::jmpf_ptr16_32(void){
 	EMU->set_sgreg(CS, PTR16);
 	SET_EIP(IMM32);
 }
@@ -758,12 +776,18 @@ void Instr32::push_rm32(void){
 /******************************************************************/
 
 void Instr32::lgdt_m32(void){
-	SEGMENT = DS;
-	EMU->set_dtreg(GDTR, READ_MEM32(DISP32+2), READ_MEM16(DISP32));
+	uint32_t m32;
+
+	m32 = get_m();
+	INFO("m32 = 0x%08x", m32);
+	EMU->set_dtreg(GDTR, READ_MEM32(m32+2), READ_MEM16(m32));
 }
 
 void Instr32::lidt_m32(void){
-	SEGMENT = DS;
-	EMU->set_dtreg(IDTR, READ_MEM32(DISP32+2), READ_MEM16(DISP32));
+	uint32_t m32;
+
+	m32 = get_m();
+	INFO("m32 = 0x%08x", m32);
+	EMU->set_dtreg(IDTR, READ_MEM32(m32+2), READ_MEM16(m32));
 }
 

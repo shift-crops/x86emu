@@ -17,6 +17,7 @@ int main(int argc, char *argv[]){
 
 	//while(!emu.is_halt() && emu.get_eip()){
 	//while(!emu.is_halt()){
+	//while(emu.get_eip()){
 	while(true){
 		bool is_protected;
 		uint8_t chsz;
@@ -26,6 +27,7 @@ int main(int argc, char *argv[]){
 			if(emu.chk_irq())	emu.do_halt(false);
 			if(emu.is_halt())	continue;
 			emu.hundle_interrupt();
+			alarm(10);
 
 			is_protected = emu.is_protected();
 			chsz = (is_protected ? instr32.chk_chsz() : instr16.chk_chsz());
@@ -45,7 +47,6 @@ int main(int argc, char *argv[]){
 		}
 		catch(int n){
 			emu.dump_regs();
-			emu.dump_mem(emu.get_crn(3)+0x1000, 0x80);
 			ERROR("Exception %d", n);
 			emu.queue_interrupt(n, true);
 		}

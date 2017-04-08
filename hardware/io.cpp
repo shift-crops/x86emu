@@ -10,8 +10,8 @@ IO::~IO(){
 //		delete it_p->second;
 	port_io.clear();
 
-	for(it_m = mem_io.begin(); it_m != mem_io.end(); it_m++)
-		delete it_m->second;
+//	for(it_m = mem_io.begin(); it_m != mem_io.end(); it_m++)
+//		delete it_m->second;
 	mem_io.clear();
 	mem_io_map.clear();
 }

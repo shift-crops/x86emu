@@ -1,4 +1,3 @@
-//#include <thread>
 #include "device/pit.hpp"
 
 uint8_t PIT::in8(uint16_t addr){
@@ -73,12 +72,3 @@ bool PIT::chk_intreq(void){
 
 	return false;
 }
-
-/*
-void PIT::worker(void){
-	while(true){
-		std::this_thread::sleep_for(std::chrono::microseconds(1000));
-		intr = true;
-	}
-}
-*/

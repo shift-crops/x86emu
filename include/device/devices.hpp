@@ -3,9 +3,11 @@
 
 #include "com.hpp"
 #include "syscontrol.hpp"
-#include "vram.hpp"
 #include "picreg.hpp"
 #include "pit.hpp"
 #include "fdd.hpp"
+#include "display.hpp"
+#include "keyboard.hpp"
+#include "mouse.hpp"
 
 #endif

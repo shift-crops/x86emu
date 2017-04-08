@@ -68,6 +68,22 @@ class InstrBase : public ExecInstr , public ParseInstr {
 		void ltr_rm16(void);
 		void mov_r32_crn(void);
 		void mov_crn_r32(void);
+		void seto(void);
+		void setno(void);
+		void setb(void);
+		void setnb(void);
+		void setz(void);
+		void setnz(void);
+		void setbe(void);
+		void seta(void);
+		void sets(void);
+		void setns(void);
+		void setp(void);
+		void setnp(void);
+		void setl(void);
+		void setnl(void);
+		void setle(void);
+		void setnle(void);
 
 		void code_80(void);
 		virtual void code_81(void) = 0;
@@ -124,8 +140,10 @@ class Instr16 : public InstrBase {
 		void mov_rm16_r16(void);
 		void mov_r16_rm16(void);
 		void mov_rm16_sreg(void);
-		void lea_r16_m(void);
+		void lea_r16_m16(void);
 		void xchg_r16_ax(void);
+                void cwd(void);
+                void callf_ptr16_16(void);
                 void mov_r16_imm16(void);
                 void ret(void);
                 void leave(void);
@@ -134,7 +152,7 @@ class Instr16 : public InstrBase {
 		void out_imm8_ax(void);
                 void call_rel16(void);
                 void jmp_rel16(void);
-                void jmp_ptr16_16(void);
+                void jmpf_ptr16_16(void);
 		void in_ax_dx(void);
 		void out_dx_ax(void);
 		void imul_r16_rm16(void);
@@ -221,8 +239,10 @@ class Instr32 : public InstrBase {
 		void mov_rm32_r32(void);
 		void mov_r32_rm32(void);
 		void mov_rm32_sreg(void);
-		void lea_r32_m(void);
+		void lea_r32_m32(void);
 		void xchg_r32_eax(void);
+                void cdq(void);
+                void callf_ptr16_32(void);
                 void mov_r32_imm32(void);
                 void ret(void);
                 void leave(void);
@@ -231,7 +251,7 @@ class Instr32 : public InstrBase {
 		void out_imm8_eax(void);
                 void call_rel32(void);
                 void jmp_rel32(void);
-                void jmp_ptr16_32(void);
+                void jmpf_ptr16_32(void);
 		void in_eax_dx(void);
 		void out_dx_eax(void);
 		void imul_r32_rm32(void);

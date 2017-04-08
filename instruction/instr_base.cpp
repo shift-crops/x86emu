@@ -62,6 +62,23 @@ InstrBase::InstrBase() {
 
 	set_funcflag(0x0f20, instrbase(mov_r32_crn), CHK_MODRM);
 	set_funcflag(0x0f22, instrbase(mov_crn_r32), CHK_MODRM);
+	set_funcflag(0x0f90, instrbase(seto), CHK_MODRM);
+	set_funcflag(0x0f91, instrbase(setno), CHK_MODRM);
+	set_funcflag(0x0f92, instrbase(setb), CHK_MODRM);
+	set_funcflag(0x0f93, instrbase(setnb), CHK_MODRM);
+	set_funcflag(0x0f94, instrbase(setz), CHK_MODRM);
+	set_funcflag(0x0f95, instrbase(setnz), CHK_MODRM);
+	set_funcflag(0x0f96, instrbase(setbe), CHK_MODRM);
+	set_funcflag(0x0f97, instrbase(seta), CHK_MODRM);
+	set_funcflag(0x0f98, instrbase(sets), CHK_MODRM);
+	set_funcflag(0x0f99, instrbase(setns), CHK_MODRM);
+	set_funcflag(0x0f9a, instrbase(setp), CHK_MODRM);
+	set_funcflag(0x0f9b, instrbase(setnp), CHK_MODRM);
+	set_funcflag(0x0f9c, instrbase(setl), CHK_MODRM);
+	set_funcflag(0x0f9d, instrbase(setnl), CHK_MODRM);
+	set_funcflag(0x0f9e, instrbase(setle), CHK_MODRM);
+	set_funcflag(0x0f9f, instrbase(setnle), CHK_MODRM);
+
 
 	set_funcflag(0x80, instrbase(code_80), CHK_MODRM | CHK_IMM8);
 	set_funcflag(0x80, instrbase(code_82), CHK_MODRM | CHK_IMM8);
@@ -371,6 +388,28 @@ void InstrBase::mov_crn_r32(void){
 	r32 = GET_GPREG(static_cast<reg32_t>(RM));	// get_r32
 	set_crn(r32);
 }
+
+#define SETCC_REL8(cc, is_flag) \
+void InstrBase::set ## cc(void){ \
+	SET_GPREG(static_cast<reg32_t>(RM), is_flag); \
+}
+
+SETCC_REL8(o, EFLAGS_OF)
+SETCC_REL8(no, !EFLAGS_OF)
+SETCC_REL8(b, EFLAGS_CF)
+SETCC_REL8(nb, !EFLAGS_CF)
+SETCC_REL8(z, EFLAGS_ZF)
+SETCC_REL8(nz, !EFLAGS_ZF)
+SETCC_REL8(be, EFLAGS_CF || EFLAGS_ZF)
+SETCC_REL8(a, !(EFLAGS_CF || EFLAGS_ZF))
+SETCC_REL8(s, EFLAGS_SF)
+SETCC_REL8(ns, !EFLAGS_SF)
+SETCC_REL8(p, EFLAGS_PF)
+SETCC_REL8(np, !EFLAGS_PF)
+SETCC_REL8(l, EFLAGS_SF != EFLAGS_OF)
+SETCC_REL8(nl, EFLAGS_SF == EFLAGS_OF)
+SETCC_REL8(le, EFLAGS_ZF || (EFLAGS_SF != EFLAGS_OF))
+SETCC_REL8(nle, !EFLAGS_ZF && (EFLAGS_SF == EFLAGS_OF))
 
 /******************************************************************/
 

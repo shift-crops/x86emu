@@ -40,7 +40,7 @@ struct QUEUE {
 	uint16_t max;
 };
 
-class FDD : public PortIO, public IRQ {
+class FDD : public IRQ, public PortIO {
 	private:
 		typedef void (FDD::*fddfunc_t)(void);
 		std::map<uint8_t, fddfunc_t> fddfuncs;

@@ -8,13 +8,9 @@
 #include "eflags.hpp"
 #include "io.hpp"
 
-class Emulator;
-
 class Hardware : public Processor, public Memory, public IO {
-	friend Emulator;
-
 	public:
-		Hardware(size_t size = 0) : Memory(size) {};
+		Hardware(size_t size = 0) : Memory(size), IO(this) {};
 };
 
 #endif

@@ -2,12 +2,12 @@ TARGET := kernel.img
 
 TGT1 := boot.bin
 TGT2 := kernel.bin
-OBJS := crt0.o main.o
+OBJS := crt0.o funcs.o init.o main.o
 
 CC	:= gcc
 AS	:= nasm
 CFLAGS  := -nostdlib -fno-asynchronous-unwind-tables -g -fno-stack-protector -m32
-LDFLAGS := --entry=start --oformat=binary -Ttext 0x0 -melf_i386
+LDFLAGS := --entry=start --oformat=binary -Ttext 0x10000 -melf_i386
 
 all :
 	make $(TARGET)

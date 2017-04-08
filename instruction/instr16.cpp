@@ -72,11 +72,13 @@ Instr16::Instr16(Emulator *e) : Instruction(e, false) {
 	// 0x8a : mov_r8_rm8
 	set_funcflag(0x8b, instr16(mov_r16_rm16), CHK_MODRM);
 	set_funcflag(0x8c, instr16(mov_rm16_sreg), CHK_MODRM);
-	set_funcflag(0x8d, instr16(lea_r16_m), CHK_MODRM);
+	set_funcflag(0x8d, instr16(lea_r16_m16), CHK_MODRM);
 	// 0x8e : mov_sreg_rm16
 
 	// 0x90 : nop
 	for (i=1; i<8; i++)	set_funcflag(0x90+i, instr16(xchg_r16_ax) ,CHK_IMM16);
+	set_funcflag(0x99, instr16(cwd), 0);
+	set_funcflag(0x9a, instr16(callf_ptr16_16), CHK_PTR16 | CHK_IMM16);
 
 	// 0xb0-0xb7 : mov_r8_imm
 	for (i=0; i<8; i++)	set_funcflag(0xb8+i, instr16(mov_r16_imm16) ,CHK_IMM16);
@@ -97,7 +99,7 @@ Instr16::Instr16(Emulator *e) : Instruction(e, false) {
 	set_funcflag(0xe7, instr16(out_imm8_ax), CHK_IMM8);
 	set_funcflag(0xe8, instr16(call_rel16), CHK_IMM16);
 	set_funcflag(0xe9, instr16(jmp_rel16), CHK_IMM16);
-	set_funcflag(0xea, instr16(jmp_ptr16_16), CHK_PTR16 | CHK_IMM16);
+	set_funcflag(0xea, instr16(jmpf_ptr16_16), CHK_PTR16 | CHK_IMM16);
 	// 0xeb : jmp
 	// 0xec : in_al_dx
 	set_funcflag(0xed, instr16(in_ax_dx), 0);
@@ -374,8 +376,11 @@ void Instr16::mov_rm16_sreg(void){
 	set_rm16(sreg);
 }
 
-void Instr16::lea_r16_m(void){
-	set_r16(get_m());
+void Instr16::lea_r16_m16(void){
+	uint16_t m16;
+
+	m16 = get_m();
+	set_r16(m16);
 }
 
 void Instr16::xchg_r16_ax(void){
@@ -385,6 +390,19 @@ void Instr16::xchg_r16_ax(void){
 	ax = GET_GPREG(AX);
 	set_r16(ax);
 	SET_GPREG(AX, r16);
+}
+
+void Instr16::cwd(void){
+	uint16_t ax;
+
+	ax = GET_GPREG(AX);
+	SET_GPREG(DX, ax&(1<<15) ? -1 : 0);
+}
+
+void Instr16::callf_ptr16_16(void){
+	EMU->set_sgreg(CS, PTR16);
+	PUSH16(GET_IP());
+	SET_IP(IMM16);
 }
 
 void Instr16::mov_r16_imm16(void){
@@ -433,7 +451,7 @@ void Instr16::jmp_rel16(void){
 	UPDATE_IP(IMM16);
 }
 
-void Instr16::jmp_ptr16_16(void){
+void Instr16::jmpf_ptr16_16(void){
 	EMU->set_sgreg(CS, PTR16);
 	SET_IP(IMM16);
 }
@@ -757,13 +775,17 @@ void Instr16::push_rm16(void){
 /******************************************************************/
 
 void Instr16::lgdt_m16(void){
+	uint16_t m16;
+
+	m16 = get_m();
 	//INFO("DISP16:0x%04x data:0x%04x", DISP16, EMU->get_data32(SEGMENT, DISP16+2));
-	SEGMENT = DS;
-	EMU->set_dtreg(GDTR, READ_MEM32(DISP16+2)&((1<<24)-1), READ_MEM16(DISP16));
+	EMU->set_dtreg(GDTR, READ_MEM32(m16+2)&((1<<24)-1), READ_MEM16(m16));
 }
 
 void Instr16::lidt_m16(void){
-	SEGMENT = DS;
-	EMU->set_dtreg(IDTR, READ_MEM32(DISP16+2)&((1<<24)-1), READ_MEM16(DISP16));
+	uint16_t m16;
+
+	m16 = get_m();
+	EMU->set_dtreg(IDTR, READ_MEM32(m16+2)&((1<<24)-1), READ_MEM16(m16));
 }
 

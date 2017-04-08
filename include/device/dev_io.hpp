@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 #include "common.hpp"
-//#include "hardware/memory.hpp"
+#include "hardware/memory.hpp"
 
 class PortIO {
 	public:
@@ -13,16 +13,15 @@ class PortIO {
 };
 
 class MemoryIO {
-/*
 	protected:
+		Memory *memory;
 		uint32_t paddr;
 		size_t size;
-		Memory *mem;
-*/
+
 	public:
 		virtual ~MemoryIO() {};
 
-		//void set_mem(Memory *m, uint32_t addr, size_t len) { mem = m; paddr = addr; size = len; };
+		void set_mem(Memory *mem, uint32_t addr, size_t len) { memory = mem; paddr = addr; size = len; };
 		virtual uint32_t read32(uint32_t offset) = 0;
 		virtual uint16_t read16(uint32_t offset) = 0;
 		virtual uint8_t read8(uint32_t offset) = 0;

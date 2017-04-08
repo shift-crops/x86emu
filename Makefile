@@ -10,8 +10,7 @@ SUB_OBJS += instruction/instruction.a
 SUB_OBJS += device/device.a
 
 CXXFLAGS := -Wall -MMD -std=c++11 -I./include
-#LDFLAGS  := -lglut -lGL -lpthread
-LDFLAGS  := -lpthread
+LDFLAGS  := -lglfw -lGL -lpthread
 
 $(TARGET): $(OBJS) $(SUB_OBJS)
 	$(CXX) $(CXXFLAGS) $^ -o $@ $(LDFLAGS)

@@ -71,7 +71,7 @@ class PIC : public IRQ {
 
 	public:
 		PIC(PIC* master = NULL);
-		void set_irq(uint8_t n, IRQ *dev) { if(n<MAX_IRQ) irq[n] = dev; else ERROR(""); };
+		void set_irq(uint8_t n, IRQ *dev) { if(n<MAX_IRQ) irq[n] = dev; else ERROR("IRQ out of bound : %d", n); };
 		int8_t get_nintr(void);
 		bool chk_intreq(void);
 	private:
