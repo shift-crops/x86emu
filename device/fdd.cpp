@@ -15,6 +15,9 @@ FDD::FDD(){
 	conf.EFIFO = 1;
 	conf.POLL = 0;
 
+	sra.raw = 0;
+	srb.raw = 0;
+
 	data_q.max = 0;
 
 	th = std::thread(&FDD::worker, this);

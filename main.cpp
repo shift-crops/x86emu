@@ -5,37 +5,36 @@
 #include "common.hpp"
 #include "instruction/base.hpp"
 #include "emulator/emulator.hpp"
+#include "emulator/exception.hpp"
 
 #define MEMORY_SIZE (1*MB)
 
-void run_emulator(const char *image_name, bool use_bios);
+void run_emulator(const char *image_name, bool preload);
 
 int main(int argc, char *argv[]){
 	glfwInit();
 
 	/*
-	std::thread th1 = std::thread(run_emulator, argc<2 ? "sample/kernel.img": argv[1], true);
-	std::thread th2 = std::thread(run_emulator, argc<2 ? "sample/kernel.img": argv[1], true);
+	std::thread th1 = std::thread(run_emulator, argc<2 ? "sample/kernel.img": argv[1], false);
+	std::thread th2 = std::thread(run_emulator, argc<2 ? "sample/kernel.img": argv[1], false);
 	th1.join();
 	th2.join();
 	*/
 	run_emulator(argc<2 ? "sample/kernel.img": argv[1], true);
-	//run_emulator(argc<2 ? "sample/kernel.bin": argv[1], false);
 
 	glfwTerminate();
 }
 
-void run_emulator(const char *image_name, bool use_bios){
-	Emulator emu = use_bios ? Emulator(MEMORY_SIZE, 0xf000, 0xfff0, image_name) : Emulator(MEMORY_SIZE, 0x1000, 0x0000, NULL);
+void run_emulator(const char *image_name, bool preload){
+	Emulator emu = Emulator(MEMORY_SIZE, 0xf000, 0xfff0, image_name);
 	Instr16 instr16(&emu);
 	Instr32 instr32(&emu);
 
-	if(use_bios){
-		emu.load_binary("bios/bios.bin", 0xf0000, 0x400);
-		emu.load_binary("bios/crt0.bin", 0xffff0, 0x10);
-	}
-	else
-		emu.load_binary(image_name, 0x10000, 0x800);
+	emu.load_binary("bios/bios.bin", 0xf0000, 0, 0x400);
+	emu.load_binary("bios/crt0.bin", 0xffff0, 0, 0x10);
+	if(preload)
+		emu.load_binary(image_name, 0x10000, 0x200, 0x1600);
+
 
 	//while(!emu.is_halt()){
 	//while(true){
@@ -68,7 +67,7 @@ void run_emulator(const char *image_name, bool use_bios){
 				instr16.exec();
 			}
 		}
-		catch(int n){
+		catch(exception_t n){
 			emu.dump_regs();
 			ERROR("Exception %d", n);
 			emu.queue_interrupt(n, true);

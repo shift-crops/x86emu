@@ -3,13 +3,17 @@
 
 #include "common.hpp"
 #include "dev_irq.hpp"
-#include "dev_io.hpp"
 
-class Mouse : public IRQ, public PortIO {
+class Keyboard;
+class Mouse : public IRQ {
+	private:
+		Keyboard *keyboard;
+		bool enable;
+
 	public:
-		uint8_t in8(uint16_t addr);
-		void out8(uint16_t addr, uint8_t v);
-		void test(void);
+		Mouse(Keyboard *kb) { keyboard = kb; enable = false; };
+		void command(uint8_t code);
+		void send_code(uint32_t code);
 };
 
 #endif

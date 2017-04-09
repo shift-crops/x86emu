@@ -53,7 +53,10 @@ irq_keyboard:
 	jmp sys_puts
 
 irq_mouse:
+	push ax
+	in ax, 0x60
 	mov esi, msg_mouse
+	pop ax
 	jmp sys_puts
 
 msg_timer:

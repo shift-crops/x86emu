@@ -136,6 +136,7 @@ Instr16::Instr16(Emulator *e) : Instruction(e, false) {
 	// 0x82 : code_82
 	set_funcflag(0x83, instr16(code_83), CHK_MODRM | CHK_IMM8);
 	set_funcflag(0xc1, instr16(code_c1), CHK_MODRM | CHK_IMM8);
+	set_funcflag(0xd3, instr16(code_d3), CHK_MODRM);
 	set_funcflag(0xff, instr16(code_ff), CHK_MODRM);
 	set_funcflag(0x0f00, instr16(code_0f00), CHK_MODRM);
 	set_funcflag(0x0f01, instr16(code_0f01), CHK_MODRM);
@@ -602,9 +603,21 @@ void Instr16::code_c1(void){
 	switch(REG){
 		case 4: shl_rm16_imm8();        break;
 		case 5: shr_rm16_imm8();        break;
-		//case 7: sar_rm16_imm8();        break;
+		case 6: sal_rm16_imm8();        break;	// ?
+		case 7: sar_rm16_imm8();        break;
 		default:
 			ERROR("not implemented: 0xc1 /%d\n", REG);
+	}
+}
+
+void Instr16::code_d3(void){
+	switch(REG){
+		case 4: shl_rm16_cl();        break;
+		case 5: shr_rm16_cl();        break;
+		case 6: sal_rm16_cl();        break;	// ?
+		case 7: sar_rm16_cl();        break;
+		default:
+			ERROR("not implemented: 0xd3 /%d\n", REG);
 	}
 }
 
@@ -789,6 +802,64 @@ void Instr16::shr_rm16_imm8(void){
 	rm16 = get_rm16();
 	set_rm16(rm16>>IMM8);
 	EFLAGS_UPDATE_SHR(rm16, IMM8);
+}
+
+void Instr16::sal_rm16_imm8(void){
+	int16_t rm16_s;
+
+	rm16_s = get_rm16();
+	set_rm16(rm16_s<<IMM8);
+//	EFLAGS_UPDATE_SAL(rm16_s, IMM8);
+}
+
+void Instr16::sar_rm16_imm8(void){
+	int16_t rm16_s;
+
+	rm16_s = get_rm16();
+	set_rm16(rm16_s>>IMM8);
+//	EFLAGS_UPDATE_SAR(rm16_s, IMM8);
+}
+
+/******************************************************************/
+
+void Instr16::shl_rm16_cl(void){
+	uint16_t rm16;
+	uint8_t cl;
+
+	rm16 = get_rm16();
+	cl = GET_GPREG(CL);
+	set_rm16(rm16<<cl);
+	EFLAGS_UPDATE_SHL(rm16, cl);
+}
+
+void Instr16::shr_rm16_cl(void){
+	uint16_t rm16;
+	uint8_t cl;
+
+	rm16 = get_rm16();
+	cl = GET_GPREG(CL);
+	set_rm16(rm16>>cl);
+	EFLAGS_UPDATE_SHR(rm16, cl);
+}
+
+void Instr16::sal_rm16_cl(void){
+	int16_t rm16_s;
+	uint8_t cl;
+
+	rm16_s = get_rm16();
+	cl = GET_GPREG(CL);
+	set_rm16(rm16_s<<cl);
+//	EFLAGS_UPDATE_SAL(rm16_s, cl);
+}
+
+void Instr16::sar_rm16_cl(void){
+	int16_t rm16_s;
+	uint8_t cl;
+
+	rm16_s = get_rm16();
+	cl = GET_GPREG(CL);
+	set_rm16(rm16_s>>cl);
+//	EFLAGS_UPDATE_SAR(rm16_s, cl);
 }
 
 /******************************************************************/

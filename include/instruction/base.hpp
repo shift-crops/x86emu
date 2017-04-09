@@ -182,6 +182,7 @@ class Instr16 : public InstrBase {
 		void code_81(void);
 		void code_83(void);
                 void code_c1(void);
+                void code_d3(void);
                 void code_ff(void);
                 void code_0f00(void);
                 void code_0f01(void);
@@ -209,6 +210,14 @@ class Instr16 : public InstrBase {
 		//0xc1
 		void shl_rm16_imm8(void);
 		void shr_rm16_imm8(void);
+		void sal_rm16_imm8(void);
+		void sar_rm16_imm8(void);
+
+		//0xd3
+		void shl_rm16_cl(void);
+		void shr_rm16_cl(void);
+		void sal_rm16_cl(void);
+		void sar_rm16_cl(void);
 
 		//0xff
 		void inc_rm16(void);
@@ -299,6 +308,7 @@ class Instr32 : public InstrBase {
 		void code_81(void);
 		void code_83(void);
 		void code_c1(void);
+                void code_d3(void);
                 void code_ff(void);
                 void code_0f00(void);
                 void code_0f01(void);
@@ -326,6 +336,14 @@ class Instr32 : public InstrBase {
 		//0xc1
 		void shl_rm32_imm8(void);
 		void shr_rm32_imm8(void);
+		void sal_rm32_imm8(void);
+		void sar_rm32_imm8(void);
+
+		//0xd3
+		void shl_rm32_cl(void);
+		void shr_rm32_cl(void);
+		void sal_rm32_cl(void);
+		void sar_rm32_cl(void);
 
 		//0xff
 		void inc_rm32(void);

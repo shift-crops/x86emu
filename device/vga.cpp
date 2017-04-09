@@ -1,16 +1,6 @@
-#include "device/display.hpp"
+#include "device/vga.hpp"
 
-void Display::resize(uint16_t x, uint16_t y, uint8_t z){
-	if(image)
-		delete[] image;
-
-	size_x = x;
-	size_y = y;
-	zoom = z;
-	image = new uint8_t[x*y*3];
-}
-
-VRAM* Display::get_vram(vram_t m){
+VRAM* VGA::get_vram(vram_t m){
 	switch(m){
 		case MODE_GRAPHIC:	return &g_vram;
 		case MODE_TEXT_MONO:	return &tm_vram;
@@ -19,7 +9,7 @@ VRAM* Display::get_vram(vram_t m){
 	return NULL;
 }
 
-uint8_t *Display::get_image(void){
+uint8_t *VGA::get_image(void){
 	VRAM *vram = get_vram(mode);
 
 	for(int i=0; i<size_x*size_y; i++){

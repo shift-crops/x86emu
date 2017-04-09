@@ -136,6 +136,7 @@ Instr32::Instr32(Emulator *e) : Instruction(e, true) {
 	// 0x82 : code_82
 	set_funcflag(0x83, instr32(code_83), CHK_MODRM | CHK_IMM8);
 	set_funcflag(0xc1, instr32(code_c1), CHK_MODRM | CHK_IMM8);
+	set_funcflag(0xd3, instr32(code_d3), CHK_MODRM);
 	set_funcflag(0xff, instr32(code_ff), CHK_MODRM);
 	set_funcflag(0x0f00, instr32(code_0f00), CHK_MODRM);
 	set_funcflag(0x0f01, instr32(code_0f01), CHK_MODRM);
@@ -603,9 +604,21 @@ void Instr32::code_c1(void){
 	switch(REG){
 		case 4: shl_rm32_imm8();        break;
 		case 5: shr_rm32_imm8();        break;
-		//case 7: sar_rm32_imm8();        break;
+		case 6: sal_rm32_imm8();        break;	// ?
+		case 7: sar_rm32_imm8();        break;
 		default:
 			ERROR("not implemented: 0xc1 /%d\n", REG);
+	}
+}
+
+void Instr32::code_d3(void){
+	switch(REG){
+		case 4: shl_rm32_cl();        break;
+		case 5: shr_rm32_cl();        break;
+		case 6: sal_rm32_cl();        break;	// ?
+		case 7: sar_rm32_cl();        break;
+		default:
+			ERROR("not implemented: 0xd3 /%d\n", REG);
 	}
 }
 
@@ -790,6 +803,64 @@ void Instr32::shr_rm32_imm8(void){
 	rm32 = get_rm32();
 	set_rm32(rm32>>IMM8);
 	EFLAGS_UPDATE_SHR(rm32, IMM8);
+}
+
+void Instr32::sal_rm32_imm8(void){
+	int32_t rm32_s;
+
+	rm32_s = get_rm32();
+	set_rm32(rm32_s<<IMM8);
+//	EFLAGS_UPDATE_SAL(rm32_s, IMM8);
+}
+
+void Instr32::sar_rm32_imm8(void){
+	int32_t rm32_s;
+
+	rm32_s = get_rm32();
+	set_rm32(rm32_s>>IMM8);
+//	EFLAGS_UPDATE_SAR(rm32_s, IMM8);
+}
+
+/******************************************************************/
+
+void Instr32::shl_rm32_cl(void){
+	uint32_t rm32;
+	uint8_t cl;
+
+	rm32 = get_rm32();
+	cl = GET_GPREG(CL);
+	set_rm32(rm32<<cl);
+	EFLAGS_UPDATE_SHL(rm32, cl);
+}
+
+void Instr32::shr_rm32_cl(void){
+	uint32_t rm32;
+	uint8_t cl;
+
+	rm32 = get_rm32();
+	cl = GET_GPREG(CL);
+	set_rm32(rm32>>cl);
+	EFLAGS_UPDATE_SHR(rm32, cl);
+}
+
+void Instr32::sal_rm32_cl(void){
+	int32_t rm32_s;
+	uint8_t cl;
+
+	rm32_s = get_rm32();
+	cl = GET_GPREG(CL);
+	set_rm32(rm32_s<<cl);
+//	EFLAGS_UPDATE_SAL(rm32_s, cl);
+}
+
+void Instr32::sar_rm32_cl(void){
+	int32_t rm32_s;
+	uint8_t cl;
+
+	rm32_s = get_rm32();
+	cl = GET_GPREG(CL);
+	set_rm32(rm32_s>>cl);
+//	EFLAGS_UPDATE_SAR(rm32_s, cl);
 }
 
 /******************************************************************/

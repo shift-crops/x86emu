@@ -11,7 +11,7 @@ class Emulator : public virtual DataAccess, public Interrupt {
 		UI *ui;
 	public:
 		Emulator(size_t size, uint16_t cs, uint16_t ip, const char *disk_name);
-		void load_binary(const char* fname, uint32_t addr, size_t size);
+		void load_binary(const char* fname, uint32_t addr, uint32_t offset, size_t size);
 		bool running(void) const { return ui ? ui->get_status() : false; };
 };
 

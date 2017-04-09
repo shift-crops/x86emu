@@ -1,5 +1,5 @@
-#ifndef _DISPLAY_H
-#define _DISPLAY_H
+#ifndef _VGA_H
+#define _VGA_H
 
 #include "common.hpp"
 #include "dev_io.hpp"
@@ -7,18 +7,15 @@
 
 enum vram_t {MODE_GRAPHIC, MODE_TEXT_MONO, MODE_TEXT_COLOR};
 
-//class Display : public PortIO {
-class Display {
-	public:
-		uint16_t size_x;
-		uint16_t size_y;
-		uint8_t zoom;
-
+//class VGA : public PortIO {
+class VGA {
 	private:
 		VRAM g_vram;
 		VRAM tm_vram;
 		VRAM tc_vram;
 		vram_t mode = MODE_GRAPHIC;
+		uint16_t size_x;
+		uint16_t size_y;
 		uint8_t *image;
 
 		uint8_t rgb_palette[16][3] = {
@@ -41,10 +38,10 @@ class Display {
 		};
 
 	public:
-		Display() { image = NULL; };
-		~Display() { if(image) delete[] image; };
-		void resize(uint16_t x, uint16_t y, uint8_t z);
+		VGA() { size_x=320; size_y=200; image = new uint8_t[320*200*3]; };
+		~VGA() { if(image) delete[] image; };
 		VRAM* get_vram(vram_t m);
+		bool get_windowsize(uint16_t *x, uint16_t *y) {*x=size_x; *y=size_y; return false; };
 		bool need_refresh(void) { return get_vram(mode)->need_refresh(); };
 		uint8_t *get_image(void);
 };

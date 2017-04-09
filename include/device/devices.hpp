@@ -6,7 +6,7 @@
 #include "pic.hpp"
 #include "pit.hpp"
 #include "fdd.hpp"
-#include "display.hpp"
+#include "vga.hpp"
 #include "keyboard.hpp"
 #include "mouse.hpp"
 

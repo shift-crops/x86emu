@@ -1,6 +1,6 @@
 TARGET := device.a
 
-SRCS := com.cpp syscontrol.cpp vram.cpp pic.cpp pit.cpp fdd.cpp display.cpp keyboard.cpp mouse.cpp
+SRCS := com.cpp syscontrol.cpp vram.cpp pic.cpp pit.cpp fdd.cpp vga.cpp keyboard.cpp mouse.cpp
 OBJS := $(SRCS:.cpp=.o)
 DEPS := $(SRCS:.cpp=.d)
 

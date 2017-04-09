@@ -56,8 +56,8 @@ extern void irq_keyboard(void);
 extern void irq_mouse(void);
 
 uint32_t init_paging(void){
-	struct PDE *pde = (struct PDE*)0x10000;
-	struct PTE *pte = (struct PTE*)0x11000;
+	struct PDE *pde = (struct PDE*)0x20000;
+	struct PTE *pte = (struct PTE*)0x21000;
 
 	pde[0].ptbl_base = ((uint32_t)pte)>>12;
 	pde[0].P = 1;
@@ -80,8 +80,8 @@ uint32_t init_paging(void){
 }
 
 uint32_t init_idt(void){
-	struct DTReg *idtr = (struct DTReg*)0x18000;
-	struct IDT *idt = (struct IDT*)0x18030;
+	struct DTReg *idtr = (struct DTReg*)0x28000;
+	struct IDT *idt = (struct IDT*)0x28030;
 
 	idtr->limit = sizeof(struct IDT)*255 - 1;
 	idtr->base_l = (uint32_t)idt & 0xffff;

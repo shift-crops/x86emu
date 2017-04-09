@@ -9,13 +9,15 @@ BITS 16
 	mov es, ax
 	mov bx, 0x0
 
-	mov ah, 0x2	; read
-	mov al, 0x3	; sectors
-	mov ch, 0x0	; cylinder
-	mov cl, 0x2	; sector
-	mov dh, 0x0	; head
-	mov dl, 0x0	; drive
-	int 0x13
+	mov ah, 0x02	; read
+	mov al, 0x10	; sectors
+	mov ch, 0x00	; cylinder
+	mov cl, 0x02	; sector
+	mov dh, 0x00	; head
+	mov dl, 0x00	; drive
+	;int 0x13
+	nop
+	nop
 
 	; gdt
 	lgdt [gdtr]

@@ -3,23 +3,27 @@
 
 #include <GLFW/glfw3.h>
 #include "common.hpp"
-#include "device/display.hpp"
+#include "device/vga.hpp"
 #include "device/keyboard.hpp"
 #include "device/mouse.hpp"
 
 class UI {
 	private:
-		Display *disp;
-		Keyboard *keyboard;
-		Mouse *mouse;
 		bool enable;
+		VGA *vga;
+		Keyboard *keyboard;
+		uint8_t zoom;
+
+		struct {
+			int32_t X, Y;
+			bool click[2];
+		};
 
 	public:
-		UI();
+		UI(uint8_t z = 2);
 		~UI();
-		Display *get_display(void) const { return disp; };
+		VGA *get_vga(void) const { return vga; };
 		Keyboard *get_keyboard(void) const { return keyboard; };
-		Mouse *get_mouse(void) const { return mouse; };
 		bool get_status(void) const { return enable; };
 	private:
 		void ui_main(void);

@@ -6,13 +6,22 @@ extern int _puts(char *);
 
 int main(void){
 	uint8_t *vram = (uint8_t*)0xa0000;
+	uint8_t *font = (uint8_t*)0x10600;
 
 	_puts("start");
-	for(int i=1; i<0x10; i++){
-		for(int j=0; j<200*320; j++)
-			vram[j] = i;
-		__asm__("hlt");
-	}
+
+	int n = 0;
+	for(int y=0; y<200; y+=0x10)
+		for(int x=0; x<320; x+=0x08){
+			for(int i=0; i<0x10; i++)
+				for(int j=1; j<=8; j++)
+					if((font[n*0x10+i]>>(8-j))&1)
+						vram[(y+i)*320+(x+j)] = 7;
+			n++;
+		}
+
+	_puts("end");
+	__asm__("hlt");
 
 	for(int i=0; i<320*200; i++)
 		vram[i] = i % 0x10;
