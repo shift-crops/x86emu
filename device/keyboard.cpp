@@ -84,10 +84,11 @@ uint8_t Keyboard::read_outbuf(void){
 	return out_buf;
 }
 
-void Keyboard::send_code(uint32_t scancode){
+void Keyboard::send_code(uint8_t scancode){
 	if(kcsr.OBF)
 		return;
 
+	INFO("scancode : %0x", scancode);
 	if(!ccb->KE) 	// enable
 		write_outbuf(scancode);
 }

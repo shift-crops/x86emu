@@ -1,5 +1,5 @@
 TARGET	= bios.bin
-OBJS	= startup.o bios.o functions.o service.o disk.o
+OBJS	= startup.o bios.o functions.o service.o disk.o vga.o
 
 CC 	:= gcc
 AS 	:= nasm

@@ -10,15 +10,17 @@ class IO {
 	private:
 		Memory *memory;
 		std::map<uint16_t, PortIO*> port_io;
+		std::map<uint16_t, size_t> port_io_map;
 		std::map<uint32_t, MemoryIO*> mem_io;
 		std::map<uint32_t, size_t> mem_io_map;
 
 	public:
 		IO(Memory *mem) { memory = mem; };
 		~IO();
-		void set_portio(uint32_t addr, PortIO *dev) { port_io[addr&(~((1<<2)-1))] = dev; };
+		void set_portio(uint16_t addr, size_t len, PortIO *dev) {
+			addr &= ~1; port_io[addr] = dev; port_io_map[addr] = len; };
 		void set_memio(uint32_t addr, size_t len, MemoryIO *dev) {
-			mem_io[addr] = dev; mem_io_map[addr] = len; dev->set_mem(memory, addr, len);
+			addr &= ~1; mem_io[addr] = dev; mem_io_map[addr] = len; dev->set_mem(memory, addr, len);
 		};
 
 		uint32_t in_io32(uint16_t addr);
@@ -36,6 +38,7 @@ class IO {
 		void write_memio16(uint32_t addr, uint16_t v);
 		void write_memio8(uint32_t addr, uint8_t v);
 	private:
+		uint16_t get_portio_base(uint16_t addr);
 		uint32_t get_memio_base(uint32_t addr);
 };
 

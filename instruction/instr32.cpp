@@ -12,7 +12,8 @@ Instr32::Instr32(Emulator *e) : Instruction(e, true) {
 	set_funcflag(0x03, instr32(add_r32_rm32), CHK_MODRM);
 	// 0x04 : add_al_imm8
 	set_funcflag(0x05, instr32(add_eax_imm32), CHK_IMM32);
-
+	set_funcflag(0x06, instr32(push_es), 0);
+	set_funcflag(0x07, instr32(pop_es), 0);
 	// 0x08 : or_rm8_r8
 	set_funcflag(0x09, instr32(or_rm32_r32), CHK_MODRM);
 	// 0x0a : or_r8_rm8
@@ -20,6 +21,11 @@ Instr32::Instr32(Emulator *e) : Instruction(e, true) {
 	// 0x0c : or_al_imm8
 	set_funcflag(0x0d, instr32(or_eax_imm32), CHK_IMM32);
 
+	set_funcflag(0x16, instr32(push_ss), 0);
+	set_funcflag(0x17, instr32(pop_ss), 0);
+
+	set_funcflag(0x1e, instr32(push_ds), 0);
+	set_funcflag(0x1f, instr32(pop_ds), 0);
 	// 0x20 : and_rm8_r8
 	set_funcflag(0x21, instr32(and_rm32_r32), CHK_MODRM);
 	// 0x22 : and_r8_rm8
@@ -77,6 +83,7 @@ Instr32::Instr32(Emulator *e) : Instruction(e, true) {
 
 	// 0x90 : nop
 	for (i=1; i<8; i++)	set_funcflag(0x90+i, instr32(xchg_r32_eax) ,CHK_IMM32);
+	set_funcflag(0x98, instr32(cwde), 0);
 	set_funcflag(0x99, instr32(cdq), 0);
 	set_funcflag(0x9a, instr32(callf_ptr16_32), CHK_PTR16 | CHK_IMM32);
 
@@ -168,6 +175,14 @@ void Instr32::add_eax_imm32(void){
 	EFLAGS_UPDATE_ADD(eax, IMM32);
 }
 
+void Instr32::push_es(void){
+	PUSH32(EMU->get_sgreg(ES));
+}
+
+void Instr32::pop_es(void){
+	EMU->set_sgreg(ES, POP32());
+}
+
 void Instr32::or_rm32_r32(void){
 	uint32_t rm32, r32;
 
@@ -192,6 +207,22 @@ void Instr32::or_eax_imm32(void){
 	eax = GET_GPREG(EAX);
 	SET_GPREG(EAX, eax|IMM32);
 	EFLAGS_UPDATE_OR(eax, IMM32);
+}
+
+void Instr32::push_ss(void){
+	PUSH32(EMU->get_sgreg(SS));
+}
+
+void Instr32::pop_ss(void){
+	EMU->set_sgreg(SS, POP32());
+}
+
+void Instr32::push_ds(void){
+	PUSH32(EMU->get_sgreg(DS));
+}
+
+void Instr32::pop_ds(void){
+	EMU->set_sgreg(DS, POP32());
 }
 
 void Instr32::and_rm32_r32(void){
@@ -426,6 +457,13 @@ void Instr32::xchg_r32_eax(void){
 	eax = GET_GPREG(EAX);
 	set_r32(eax);
 	SET_GPREG(EAX, r32);
+}
+
+void Instr32::cwde(void){
+	int16_t ax_s;
+
+	ax_s = GET_GPREG(AX);
+	SET_GPREG(EAX, ax_s);
 }
 
 void Instr32::cdq(void){

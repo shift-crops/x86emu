@@ -1,9 +1,15 @@
-global _puts, _gets
+global _puts, _putc, _gets
 global sys_puts, sys_gets, irq_timer, irq_keyboard, irq_mouse
+
+extern print_key
 
 BITS 32
 _puts:
 	mov esi, [esp+0x4]
+	int 0
+	ret
+_putc:
+	lea esi, [esp+0x4]
 	int 0
 	ret
 
@@ -23,8 +29,6 @@ puts_loop:
 	out dx, al
 	jmp puts_loop
 puts_end:
-	mov al, 0x0a
-	out dx, al
 	popa
 	iret
 
@@ -47,21 +51,23 @@ irq_timer:
 
 irq_keyboard:
 	push ax
-	in ax, 0x60
-	mov esi, msg_keyboard
+	in al, 0x60
+	push ax
+	call print_key
+	add esp, 2
 	pop ax
-	jmp sys_puts
+	iret
 
 irq_mouse:
 	push ax
-	in ax, 0x60
+	in al, 0x60
 	mov esi, msg_mouse
 	pop ax
 	jmp sys_puts
 
 msg_timer:
-	db "Tick!", 0x0
+	db "Tick!", 0xa, 0x0
 msg_keyboard:
-	db "Keyboard Interrupt!", 0x0
+	db "Keyboard Interrupt!", 0xa,0x0
 msg_mouse:
-	db "Mouse Interrupt!", 0x0
+	db "Mouse Interrupt!", 0xa, 0x0

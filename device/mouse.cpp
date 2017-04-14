@@ -11,7 +11,7 @@ void Mouse::command(uint8_t v){
 			break;
 	}
 }
-void Mouse::send_code(uint32_t code){
+void Mouse::send_code(uint8_t code){
 	if(keyboard->kcsr.OBF)
 		return;
 

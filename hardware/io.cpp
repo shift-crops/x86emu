@@ -16,66 +16,57 @@ IO::~IO(){
 	mem_io_map.clear();
 }
 
+uint16_t IO::get_portio_base(uint16_t addr){
+	for(int i=0; i<5; i++){	// max_mask : 0xfff0
+		uint16_t base = (addr&(~1)) - (2*i);
+		if(port_io_map.count(base))
+			return addr < base+port_io_map[base] ? base : 0;
+	}
+	return 0;
+}
+
 uint32_t IO::in_io32(uint16_t addr){
 	uint32_t v = 0;
-	for(int i=0; i<4; i++){
-		uint16_t base_addr = (addr+i)&(~((1<<2)-1));
-		if(port_io.count(base_addr))
-			v += (port_io[base_addr]->in8(addr+i)) << (8*i);
-		else
-			ERROR("no device connected at port : 0x%04x", base_addr);
-	}
+
+	for(int i=0; i<4; i++)
+		v += in_io8(addr+i) << (8*i);
 	return v;
 }
 
 uint16_t IO::in_io16(uint16_t addr){
 	uint16_t v = 0;
-	for(int i=0; i<2; i++){
-		uint16_t base_addr = (addr+i)&(~((1<<2)-1));
-		if(port_io.count(base_addr))
-			v += (port_io[base_addr]->in8(addr+i)) << (8*i);
-		else
-			ERROR("no device connected at port : 0x%04x", base_addr);
-	}
+
+	for(int i=0; i<2; i++)
+		v += in_io8(addr+i) << (8*i);
 	return v;
 }
 
 uint8_t IO::in_io8(uint16_t addr){
 	uint8_t v = 0;
-	uint16_t base_addr = addr&(~((1<<2)-1));
-	if(port_io.count(base_addr))
-		v = port_io[base_addr]->in8(addr);
+	uint16_t base = get_portio_base(addr);
+	if(base)
+		v = port_io[base]->in8(addr);
 	else
-		ERROR("no device connected at port : 0x%04x", base_addr);
+		ERROR("no device connected at port : 0x%04x", addr);
 	return v;
 }
 
 void IO::out_io32(uint16_t addr, uint32_t value){
-	for(int i=0; i<4; i++){
-		uint16_t base_addr = (addr+i)&(~((1<<2)-1));
-		if(port_io.count(base_addr))
-			port_io[base_addr]->out8(addr+i, (value >> (8*i)) & 0xff);
-		else
-			ERROR("no device connected at port : 0x%04x", base_addr);
-	}
+	for(int i=0; i<4; i++)
+		out_io8(addr+i, (value >> (8*i)) & 0xff);
 }
 
 void IO::out_io16(uint16_t addr, uint16_t value){
-	for(int i=0; i<2; i++){
-		uint16_t base_addr = (addr+i)&(~((1<<2)-1));
-		if(port_io.count(base_addr))
-			port_io[base_addr]->out8(addr+i, (value >> (8*i)) & 0xff);
-		else
-			ERROR("no device connected at port : 0x%04x", base_addr);
-	}
+	for(int i=0; i<2; i++)
+		out_io8(addr+i, (value >> (8*i)) & 0xff);
 }
 
 void IO::out_io8(uint16_t addr, uint8_t value){
-	uint16_t base_addr = addr&(~((1<<2)-1));
-	if(port_io.count(base_addr))
-		port_io[base_addr]->out8(addr, value);
+	uint16_t base = get_portio_base(addr);
+	if(base)
+		port_io[base]->out8(addr, value);
 	else
-		ERROR("no device connected at port : 0x%04x", base_addr);
+		ERROR("no device connected at port : 0x%04x", addr);
 }
 
 

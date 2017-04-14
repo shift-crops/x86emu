@@ -12,7 +12,8 @@ Instr16::Instr16(Emulator *e) : Instruction(e, false) {
 	set_funcflag(0x03, instr16(add_r16_rm16), CHK_MODRM);
 	// 0x04 : add_al_imm8
 	set_funcflag(0x05, instr16(add_ax_imm16), CHK_IMM16);
-
+	set_funcflag(0x06, instr16(push_es), 0);
+	set_funcflag(0x07, instr16(pop_es), 0);
 	// 0x08 : or_rm8_r8
 	set_funcflag(0x09, instr16(or_rm16_r16), CHK_MODRM);
 	// 0x0a : or_r8_rm8
@@ -20,6 +21,11 @@ Instr16::Instr16(Emulator *e) : Instruction(e, false) {
 	// 0x0c : or_al_imm8
 	set_funcflag(0x0d, instr16(or_ax_imm16), CHK_IMM16);
 
+	set_funcflag(0x16, instr16(push_ss), 0);
+	set_funcflag(0x17, instr16(pop_ss), 0);
+
+	set_funcflag(0x1e, instr16(push_ds), 0);
+	set_funcflag(0x1f, instr16(pop_ds), 0);
 	// 0x20 : and_rm8_r8
 	set_funcflag(0x21, instr16(and_rm16_r16), CHK_MODRM);
 	// 0x22 : and_r8_rm8
@@ -77,6 +83,7 @@ Instr16::Instr16(Emulator *e) : Instruction(e, false) {
 
 	// 0x90 : nop
 	for (i=1; i<8; i++)	set_funcflag(0x90+i, instr16(xchg_r16_ax) ,CHK_IMM16);
+	set_funcflag(0x98, instr16(cbw), 0);
 	set_funcflag(0x99, instr16(cwd), 0);
 	set_funcflag(0x9a, instr16(callf_ptr16_16), CHK_PTR16 | CHK_IMM16);
 
@@ -168,6 +175,14 @@ void Instr16::add_ax_imm16(void){
 	EFLAGS_UPDATE_ADD(ax, IMM16);
 }
 
+void Instr16::push_es(void){
+	PUSH16(EMU->get_sgreg(ES));
+}
+
+void Instr16::pop_es(void){
+	EMU->set_sgreg(ES, POP16());
+}
+
 void Instr16::or_rm16_r16(void){
 	uint16_t rm16, r16;
 
@@ -192,6 +207,22 @@ void Instr16::or_ax_imm16(void){
 	ax = GET_GPREG(AX);
 	SET_GPREG(AX, ax|IMM16);
 	EFLAGS_UPDATE_OR(ax, IMM16);
+}
+
+void Instr16::push_ss(void){
+	PUSH16(EMU->get_sgreg(SS));
+}
+
+void Instr16::pop_ss(void){
+	EMU->set_sgreg(SS, POP16());
+}
+
+void Instr16::push_ds(void){
+	PUSH16(EMU->get_sgreg(DS));
+}
+
+void Instr16::pop_ds(void){
+	EMU->set_sgreg(DS, POP16());
 }
 
 void Instr16::and_rm16_r16(void){
@@ -426,6 +457,13 @@ void Instr16::xchg_r16_ax(void){
 	ax = GET_GPREG(AX);
 	set_r16(ax);
 	SET_GPREG(AX, r16);
+}
+
+void Instr16::cbw(void){
+	int8_t al_s;
+
+	al_s = GET_GPREG(AL);
+	SET_GPREG(AX, al_s);
 }
 
 void Instr16::cwd(void){

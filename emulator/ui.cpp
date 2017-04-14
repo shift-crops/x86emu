@@ -13,9 +13,14 @@ UI::UI(uint8_t z){
 
 	main_th = std::thread(&UI::ui_main, this);
 	main_th.detach();
+
+	size_x = 320;
+	size_y = 200;
+	image = new uint8_t[size_x*size_y*3];
 }
 
 UI::~UI(void){
+	delete[] image;
 	delete vga;
 	delete keyboard;
 }
@@ -23,7 +28,7 @@ UI::~UI(void){
 void UI::ui_main(void){
 	GLFWwindow* window;
 
-	window = glfwCreateWindow(320*2, 200*2, "x86emu", NULL, NULL);
+	window = glfwCreateWindow(size_x*zoom, size_y*zoom, "x86emu", NULL, NULL);
 
 	glfwSetWindowUserPointer(window, this);
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
@@ -42,9 +47,17 @@ void UI::ui_main(void){
 		if(vga->need_refresh()){
 			uint16_t x, y;
 
-			if(vga->get_windowsize(&x, &y))
+			vga->get_windowsize(&x, &y);
+			if(x && y && ((size_x^x) || (size_y*y))){
+				size_x = x;
+				size_y = y;
 				glfwSetWindowSize(window, x*zoom, y*zoom);
-			glDrawPixels(x, y, GL_RGB, GL_UNSIGNED_BYTE, vga->get_image());
+
+				delete[] image;
+				image = new uint8_t[x*y*3];
+			}
+			vga->rgb_image(image, x*y);
+			glDrawPixels(x, y, GL_RGB, GL_UNSIGNED_BYTE, image);
 		}
 
 		glfwSwapBuffers(window);

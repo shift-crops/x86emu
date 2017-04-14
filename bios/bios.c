@@ -17,6 +17,6 @@ void init_ivt(void){
 void set_ivt(int n, uint32_t offset, uint16_t cs){
 	IVT* ivt = (IVT*)0;
 
-	put_esmem(&(ivt[n].offset), offset);
-	put_esmem(&(ivt[n].segment), cs);
+	write_esw(&(ivt[n].offset), offset);
+	write_esw(&(ivt[n].segment), cs);
 }

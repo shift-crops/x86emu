@@ -1,4 +1,6 @@
-extern bios_main, bios_init, fdd_configure
+extern bios_main, bios_init
+extern fdd_configure
+extern attr_configure, dac_configure, load_font
 global start
 
 BITS 16
@@ -14,6 +16,7 @@ start:
 
 	call init_pic
 	call init_fdd
+	call init_vga
 	call dword bios_init
 	call dword bios_main
 	call load_mbr
@@ -58,6 +61,55 @@ init_fdd:
 	and al, 0xbf
 	out 0x21, al
 	sti
+	ret
+
+init_vga:
+	call dword attr_configure
+	call dword dac_configure
+
+	cli
+	; x : 320
+	mov dx, 0x03b4
+	mov al, 0x1
+	out dx, al
+	mov dx, 0x03b5
+	mov al, 0x28
+	out dx, al
+
+	; y : 200
+	mov dx, 0x03b4
+	mov al, 0x12
+	out dx, al
+	mov dx, 0x03b5
+	mov al, 0x19
+	out dx, al
+
+	; MSL : 8
+	mov dx, 0x03b4
+	mov al, 0x09
+	out dx, al
+	mov dx, 0x03b5
+	mov al, 0x08-1
+	out dx, al
+	sti
+
+	; font ([0xa:0x0000] <- [0xf:0xc000])
+	push es
+	mov ax, 0x0a
+	mov es, ax
+	push dword 0xc000
+	call dword load_font
+	add sp, 4
+	pop es
+
+	; graphic mode
+	mov dx, 0x03ce
+	mov al, 0x06
+	out dx, al
+	mov dx, 0x03cf
+	mov al, 0x1
+	out dx, al
+	
 	ret
 
 load_mbr:

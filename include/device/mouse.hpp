@@ -13,7 +13,7 @@ class Mouse : public IRQ {
 	public:
 		Mouse(Keyboard *kb) { keyboard = kb; enable = false; };
 		void command(uint8_t code);
-		void send_code(uint32_t code);
+		void send_code(uint8_t code);
 };
 
 #endif

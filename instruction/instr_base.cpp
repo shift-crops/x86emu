@@ -49,6 +49,7 @@ InstrBase::InstrBase() {
 	set_funcflag(0xa8, instrbase(test_al_imm8), CHK_IMM8);
 	for (i=0; i<8; i++)	set_funcflag(0xb0+i, instrbase(mov_r8_imm8) ,CHK_IMM8);
 	set_funcflag(0xc6, instrbase(mov_rm8_imm8), CHK_MODRM | CHK_IMM8);
+	set_funcflag(0xcc, instrbase(int3), 0);
 	set_funcflag(0xcd, instrbase(int_imm8), CHK_IMM8);
 	set_funcflag(0xcf, instrbase(iret), 0);
 	set_funcflag(0xe4, instrbase(in_al_imm8), CHK_IMM8);
@@ -314,6 +315,11 @@ void InstrBase::mov_r8_imm8(void){
 
 void InstrBase::mov_rm8_imm8(void){
 	set_rm8(IMM8);
+}
+
+void InstrBase::int3(void){
+	EMU->dump_regs();
+	EMU->dump_mem((EMU->get_sgreg(SS)<<4)+EMU->get_gpreg(ESP)-0x40, 0x80);
 }
 
 void InstrBase::int_imm8(void){

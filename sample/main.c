@@ -1,13 +1,10 @@
-#define uint8_t unsigned char
-#define uint16_t unsigned short
-#define uint32_t unsigned long
-
+#include "common.h"
 extern int _puts(char *);
 
 int main(void){
 	uint8_t *vram = (uint8_t*)0xa0000;
+/*
 	uint8_t *font = (uint8_t*)0x10600;
-
 	_puts("start");
 
 	int n = 0;
@@ -22,6 +19,13 @@ int main(void){
 
 	_puts("end");
 	__asm__("hlt");
+*/
+	for(int i=0; i<0x10; i++){
+		_puts("next\n");
+		for(int j=0; j<320*200; j++)
+			vram[j] = i;
+		__asm__("hlt");
+	}
 
 	for(int i=0; i<320*200; i++)
 		vram[i] = i % 0x10;
@@ -34,7 +38,7 @@ int main(void){
 	}
 */
 	while(1){
-		_puts("puts in main function");
+		//_puts("puts in main function");
 		//for(int i=0; i<1000; i++);
 		__asm__("hlt");
 	}

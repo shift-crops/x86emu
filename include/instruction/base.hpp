@@ -55,6 +55,7 @@ class InstrBase : public ExecInstr , public ParseInstr {
 		void test_al_imm8(void);
                 void mov_r8_imm8(void);
                 void mov_rm8_imm8(void);
+                void int3(void);
                 void int_imm8(void);
                 void iret(void);
 		void in_al_imm8(void);
@@ -112,9 +113,15 @@ class Instr16 : public InstrBase {
 		void add_rm16_r16(void);
 		void add_r16_rm16(void);
 		void add_ax_imm16(void);
+		void push_es(void);
+		void pop_es(void);
 		void or_rm16_r16(void);
 		void or_r16_rm16(void);
 		void or_ax_imm16(void);
+		void push_ss(void);
+		void pop_ss(void);
+		void push_ds(void);
+		void pop_ds(void);
 		void and_rm16_r16(void);
 		void and_r16_rm16(void);
 		void and_ax_imm16(void);
@@ -144,6 +151,7 @@ class Instr16 : public InstrBase {
 		void mov_rm16_sreg(void);
 		void lea_r16_m16(void);
 		void xchg_r16_ax(void);
+                void cbw(void);
                 void cwd(void);
                 void callf_ptr16_16(void);
                 void mov_r16_imm16(void);
@@ -238,9 +246,15 @@ class Instr32 : public InstrBase {
 		void add_rm32_r32(void);
 		void add_r32_rm32(void);
 		void add_eax_imm32(void);
+		void push_es(void);
+		void pop_es(void);
 		void or_rm32_r32(void);
 		void or_r32_rm32(void);
 		void or_eax_imm32(void);
+		void push_ss(void);
+		void pop_ss(void);
+		void push_ds(void);
+		void pop_ds(void);
 		void and_rm32_r32(void);
 		void and_r32_rm32(void);
 		void and_eax_imm32(void);
@@ -270,6 +284,7 @@ class Instr32 : public InstrBase {
 		void mov_rm32_sreg(void);
 		void lea_r32_m32(void);
 		void xchg_r32_eax(void);
+                void cwde(void);
                 void cdq(void);
                 void callf_ptr16_32(void);
                 void mov_r32_imm32(void);

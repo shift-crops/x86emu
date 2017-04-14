@@ -12,10 +12,12 @@ class UI {
 		bool enable;
 		VGA *vga;
 		Keyboard *keyboard;
+		uint16_t size_x, size_y;
 		uint8_t zoom;
+		uint8_t *image;
 
 		struct {
-			int32_t X, Y;
+			int16_t X, Y;
 			bool click[2];
 		};
 

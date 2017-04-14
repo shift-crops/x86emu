@@ -2,7 +2,7 @@ TARGET := kernel.img
 
 TGT1 := boot.bin
 TGT2 := kernel.bin
-OBJS := crt0.o funcs.o init.o main.o
+OBJS := crt0.o funcs.o init.o main.o keyboard.o
 
 CC	:= gcc
 AS	:= nasm
