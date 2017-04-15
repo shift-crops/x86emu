@@ -108,7 +108,7 @@ class InstrBase : public ExecInstr , public ParseInstr {
 
 class Instr16 : public InstrBase {
         public:
-                Instr16(Emulator *e);
+                Instr16(Emulator *e, InstrData *id);
         private:
 		void add_rm16_r16(void);
 		void add_r16_rm16(void);
@@ -241,7 +241,7 @@ class Instr16 : public InstrBase {
 
 class Instr32 : public InstrBase {
         public:
-                Instr32(Emulator *e);
+                Instr32(Emulator *e, InstrData *id);
         private:
 		void add_rm32_r32(void);
 		void add_r32_rm32(void);

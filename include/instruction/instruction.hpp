@@ -39,24 +39,24 @@
 #define POP32()				EMU->pop32()
 #define POP16()				EMU->pop16()
 
-#define PREFIX		(instr.prefix)
-#define OPCODE		(instr.opcode)
-#define _MODRM		(instr._modrm)
-#define MOD		(instr.modrm.mod)
-#define REG		(instr.modrm.reg)
-#define RM		(instr.modrm.rm)
-#define _SIB		(instr._sib)
-#define SCALE		(instr.sib.scale)
-#define INDEX		(instr.sib.index)
-#define BASE		(instr.sib.base)
-#define DISP32		(instr.disp32)
-#define DISP16		(instr.disp16)
-#define DISP8		(instr.disp8)
-#define IMM32		(instr.imm32)
-#define IMM16		(instr.imm16)
-#define IMM8		(instr.imm8)
-#define PTR16		(instr.ptr16)
-#define PRE_SEGMENT	(pre_segment)
+#define PREFIX		(instr->prefix)
+#define OPCODE		(instr->opcode)
+#define _MODRM		(instr->_modrm)
+#define MOD		(instr->modrm.mod)
+#define REG		(instr->modrm.reg)
+#define RM		(instr->modrm.rm)
+#define _SIB		(instr->_sib)
+#define SCALE		(instr->sib.scale)
+#define INDEX		(instr->sib.index)
+#define BASE		(instr->sib.base)
+#define DISP32		(instr->disp32)
+#define DISP16		(instr->disp16)
+#define DISP8		(instr->disp8)
+#define IMM32		(instr->imm32)
+#define IMM16		(instr->imm16)
+#define IMM8		(instr->imm8)
+#define PTR16		(instr->ptr16)
+#define PRE_SEGMENT	(instr->pre_segment)
 #define SEGMENT		(segment)
 
 struct ModRM {  
@@ -71,33 +71,36 @@ struct SIB {
         uint8_t scale : 2; 
 };
 
+struct InstrData {
+	uint16_t prefix;
+	sgreg_t pre_segment;
+
+	uint16_t opcode;
+	union {
+		uint8_t _modrm;
+		struct ModRM modrm;
+	};
+	union {
+		uint8_t _sib;
+		struct SIB sib;
+	};
+	union {
+		int8_t disp8;
+		int16_t disp16;
+		int32_t disp32;
+	};
+	union {
+		int8_t imm8;
+		int16_t imm16;
+		int32_t imm32;
+	};
+	int16_t ptr16;
+};
+
 class Instruction {
 	protected:
-		struct {
-			uint16_t prefix;
-			uint16_t opcode;
-			union {
-				uint8_t _modrm;
-				struct ModRM modrm;
-			};
-			union {
-				uint8_t _sib;
-				struct SIB sib;
-			};
-			union {
-				int8_t disp8;
-				int16_t disp16;
-				int32_t disp32;
-			};
-			union {
-				int8_t imm8;
-				int16_t imm16;
-				int32_t imm32;
-			};
-			int16_t ptr16;
-		} instr;
-
-		sgreg_t segment, pre_segment;
+		InstrData *instr;
+		sgreg_t segment;
 		bool chsz_ad;
 	private:
 		Emulator *emu;
@@ -105,11 +108,11 @@ class Instruction {
 
 	public:
 		Instruction() {};
-		Instruction(Emulator *e, bool p) { emu = e; mode_protected = p; };
+		Instruction(Emulator *e, InstrData *i, bool p) { emu = e; instr = i; mode_protected = p; };
 	protected:
 		Emulator* get_emu(void) { return emu; };
 		bool is_protected(void) { return mode_protected; };
-		sgreg_t get_segment(void) { return instr.prefix ? pre_segment : segment; };
+		sgreg_t get_segment(void) { return instr->prefix ? instr->pre_segment : segment; };
 };
 
 
@@ -181,9 +184,9 @@ class ParseInstr : protected virtual Instruction {
 	public:
 		//ParseInstr(Emulator *e) : Instruction(e) {}; 
 		void parse(void);
-		uint8_t chk_chsz(void);
+		uint8_t parse_prefix(void);
 	private:
-		void parse_prefix_opcode(void);
+		void parse_opcode(void);
 		void parse_modrm_sib_disp(void);
 		void parse_modrm16(void);
 		void parse_modrm32(void);

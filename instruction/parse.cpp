@@ -1,20 +1,37 @@
-#include <string.h>
 #include <map>
 #include "instruction/instruction.hpp"
 
-uint8_t ParseInstr::chk_chsz(void){
-	uint8_t code, chsz;
+uint8_t ParseInstr::parse_prefix(void){
+	uint8_t code, chsz = 0;
 
 	while(true){
 		code = get_emu()->get_code8(0);
 		switch(code){
+			case 0x26:
+				PRE_SEGMENT = ES;
+				goto set_pre;
+			case 0x2e:
+				PRE_SEGMENT = CS;
+				goto set_pre;
+			case 0x36:
+				PRE_SEGMENT = SS;
+				goto set_pre;
+			case 0x3e:
+				PRE_SEGMENT = DS;
+				goto set_pre;
+			case 0x64:
+				PRE_SEGMENT = FS;
+				goto set_pre;
+			case 0x65:
+				PRE_SEGMENT = GS;
+set_pre:			PREFIX = code;
+				goto next;
 			case 0x66:
 				chsz |= CHSZ_OP;
-				UPDATE_EIP(1);
-				break;
+				goto next;
 			case 0x67:
 				chsz |= CHSZ_AD;
-				UPDATE_EIP(1);
+next:				UPDATE_EIP(1);
 				break;
 			default:
 				return chsz;
@@ -23,9 +40,7 @@ uint8_t ParseInstr::chk_chsz(void){
 }
 
 void ParseInstr::parse(void){
-	memset(&instr, 0, sizeof(instr));
-
-	parse_prefix_opcode();
+	parse_opcode();
 
 	if(!chk.count(OPCODE)){
 		DEBUG_MSG("\n");
@@ -60,38 +75,10 @@ void ParseInstr::parse(void){
 	DEBUG_MSG("\n");
 }
 
-void ParseInstr::parse_prefix_opcode(void){
-	uint8_t code;
-
-	code = get_emu()->get_code8(0);
+void ParseInstr::parse_opcode(void){
+	OPCODE = get_emu()->get_code8(0);
 	UPDATE_EIP(1);
-
-	// prefix
-	switch(code){
-		case 0x26:
-			PRE_SEGMENT = ES;
-			goto next;
-		case 0x2e:
-			PRE_SEGMENT = CS;
-			goto next;
-		case 0x36:
-			PRE_SEGMENT = SS;
-			goto next;
-		case 0x3e:
-			PRE_SEGMENT = DS;
-			goto next;
-		case 0x64:
-			PRE_SEGMENT = FS;
-			goto next;
-		case 0x65:
-			PRE_SEGMENT = GS;
-next:			PREFIX = code;
-			code = get_emu()->get_code8(0);
-			UPDATE_EIP(1);
-	}
-
-	OPCODE = code;
-
+	
 	// two byte opcode
 	if(OPCODE == 0x0f){
 		OPCODE = (OPCODE << 8) + get_emu()->get_code8(0);

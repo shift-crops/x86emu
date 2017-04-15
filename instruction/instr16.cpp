@@ -3,7 +3,7 @@
 
 #define instr16(f) ((instrfunc_t)&Instr16::f)
 
-Instr16::Instr16(Emulator *e) : Instruction(e, false) {
+Instr16::Instr16(Emulator *e, InstrData *id) : Instruction(e, id, false) {
 	int i;
 
 	// 0x00 : add_rm8_r8
@@ -947,6 +947,7 @@ void Instr16::lgdt_m16(void){
 	m16 = get_m();
 	//INFO("DISP16:0x%04x data:0x%04x", DISP16, EMU->get_data32(SEGMENT, DISP16+2));
 	EMU->set_dtreg(GDTR, READ_MEM32(m16+2)&((1<<24)-1), READ_MEM16(m16));
+	//INFO("[0x%04x:0x%08x] limit:0x%04x gdt:0x%04x", EMU->get_sgreg(get_segment()), m16, READ_MEM32(m16+2)&((1<<24)-1), READ_MEM16(m16));
 }
 
 void Instr16::lidt_m16(void){

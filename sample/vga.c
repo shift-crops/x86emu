@@ -1,16 +1,13 @@
-#ifndef _VGA_H
-#define _VGA_H
-
 #include "common.h"
 
 typedef struct {
-	uint8_t blue;
-	uint8_t green;
 	uint8_t red;
+	uint8_t green;
+	uint8_t blue;
 } rgb_t;
 
 const rgb_t palette[0x100] = {
-//	 B,    G,    R
+//	 R,    G,    B
 	{0x00, 0x00, 0x00},
 	{0x00, 0x00, 0x2a},
 	{0x00, 0x2a, 0x00},
@@ -269,4 +266,29 @@ const rgb_t palette[0x100] = {
 	{0x00, 0x00, 0x00}
 };
 
-#endif
+void cli(void);
+void sti(void);
+void out_port(uint16_t port, uint8_t v);
+
+void gc_configure(void){
+	cli();
+	out_port(0x3ce, 0x6);
+	out_port(0x3cf, 0x1);
+	sti();
+}
+
+void dac_configure(void){
+	cli();
+	out_port(0x3c8, 0);
+	for(int i=0; i<0x100; i++){
+		out_port(0x3c9, palette[i].red);
+		out_port(0x3c9, palette[i].green);
+		out_port(0x3c9, palette[i].blue);
+	}
+	sti();
+}
+
+void init_vga(void){
+	dac_configure();
+	//gc_configure();
+}

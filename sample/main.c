@@ -3,6 +3,7 @@ extern int _puts(char *);
 
 int main(void){
 	uint8_t *vram = (uint8_t*)0xa0000;
+	_puts("Hello!\n");
 /*
 	uint8_t *font = (uint8_t*)0x10600;
 	_puts("start");
@@ -19,7 +20,7 @@ int main(void){
 
 	_puts("end");
 	__asm__("hlt");
-*/
+
 	for(int i=0; i<0x10; i++){
 		_puts("next\n");
 		for(int j=0; j<320*200; j++)
@@ -29,7 +30,7 @@ int main(void){
 
 	for(int i=0; i<320*200; i++)
 		vram[i] = i % 0x10;
-/*
+
 	for(int i=0; i<200; i++){
 		uint8_t c8 = i % 0x10;
 		uint32_t c32 = (c8<<24) + (c8<<16) + (c8<<8) + c8;

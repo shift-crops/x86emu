@@ -3,7 +3,7 @@
 
 #define instr32(f) ((instrfunc_t)&Instr32::f)
 
-Instr32::Instr32(Emulator *e) : Instruction(e, true) {
+Instr32::Instr32(Emulator *e, InstrData *id) : Instruction(e, id, true) {
 	int i;
 
 	// 0x00 : add_rm8_r8

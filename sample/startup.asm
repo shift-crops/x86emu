@@ -1,4 +1,4 @@
-extern init_idt, init_paging
+extern init_idt, init_paging, init_vga
 extern main
 global start
 
@@ -56,6 +56,8 @@ start:
 	and al, 0xef
 	out 0xa1, al
 	sti
+
+	call init_vga
 
 	mov ax, 0x23
 	mov ds, ax

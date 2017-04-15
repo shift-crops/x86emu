@@ -9,7 +9,7 @@ void bios_init(void){
 }
 
 void init_ivt(void){
-	set_ivt(0x10, (uint32_t)bsv_test, 0xf000);
+	set_ivt(0x10, (uint32_t)bsv_video, 0xf000);
 	set_ivt(0x13, (uint32_t)bsv_disk, 0xf000);
 	set_ivt(0x26, (uint32_t)bsv_irq_disk, 0xf000);
 }

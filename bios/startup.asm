@@ -47,7 +47,6 @@ init_pic:
 	mov al, 0xff
 	out 0xa1, al
 	sti
-
 	ret
 
 init_fdd:
@@ -89,26 +88,18 @@ init_vga:
 	mov al, 0x09
 	out dx, al
 	mov dx, 0x03b5
-	mov al, 0x08-1
+	mov al, 0x10-1
 	out dx, al
 	sti
 
-	; font ([0xa:0x0000] <- [0xf:0xc000])
+	; font ([0xa000:0x0000] <- [0xf000:0xc000])
 	push es
-	mov ax, 0x0a
+	mov ax, 0xa000
 	mov es, ax
 	push dword 0xc000
 	call dword load_font
 	add sp, 4
 	pop es
-
-	; graphic mode
-	mov dx, 0x03ce
-	mov al, 0x06
-	out dx, al
-	mov dx, 0x03cf
-	mov al, 0x1
-	out dx, al
 	
 	ret
 

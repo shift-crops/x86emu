@@ -27,8 +27,18 @@ BITS 16
 boot:
 	mov ax, cs
 	mov ds, ax
+	mov es, ax
+
+	mov ah, 0x13
+	mov al, 0x3
+	mov bl, 0x7	; attribute
+	mov dl, 0x00	; x
+	mov dh, 0x00	; y
+	mov bp, str_loading
+	int 0x10
 
 	; read sectors (0x1000:0x0)
+	push es
 	mov ax, 0x1000
 	mov es, ax
 	mov bx, 0x0
@@ -39,9 +49,16 @@ boot:
 	mov cl, 0x02	; sector
 	mov dh, 0x00	; head
 	mov dl, 0x00	; drive
-	;int 0x13
-	nop
-	nop
+	int 0x13
+	pop es
+
+	mov ah, 0x13
+	mov al, 0x3
+	mov bl, 0x7	; attribute
+	mov dl, 0x00	; x
+	mov dh, 0x01	; y
+	mov bp, str_booting
+	int 0x10
 
 	; gdt
 	lgdt [gdtr]
@@ -85,6 +102,11 @@ gdt:
 	db 0x42
 	db 0x00
 gdt_end:
+
+str_loading:
+	db "now loading from floppy disk...", 0x00
+str_booting:
+	db "booting...", 0x00
 
 times	0x1fe-($-$$) db 0
 	dw 0xaa55

@@ -22,18 +22,20 @@ int main(int argc, char *argv[]){
 	th1.join();
 	th2.join();
 	*/
-	run_emulator(argc<2 ? "sample/kernel.img": argv[1], true);
+	run_emulator(argc<2 ? "sample/kernel.img": argv[1], false);
 
 	glfwTerminate();
 }
 
 void run_emulator(const char *image_name, bool preload){
 	Emulator emu = Emulator(MEMORY_SIZE, 0xf000, 0xfff0, image_name);
-	Instr16 instr16(&emu);
-	Instr32 instr32(&emu);
+	InstrData instr;
+
+	Instr16 instr16(&emu, &instr);
+	Instr32 instr32(&emu, &instr);
 
 	emu.load_binary("bios/bios.bin", 0xf0000, 0, 0x600);
-	//emu.load_binary("bios/hankaku.chr", 0xfc000, 0, 0x1000);
+	emu.load_binary("bios/hankaku.chr", 0xfc000, 0, 0x1000);
 	emu.load_binary("bios/crt0.bin", 0xffff0, 0, 0x10);
 	if(preload)
 		emu.load_binary(image_name, 0x10000, 0x200, 0x1800);
@@ -46,6 +48,7 @@ void run_emulator(const char *image_name, bool preload){
 		uint8_t chsz;
 		bool chsz_op, chsz_ad;
 
+		memset(&instr, 0, sizeof(InstrData));
 		try{
 			if(emu.chk_irq())	emu.do_halt(false);
 			if(emu.is_halt()){
@@ -55,7 +58,7 @@ void run_emulator(const char *image_name, bool preload){
 			emu.hundle_interrupt();
 
 			is_protected = emu.is_protected();
-			chsz = (is_protected ? instr32.chk_chsz() : instr16.chk_chsz());
+			chsz = (is_protected ? instr32.parse_prefix() : instr16.parse_prefix());
 			chsz_op = chsz & CHSZ_OP;
 			chsz_ad = chsz & CHSZ_AD;
 
