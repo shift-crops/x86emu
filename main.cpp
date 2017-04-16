@@ -34,11 +34,11 @@ void run_emulator(const char *image_name, bool preload){
 	Instr16 instr16(&emu, &instr);
 	Instr32 instr32(&emu, &instr);
 
-	emu.load_binary("bios/bios.bin", 0xf0000, 0, 0x600);
+	emu.load_binary("bios/bios.bin", 0xf0000, 0, 0x800);
 	emu.load_binary("bios/hankaku.chr", 0xfc000, 0, 0x1000);
 	emu.load_binary("bios/crt0.bin", 0xffff0, 0, 0x10);
 	if(preload)
-		emu.load_binary(image_name, 0x10000, 0x200, 0x1800);
+		emu.load_binary(image_name, 0x10000, 0x200, 0x2000);
 
 
 	//while(!emu.is_halt()){

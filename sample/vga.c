@@ -265,6 +265,7 @@ const rgb_t palette[0x100] = {
 	{0x00, 0x00, 0x00},
 	{0x00, 0x00, 0x00}
 };
+uint16_t cursor_x, cursor_y=0;
 
 void cli(void);
 void sti(void);
@@ -291,4 +292,29 @@ void dac_configure(void){
 void init_vga(void){
 	dac_configure();
 	//gc_configure();
+}
+
+void scroll_page(uint8_t n){
+	uint16_t i;
+	uint16_t *vram = (uint16_t*)0xa0000;
+
+	for(i=0; i<(0xc-n)*0x28; i++)
+		vram[i] = vram[n*0x28+i];
+	for(; i<0xc*0x28; i++)
+		vram[i] = 0x0700;
+	cursor_y -= n;
+}
+
+uint32_t put_text(const uint8_t *s){
+	uint16_t i;
+	uint16_t *vram = (uint16_t*)0xa0000;
+
+	if(cursor_y > 0xb)
+		scroll_page(1);
+
+	for(i=0; s[i]; i++)
+		vram[cursor_y*0x28 + i] = 0x0700 + s[i];
+	cursor_y++;
+
+	return i;
 }

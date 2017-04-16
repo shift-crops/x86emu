@@ -29,16 +29,8 @@ uint8_t VGA::in8(uint16_t addr){
 void VGA::out8(uint16_t addr, uint8_t v){
 }
 
-uint32_t VGA::read32(uint32_t offset){
-	return 0;
-}
-
-uint16_t VGA::read16(uint32_t offset){
-	return 0;
-}
-
 uint8_t VGA::read8(uint32_t offset){
-	return 0;
+	return plane[offset%2][offset&(~1)];
 }
 
 void VGA::write32(uint32_t offset, uint32_t v){
@@ -47,18 +39,10 @@ void VGA::write32(uint32_t offset, uint32_t v){
 	*(uint32_t*)&plane[2][offset] = v;
 }
 
-void VGA::write16(uint32_t offset, uint16_t v){
-	refresh = true;
-	// TODO
-	plane[0][offset] = v&0xff;
-	plane[1][offset+1] = (v>>8)&0xff;
-}
-
 void VGA::write8(uint32_t offset, uint8_t v){
 	refresh = true;
 	// TODO
-	//plane[2][offset] = v;
-	plane[offset%2][offset] = v;
+	plane[offset%2][offset&(~1)] = v;
 }
 
 /* Sequencer */
@@ -110,7 +94,7 @@ uint8_t VGA::CRT::attr_index_text(uint32_t n){
 
 	idx = y/(mslr.MSL+1)*hdeer.HDEE + x/8;
 	chr = vga->plane[0][idx*2];
-	att = vga->plane[1][idx*2+1];
+	att = vga->plane[1][idx*2];
 
 	font = vga->seq.get_font(att);
 	bits = *(font + chr*0x10 + y%(mslr.MSL+1));

@@ -3,7 +3,7 @@ BITS 16
 
 	jmp boot
 	BS_jmpBoot2	db	0x90
-	BS_OEMName	db	"SCOS", 0x00, 0x00, 0x00, 0x00
+	BS_OEMName	db	"SAMPLE", 0x00, 0x00
 	BPB_BytsPerSec	dw	0x0200		;BytesPerSector
 	BPB_SecPerClus	db	0x01		;SectorPerCluster
 	BPB_RsvdSecCnt	dw	0x0001		;ReservedSectors
@@ -21,7 +21,7 @@ BITS 16
 	BS_Reserved1	db	0x00		;Reserved
 	BS_BootSig	db	0x29		;BootSignature
 	BS_VolID	dd	0x20170401	;VolumeSerialNumber
-	BS_VolLab	db	"ShiftCrops "	;VolumeLabel
+	BS_VolLab	db	"SampleOS   "	;VolumeLabel
 	BS_FilSysType	db	"FAT12   "	;FileSystemType
 
 boot:

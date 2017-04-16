@@ -46,6 +46,8 @@ InstrBase::InstrBase() {
 	set_funcflag(0x8a, instrbase(mov_r8_rm8), CHK_MODRM);
 	set_funcflag(0x8e, instrbase(mov_sreg_rm16), CHK_MODRM);
 	set_funcflag(0x90, instrbase(nop), 0);
+	set_funcflag(0xa0, instrbase(mov_al_moffs8), CHK_MOFFS8);
+	set_funcflag(0xa2, instrbase(mov_moffs8_al), CHK_MOFFS8);
 	set_funcflag(0xa8, instrbase(test_al_imm8), CHK_IMM8);
 	for (i=0; i<8; i++)	set_funcflag(0xb0+i, instrbase(mov_r8_imm8) ,CHK_IMM8);
 	set_funcflag(0xc6, instrbase(mov_rm8_imm8), CHK_MODRM | CHK_IMM8);
@@ -298,6 +300,14 @@ void InstrBase::mov_sreg_rm16(void){
 }
 
 void InstrBase::nop(void){} 		// xchg eax, eax
+
+void InstrBase::mov_al_moffs8(void){
+	SET_GPREG(AL, READ_MEM8(MOFFS8));
+}
+
+void InstrBase::mov_moffs8_al(void){
+	WRITE_MEM8(MOFFS8, GET_GPREG(AL));
+}
 
 void InstrBase::test_al_imm8(void){
 	uint8_t al;

@@ -64,7 +64,7 @@ uint32_t DataAccess::trans_v2l(acsmode_t mode, sgreg_t seg, uint32_t vaddr){
 		dt_base = get_dtreg_base(sg.TI ? LDTR : GDTR);
 		dt_limit = get_dtreg_limit(sg.TI ? LDTR : GDTR);
 
-		INFO("dt_base=0x%04x, dt_limit=0x%02x, dt_index=0x%02x", dt_base, dt_limit, dt_index);
+		//INFO("dt_base=0x%04x, dt_limit=0x%02x, dt_index=0x%02x", dt_base, dt_limit, dt_index);
 		EXCEPTION(EXP_GP, !dt_index || dt_index > dt_limit);
 
 		read_data(&gdt, dt_base + dt_index, sizeof(SGDescriptor));

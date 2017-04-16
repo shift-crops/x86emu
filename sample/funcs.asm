@@ -2,7 +2,7 @@ global _puts, _putc, _gets
 global in_port, out_port, cli, sti
 global sys_puts, sys_gets, irq_timer, irq_keyboard, irq_mouse
 
-extern print_key
+extern print_key, put_text
 
 BITS 32
 _puts:
@@ -53,7 +53,9 @@ sti:
 
 sys_puts:
 	pusha
-	mov ebx, 0xa0000
+	push esi
+	call dword put_text
+	add esp, 4
 	mov edx, 0x03f8
 puts_loop:
 	mov al, [esi]
@@ -61,12 +63,8 @@ puts_loop:
 	cmp al, 0
 	je puts_end
 	out dx, al
-	mov [ebx], ax
-	mov byte [ebx+1], 7
-	add ebx, 2
 	jmp puts_loop
 puts_end:
-	mov byte [ebx], 0
 	popa
 	iret
 

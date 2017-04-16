@@ -7,22 +7,59 @@ bsv_video:
 	je video_set_cursor_pos
 	cmp ah, 0x03
 	je video_get_cursor_pos
+	cmp ah, 0x06
+	je video_scroll_up
 	cmp ah, 0x0e
 	je video_write_teletype
 	cmp ah, 0x13
 	je video_write_string
 	iret
 
+; video_set_cursor_pos
 video_set_cursor_pos:
 	mov [cursor_x], dl
 	mov [cursor_y], dh
 	mov ax, 0x0
 	iret
 
+; video_get_cursor_pos
 video_get_cursor_pos:
 	mov dl, [cursor_x]
 	mov dh, [cursor_y]
 	mov ax, 0x0
+	iret
+
+; video_scroll_up
+video_scroll_up:
+	pusha
+	push ds
+	mov cx, 0xa000
+	mov ds, cx
+	xor ah, ah
+	sub word [cursor_y], ax
+	mov si, ax
+	imul si, 0x28*2
+	xor di, di
+	mov cx, 0xc	; 0xc8/0x10
+	sub cx, ax
+	imul cx, 0x28
+video_up_loop:
+	mov dx, [si]
+	mov [di], dx
+	add si, 2
+	add di, 2
+	dec cx
+	test cx, cx
+	jnz video_up_loop
+
+	xor bl, bl
+video_up_attr_loop:
+	mov [di], bx
+	add di, 2
+	cmp di, 0x28*2*0xc
+	jl video_up_attr_loop
+	pop ds
+	popa
 	iret
 
 ; video_write_teletype

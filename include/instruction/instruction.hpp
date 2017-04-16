@@ -56,6 +56,8 @@
 #define IMM16		(instr->imm16)
 #define IMM8		(instr->imm8)
 #define PTR16		(instr->ptr16)
+#define MOFFS8		(instr->moffs8)
+#define MOFFS		(instr->moffs)
 #define PRE_SEGMENT	(instr->pre_segment)
 #define SEGMENT		(segment)
 
@@ -95,6 +97,10 @@ struct InstrData {
 		int32_t imm32;
 	};
 	int16_t ptr16;
+	union {
+		int8_t moffs8;
+		int32_t moffs;
+	};
 };
 
 class Instruction {
@@ -156,11 +162,13 @@ class ExecInstr : protected virtual Instruction {
 };
 
 
-#define CHK_MODRM 	1
-#define CHK_IMM32 	2
-#define CHK_IMM16 	4
-#define CHK_IMM8 	8
-#define CHK_PTR16 	16
+#define CHK_MODRM 	(1<<0)
+#define CHK_IMM32 	(1<<1)
+#define CHK_IMM16 	(1<<2)
+#define CHK_IMM8 	(1<<3)
+#define CHK_PTR16 	(1<<4)
+#define CHK_MOFFS 	(1<<5)
+#define CHK_MOFFS8 	(1<<6)
 
 #define CHSZ_NONE	0
 #define CHSZ_OP		1
@@ -174,6 +182,8 @@ union InstrFlags {
 		uint8_t imm16 : 1;
 		uint8_t imm8 : 1;
 		uint8_t ptr16 : 1;
+		uint8_t moffs : 1;
+		uint8_t moffs8 : 1;
 	};
 };
 

@@ -87,6 +87,11 @@ Instr16::Instr16(Emulator *e, InstrData *id) : Instruction(e, id, false) {
 	set_funcflag(0x99, instr16(cwd), 0);
 	set_funcflag(0x9a, instr16(callf_ptr16_16), CHK_PTR16 | CHK_IMM16);
 
+	// 0xa0 : mov_al_moff8
+	set_funcflag(0xa1, instr16(mov_ax_moffs), CHK_MOFFS);
+	// 0xa2 : mov_moff8_al
+	set_funcflag(0xa3, instr16(mov_moffs_ax), CHK_MOFFS);
+
 	// 0xb0-0xb7 : mov_r8_imm
 	for (i=0; i<8; i++)	set_funcflag(0xb8+i, instr16(mov_r16_imm16) ,CHK_IMM16);
 
@@ -477,6 +482,14 @@ void Instr16::callf_ptr16_16(void){
 	EMU->set_sgreg(CS, PTR16);
 	PUSH16(GET_IP());
 	SET_IP(IMM16);
+}
+
+void Instr16::mov_ax_moffs(void){
+	SET_GPREG(AX, READ_MEM16(MOFFS));
+}
+
+void Instr16::mov_moffs_ax(void){
+	WRITE_MEM16(MOFFS, GET_GPREG(AX));
 }
 
 void Instr16::mov_r16_imm16(void){

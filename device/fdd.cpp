@@ -94,7 +94,8 @@ uint8_t FDD::read(uint8_t slot){
 	if(!drive[slot] || !drive[slot]->disk)
 		ERROR("not ready disk%d", slot);
 	
-	fread(&v, 1, 1, drive[slot]->disk);
+	if(!fread(&v, 1, 1, drive[slot]->disk))
+		v = 0;
 	sync_position(slot);
 	return v;
 }
