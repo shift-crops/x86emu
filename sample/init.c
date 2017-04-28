@@ -67,7 +67,7 @@ uint32_t init_paging(void){
 		pte[i].RW = 1;
 		pte[i].US = 1;
 	}
-	for(int i=0xa0; i<0xb0; i++){
+	for(int i=0xa0; i<0xc0; i++){
 		pte[i].page_base = i;
 		pte[i].P = 1;
 		pte[i].RW = 1;

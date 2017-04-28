@@ -6,7 +6,7 @@ OBJS := startup.o funcs.o init.o main.o keyboard.o vga.o
 
 CC	:= gcc
 AS	:= nasm
-CFLAGS  := -nostdlib -fno-asynchronous-unwind-tables -g -fno-stack-protector -m32
+CFLAGS  := -masm=intel -nostdlib -fno-asynchronous-unwind-tables -g -fno-stack-protector -m32
 LDFLAGS := --entry=start --oformat=binary -Ttext 0x10000 -melf_i386
 
 all :

@@ -16,7 +16,7 @@ Emulator::Emulator(size_t size, uint16_t cs, uint16_t ip, const char *disk_name)
 	set_pic(pic_m, true);
 	set_pic(pic_s, false);
 
-	ui	= new UI();
+	ui	= new UI(3);
 	pit	= new PIT();
 	fdd	= new FDD();
 	syscon	= new SysControl(this);
@@ -44,7 +44,7 @@ Emulator::Emulator(size_t size, uint16_t cs, uint16_t ip, const char *disk_name)
 	set_portio(0x3c2, 2, vga);		// 0x3c2, 0x3c3
 	set_portio(0x3c4, 2, vga->get_seq());	// 0x3c4, 0x3c5
 	set_portio(0x3c6, 4, vga->get_dac());	// 0x3c6, 0x3c7, 0x3c8, 0x3c9
-	set_portio(0x3ca, 4, vga);		// 0x3ca, 0x3cc
+	set_portio(0x3cc, 1, vga);		// 0x3cc
 	set_portio(0x3ce, 2, vga->get_gc());	// 0x3ce, 0x3cf
 	set_portio(0x3d4, 2, vga->get_crt());	// 0x3d4, 0x3d5
 	set_portio(0x3da, 1, vga);		// 0x3da

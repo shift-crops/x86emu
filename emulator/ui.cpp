@@ -73,8 +73,15 @@ void UI::keyboard_callback(GLFWwindow *window, int key, int scancode, int action
 	Keyboard *kb = static_cast<UI*>(glfwGetWindowUserPointer(window))->keyboard;
 
 	INFO("key : %d, scancode : %d, action : %d, mods : %d\n", key, scancode, action, mods);
-	if(action < 2)
-		kb->send_code(scancode-8 + (1-action)*0x80);
+	switch(action){
+		case 0:		// release
+			kb->send_code(scancode-8 + 0x80);
+			break;
+		case 1:		// press
+		case 2:		// keep
+			kb->send_code(scancode-8);
+			break;
+	}
 }
 
 void UI::mouse_callback(GLFWwindow *window, int button, int action, int mods){

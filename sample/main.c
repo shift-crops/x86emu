@@ -1,5 +1,6 @@
 #include "common.h"
-extern int _puts(char *);
+int _puts(char *);
+void set_graphicmode(void);
 
 int main(void){
 	uint8_t *vram = (uint8_t*)0xa0000;
@@ -20,14 +21,15 @@ int main(void){
 
 	_puts("end");
 	__asm__("hlt");
+*/
 
+	set_graphicmode();
 	for(int i=0; i<0x10; i++){
-		_puts("next\n");
 		for(int j=0; j<320*200; j++)
 			vram[j] = i;
 		__asm__("hlt");
 	}
-
+/*
 	for(int i=0; i<320*200; i++)
 		vram[i] = i % 0x10;
 

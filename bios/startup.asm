@@ -1,6 +1,6 @@
 extern bios_main, bios_init
 extern fdd_configure
-extern attr_configure, dac_configure, load_font
+extern attr_configure, seq_configure, dac_configure, gc_configure, load_font
 global start
 
 BITS 16
@@ -63,10 +63,21 @@ init_fdd:
 	ret
 
 init_vga:
-	call dword attr_configure
-	call dword dac_configure
+	cli
+	; mor : 0x2
+	mov dx, 0x03c2
+	mov al, 0x2
+	out dx, al
+	sti
+
+	call dword load_font
 
 	cli
+	call dword attr_configure
+	call dword seq_configure
+	call dword dac_configure
+	call dword gc_configure
+
 	; x : 320
 	mov dx, 0x03b4
 	mov al, 0x1
@@ -88,19 +99,10 @@ init_vga:
 	mov al, 0x09
 	out dx, al
 	mov dx, 0x03b5
-	mov al, 0x10-1
+	mov al, 0x8-1
 	out dx, al
 	sti
 
-	; font ([0xa000:0x0000] <- [0xf000:0xc000])
-	push es
-	mov ax, 0xa000
-	mov es, ax
-	push dword 0xc000
-	call dword load_font
-	add sp, 4
-	pop es
-	
 	ret
 
 load_mbr:

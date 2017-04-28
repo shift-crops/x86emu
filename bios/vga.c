@@ -1,4 +1,5 @@
 #include "common.h"
+#include "font8x8.h"
 
 typedef struct {
 	uint8_t red;
@@ -27,28 +28,61 @@ const rgb_t palette[0x10] = {
 };
 
 void attr_configure(void){
-	cli();
 	for(int i=0; i<0x10; i++){
 		out_port(0x3c0, i);
 		out_port(0x3c1, i);
 	}
-	sti();
+}
+
+void seq_configure(void){
+	out_port(0x3c4, 2);
+	out_port(0x3c5, 0x3);
+
+	out_port(0x3c4, 3);
+	out_port(0x3c5, 0x0);
+
+	out_port(0x3c4, 4);
+	out_port(0x3c5, 0x2);
 }
 
 void dac_configure(void){
-	cli();
 	out_port(0x3c8, 0);
 	for(int i=0; i<0x10; i++){
 		out_port(0x3c9, palette[i].red);
 		out_port(0x3c9, palette[i].green);
 		out_port(0x3c9, palette[i].blue);
 	}
-	sti();
 }
 
-void load_font(void *font){
-	for(int i=0; i<0x1000; i+=4){
-		uint32_t v = *(uint32_t*)(font+i);
-		write_esd((uint32_t*)i, v);
+void gc_configure(void){
+	out_port(0x3ce, 5);
+	out_port(0x3cf, 0x10);
+
+	out_port(0x3ce, 6);
+	out_port(0x3cf, 0xe);
+}
+
+void load_font(void){
+	cli();
+	out_port(0x3c4, 2);
+	out_port(0x3c5, 0x4);
+	out_port(0x3c4, 4);
+	out_port(0x3c5, 0x6);
+
+	out_port(0x3ce, 5);
+	out_port(0x3cf, 0x0);
+	out_port(0x3ce, 6);
+	out_port(0x3cf, 0x0);
+	sti();
+
+	__asm__("push es\n"
+		"mov ax, 0xa000\n"
+		"mov es, ax");
+
+	for(int i=0; i<0x80; i++){
+		uint8_t *p = font8x8_basic[i];
+		write_esd((uint32_t*)(i*0x10), *(uint32_t*)&p[0]);
+		write_esd((uint32_t*)(i*0x10+4), *(uint32_t*)&p[4]);
 	}
+	__asm__("pop es");
 }

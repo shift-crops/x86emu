@@ -23,36 +23,94 @@ void VGA::rgb_image(uint8_t *buffer, uint32_t size){
 }
 
 uint8_t VGA::in8(uint16_t addr){
-	return 0;
+	switch(addr){
+		case 0x3c2:
+			return 0;
+		case 0x3c3:
+			return 0;
+		case 0x3cc:
+			return mor.raw;
+		case 0x3ba:
+		case 0x3da:
+			return 0;
+	}
+	return -1;
 }
 
 void VGA::out8(uint16_t addr, uint8_t v){
+	switch(addr){
+		case 0x3c2:
+			mor.raw = v;
+			break;
+		case 0x3c3:
+			break;
+		case 0x3ba:
+		case 0x3da:
+			break;
+	}
+
 }
 
 uint8_t VGA::read8(uint32_t offset){
-	return plane[offset%2][offset&(~1)];
-}
-
-void VGA::write32(uint32_t offset, uint32_t v){
-	//refresh = true;
-	// TODO
-	*(uint32_t*)&plane[2][offset] = v;
+	return mor.ER ? seq.read(offset) : 0;
 }
 
 void VGA::write8(uint32_t offset, uint8_t v){
 	refresh = true;
-	// TODO
-	plane[offset%2][offset&(~1)] = v;
+	if(mor.ER)
+		seq.write(offset, v);
+}
+
+uint8_t VGA::read_plane(uint8_t nplane, uint32_t offset){
+	if(nplane > 3 || offset > (1<<16)-1)
+		ERROR("Out of Plane range");
+	return plane[nplane][offset];
+}
+
+void VGA::write_plane(uint8_t nplane, uint32_t offset, uint8_t v){
+	if(nplane > 3 || offset > (1<<16)-1)
+		ERROR("Out of Plane range");
+	plane[nplane][offset] = v;
 }
 
 /* Sequencer */
+uint8_t VGA::Sequencer::read(uint32_t offset){
+	if(!mem_mr.EM)
+		offset &= (1<<16)-1;
+
+	return vga->gc.read(offset);
+}
+
+#define SEQ_WRITE_PLANE(n, o, v)	if((map_mr.raw>>(n)) & 1) vga->gc.write(n, o ,v)
+void VGA::Sequencer::write(uint32_t offset, uint8_t v){
+	if(!mem_mr.EM)
+		offset &= (1<<16)-1;
+
+	if(mem_mr.C4){
+		SEQ_WRITE_PLANE(offset&3, offset&(~3), v);
+	}
+	else{
+		if(mem_mr.OE){
+			for(int i=0; i<4; i++)
+				SEQ_WRITE_PLANE(i, offset, v);
+		}
+		else{
+			uint8_t nplane = offset&1;
+			SEQ_WRITE_PLANE(nplane, offset, v);
+			SEQ_WRITE_PLANE(nplane+2, offset, v);
+		}
+	}
+}
+
 uint8_t *VGA::Sequencer::get_font(uint8_t att){
+	uint8_t v;
 	uint16_t font_ofst = 0;
 
-	if(mem_mr.EM){
-		uint8_t v = (att&0x8) ? cmsr.CMA : cmsr.CMB;
-		font_ofst = v<4 ? v*2 : (v-4)*2 + 1;
-	}
+	v = att&0x8 ? (cmsr.CMAM<<2) + cmsr.CMA : (cmsr.CMBM<<2) + cmsr.CMB;
+	font_ofst = v&4 ? (v&(~4))*2 + 1 : v*2;
+
+	if(!mem_mr.EM)
+		font_ofst &= (1<<16)-1;
 
 	return vga->plane[2] + font_ofst;
 }
@@ -93,13 +151,13 @@ uint8_t VGA::CRT::attr_index_text(uint32_t n){
 	y = n / (8*hdeer.HDEE);
 
 	idx = y/(mslr.MSL+1)*hdeer.HDEE + x/8;
-	chr = vga->plane[0][idx*2];
-	att = vga->plane[1][idx*2];
+	chr = vga->read_plane(0, idx*2);
+	att = vga->read_plane(1, idx*2);
 
 	font = vga->seq.get_font(att);
 	bits = *(font + chr*0x10 + y%(mslr.MSL+1));
 
-	return (bits>>(7-x%8))&1 ? att&0x0f : (att&0xf0)>>4;
+	return (bits>>(x%8))&1 ? att&0x0f : (att&0xf0)>>4;
 }
 
 uint8_t VGA::CRT::in8(uint16_t addr){
@@ -129,6 +187,69 @@ void VGA::CRT::out8(uint16_t addr, uint8_t v){
 }
 
 /* GraphicController */
+uint8_t VGA::GraphicController::read(uint32_t offset){
+	if(!chk_offset(&offset))
+		return 0;
+
+	switch(gmr.WM){
+		case 0:
+			if(gmr.OE){
+				uint8_t nplane = (rmsr.MS&2) + (offset&1);
+				return vga->read_plane(nplane, offset&(~1));
+			}
+			else
+				return vga->read_plane(rmsr.MS, offset);
+		case 1:
+			break;
+	}
+
+	return 0;
+}
+
+void VGA::GraphicController::write(uint8_t nplane, uint32_t offset, uint8_t v){
+	if(!chk_offset(&offset))
+		return;
+
+	switch(gmr.WM){
+		case 0:
+			if(gmr.OE)
+				offset &= ~1;
+			vga->write_plane(nplane, offset, v);
+			break;
+		case 1:
+			break;
+		case 2:
+			break;
+		case 3:
+			break;
+	}
+	INFO("write : plane[%d][0x%x] = 0x%02x", nplane, offset, v);
+}
+
+bool VGA::GraphicController::chk_offset(uint32_t *offset){
+	uint32_t base, size;
+	bool valid;
+
+	switch(mr.MM){
+		case 0:	
+			base = 0x00000; size = 0x20000;
+			break;
+		case 1:	
+			base = 0x00000; size = 0x10000;
+			break;
+		case 2:	
+			base = 0x10000; size = 0x08000;
+			break;
+		case 3:
+			base = 0x18000; size = 0x08000;
+			break;
+	}
+
+	valid = (*offset >= base && *offset < base+size);
+	*offset -= base;
+	return valid;
+}
+
 gmode_t VGA::GraphicController::graphic_mode(void){
 	if(mr.GM){
 		if(gmr._256CM)
@@ -139,7 +260,7 @@ gmode_t VGA::GraphicController::graphic_mode(void){
 }
 
 uint8_t VGA::GraphicController::attr_index_graphic(uint32_t n){
-	return vga->plane[2][n];
+	return vga->read_plane(2, n);
 }
 
 uint8_t VGA::GraphicController::in8(uint16_t addr){

@@ -33,14 +33,14 @@ video_get_cursor_pos:
 video_scroll_up:
 	pusha
 	push ds
-	mov cx, 0xa000
+	mov cx, 0xb800
 	mov ds, cx
 	xor ah, ah
 	sub word [cursor_y], ax
 	mov si, ax
 	imul si, 0x28*2
 	xor di, di
-	mov cx, 0xc	; 0xc8/0x10
+	mov cx, 0x19	; 0xc8/0x8
 	sub cx, ax
 	imul cx, 0x28
 video_up_loop:
@@ -56,7 +56,7 @@ video_up_loop:
 video_up_attr_loop:
 	mov [di], bx
 	add di, 2
-	cmp di, 0x28*2*0xc
+	cmp di, 0x28*2*0x19
 	jl video_up_attr_loop
 	pop ds
 	popa
@@ -66,7 +66,7 @@ video_up_attr_loop:
 video_write_teletype:
 	pusha
 	push ds
-	mov cx, 0xa000
+	mov cx, 0xb800
 	mov ds, cx
 	mov di, [cursor_y]
 	imul di, 0x28
@@ -94,7 +94,7 @@ video_write_string:
 	pusha
 	push ds
 	push dx
-	mov cx, 0xa000
+	mov cx, 0xb800
 	mov ds, cx
 
 	xor cx, cx

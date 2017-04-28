@@ -89,6 +89,8 @@ class VGA : public PortIO, public MemoryIO {
 					for(uint8_t i=0; i<sizeof(regs)/sizeof(uint8_t*); i++)
 						if(regs[i])*regs[i]=0;
 				};
+				uint8_t read(uint32_t offset);
+				void write(uint32_t offset, uint8_t v);
 				uint8_t *get_font(uint8_t att);
 				uint8_t in8(uint16_t addr);
 				void out8(uint16_t addr, uint8_t v);
@@ -274,6 +276,7 @@ class VGA : public PortIO, public MemoryIO {
 					uint8_t raw;
 					struct {
 						uint8_t WM : 2;
+						uint8_t : 1;
 						uint8_t RM : 1;
 						uint8_t OE : 1;
 						uint8_t SRM : 1;
@@ -286,8 +289,7 @@ class VGA : public PortIO, public MemoryIO {
 					struct {
 						uint8_t GM : 1;
 						uint8_t OE : 1;
-						uint8_t MM0 : 1;
-						uint8_t MM1 : 1;
+						uint8_t MM : 2;
 					};
 				} mr;
 
@@ -299,6 +301,9 @@ class VGA : public PortIO, public MemoryIO {
 					for(uint8_t i=0; i<sizeof(regs)/sizeof(uint8_t*); i++)
 						if(regs[i])*regs[i]=0;
 				};
+				uint8_t read(uint32_t offset);
+				void write(uint8_t nplane, uint32_t offset, uint8_t v);
+				bool chk_offset(uint32_t *offset);
 				gmode_t graphic_mode(void);
 				uint8_t attr_index_graphic(uint32_t n);
 				uint8_t in8(uint16_t addr);
@@ -454,8 +459,10 @@ class VGA : public PortIO, public MemoryIO {
 		void out8(uint16_t addr, uint8_t v);
 
 		uint8_t read8(uint32_t offset);
-		void write32(uint32_t offset, uint32_t v);
 		void write8(uint32_t offset, uint8_t v);
+
+		uint8_t read_plane(uint8_t nplane, uint32_t offset);
+		void write_plane(uint8_t nplane, uint32_t offset, uint8_t v);
 };
 
 #endif

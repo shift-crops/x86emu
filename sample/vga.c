@@ -265,7 +265,8 @@ const rgb_t palette[0x100] = {
 	{0x00, 0x00, 0x00},
 	{0x00, 0x00, 0x00}
 };
-uint16_t cursor_x, cursor_y=0;
+uint16_t cursor_x=0, cursor_y=0;
+bool graphic = false;
 
 void cli(void);
 void sti(void);
@@ -296,25 +297,52 @@ void init_vga(void){
 
 void scroll_page(uint8_t n){
 	uint16_t i;
-	uint16_t *vram = (uint16_t*)0xa0000;
+	uint16_t *vram = (uint16_t*)0xb8000;
 
-	for(i=0; i<(0xc-n)*0x28; i++)
+	for(i=0; i<(0x19-n)*0x28; i++)
 		vram[i] = vram[n*0x28+i];
-	for(; i<0xc*0x28; i++)
+	for(; i<0x19*0x28; i++)
 		vram[i] = 0x0700;
+
+	cursor_x = 0;
 	cursor_y -= n;
 }
 
 uint32_t put_text(const uint8_t *s){
 	uint16_t i;
-	uint16_t *vram = (uint16_t*)0xa0000;
+	uint16_t *vram = (uint16_t*)0xb8000;
 
-	if(cursor_y > 0xb)
-		scroll_page(1);
+	if(graphic)
+		return 0;
 
-	for(i=0; s[i]; i++)
-		vram[cursor_y*0x28 + i] = 0x0700 + s[i];
-	cursor_y++;
+	for(i=0; s[i]; i++){
+		vram[cursor_y*0x28 + cursor_x] = 0x0700 + s[i];
+		cursor_x++;
+		if(cursor_x >= 0x28 || !(s[i]^0x0a)){
+			cursor_x = 0;
+			cursor_y++;
+		}
+
+		if(cursor_y >= 0x19)
+			scroll_page(1);
+	}
 
 	return i;
 }
+
+void set_graphicmode(void){
+	graphic = true;
+
+	cli();
+        out_port(0x3c4, 2);
+        out_port(0x3c5, 0x4);
+        out_port(0x3c4, 4);
+        out_port(0x3c5, 0x6);
+
+	out_port(0x3ce, 5);
+	out_port(0x3cf, 0x0);
+	out_port(0x3ce, 6);
+	out_port(0x3cf, 0x5);
+	sti();
+}
+
