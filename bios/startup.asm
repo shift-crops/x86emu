@@ -35,7 +35,7 @@ init_pic:
 
 	mov al, 0x4
 	out 0x21, al
-	mov al, 0x2
+	mov al, 2
 	out 0xa1, al
 
 	mov al, 0x1

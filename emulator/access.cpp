@@ -61,6 +61,10 @@ uint32_t DataAccess::trans_v2l(acsmode_t mode, sgreg_t seg, uint32_t vaddr){
 		dt_index = sg.index << 3;
 
 		// TODO
+		if(!dt_index)
+			return vaddr;
+
+		// TODO
 		dt_base = get_dtreg_base(sg.TI ? LDTR : GDTR);
 		dt_limit = get_dtreg_limit(sg.TI ? LDTR : GDTR);
 

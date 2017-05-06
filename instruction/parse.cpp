@@ -65,6 +65,7 @@ void ParseInstr::parse(void){
 		DEBUG_MSG("imm8:0x%02x ", IMM8);
 		UPDATE_EIP(1);
 	}
+/*
 	else if(chk[OPCODE].moffs8){
 		MOFFS8 = (int8_t)get_emu()->get_code8(0);
 		DEBUG_MSG("moffs8:0x%02x ", MOFFS8);
@@ -81,7 +82,7 @@ void ParseInstr::parse(void){
 		}
 		DEBUG_MSG("moffs:0x%04x", MOFFS);
 	}
-
+*/
 	if(chk[OPCODE].ptr16){
 		PTR16 = get_emu()->get_code16(0);
 		DEBUG_MSG("ptr16:0x%04x", PTR16);

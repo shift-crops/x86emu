@@ -3,6 +3,8 @@ global bsv_video
 BITS 16
 ; bsv_video
 bsv_video:
+	cmp ah, 0x00
+	je video_set_video_mode
 	cmp ah, 0x02
 	je video_set_cursor_pos
 	cmp ah, 0x03
@@ -13,6 +15,35 @@ bsv_video:
 	je video_write_teletype
 	cmp ah, 0x13
 	je video_write_string
+	iret
+
+; video_set_video_mode
+video_set_video_mode:
+	mov dx, 0x3c4
+	mov al, 2
+	out dx, al
+	mov dx, 0x3c5
+	mov al, 0x4
+	out dx, al
+	mov dx, 0x3c4
+	mov al, 4
+	out dx, al
+	mov dx, 0x3c5
+	mov al, 0x6
+	out dx, al
+
+	mov dx, 0x3ce
+	mov al, 5
+	out dx, al
+	mov dx, 0x3cf
+	mov al, 0x0
+	out dx, al
+	mov dx, 0x3ce
+	mov al, 6
+	out dx, al
+	mov dx, 0x3cf
+	mov al, 0x5
+	out dx, al
 	iret
 
 ; video_set_cursor_pos

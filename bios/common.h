@@ -19,6 +19,7 @@ void sti(void);
 void bsv_test(void);
 void bsv_video(void);
 void bsv_disk(void);
+void bsv_keyboard(void);
 void bsv_irq_disk(void);
 
 #endif

@@ -26,5 +26,6 @@ void debug_print(const int type, const char *file, const char *function, int lin
 		dprintf(ts.fd, "\n");
 
 	if(ts.exit)
-		exit(-1);
+		//exit(-1);
+		throw -1;
 }

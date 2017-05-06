@@ -64,8 +64,8 @@ class Processor : public Eflags, public CR {
 		uint16_t get_dtreg_limit(enum dtreg_t n){ return dtregs[n].limit; };
 		uint16_t get_tr(void){ return tr; };
 
-		void set_eip(uint32_t v){ eip = v; mode_protected = CR::is_protected(); }; // flush pipeline
-		void set_ip(uint16_t v){ ip = v; mode_protected = CR::is_protected(); };
+		void set_eip(uint32_t v){ eip = v; };
+		void set_ip(uint16_t v){ ip = v; };
 		void set_gpreg(enum reg32_t n, uint32_t v){ gpregs[n].reg32 = v; };
 		void set_gpreg(enum reg16_t n, uint16_t v){ gpregs[n].reg16 = v; };
 		void set_gpreg(enum reg8_t n, uint8_t v){ (n<AH ? gpregs[n].reg8_l : gpregs[n-AH].reg8_h) = v; };
@@ -79,6 +79,7 @@ class Processor : public Eflags, public CR {
 		uint16_t update_gpreg(enum reg16_t n, int16_t v){ return gpregs[n].reg16 += v; };
 		uint8_t update_gpreg(enum reg8_t n, int8_t v){ return (n<AH ? gpregs[n].reg8_l : gpregs[n-AH].reg8_h) += v; };
 
+		void flush(void){ mode_protected = CR::is_protected(); };
 		bool is_halt(void){ return halt; };
 		void do_halt(bool h){ halt = h; };
 

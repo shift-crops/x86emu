@@ -87,10 +87,16 @@ Instr32::Instr32(Emulator *e, InstrData *id) : Instruction(e, id, true) {
 	set_funcflag(0x99, instr32(cdq), 0);
 	set_funcflag(0x9a, instr32(callf_ptr16_32), CHK_PTR16 | CHK_IMM32);
 
-	// 0xa0 : mov_al_moff8
-	set_funcflag(0xa1, instr32(mov_eax_moffs), CHK_MOFFS);
-	// 0xa2 : mov_moff8_al
-	set_funcflag(0xa3, instr32(mov_moffs_eax), CHK_MOFFS);
+	set_funcflag(0x9c, instr32(pushf), 0);
+	set_funcflag(0x9d, instr32(popf), 0);
+
+	set_funcflag(0xa0, instr32(mov_al_moffs8), CHK_IMM32);
+	set_funcflag(0xa1, instr32(mov_eax_moffs32), CHK_IMM32);
+	set_funcflag(0xa2, instr32(mov_moffs8_al), CHK_IMM32);
+	set_funcflag(0xa3, instr32(mov_moffs32_eax), CHK_IMM32);
+
+	// 0xa8 : test_al_imm8
+	set_funcflag(0xa9, instr32(test_eax_imm32), CHK_IMM16);
 
 	// 0xb0-0xb7 : mov_r8_imm
 	for (i=0; i<8; i++)	set_funcflag(0xb8+i, instr32(mov_r32_imm32) ,CHK_IMM32);
@@ -147,8 +153,10 @@ Instr32::Instr32(Emulator *e, InstrData *id) : Instruction(e, id, true) {
 	set_funcflag(0x81, instr32(code_81), CHK_MODRM | CHK_IMM32);
 	// 0x82 : code_82
 	set_funcflag(0x83, instr32(code_83), CHK_MODRM | CHK_IMM8);
+	// 0xc0 : code_c0
 	set_funcflag(0xc1, instr32(code_c1), CHK_MODRM | CHK_IMM8);
 	set_funcflag(0xd3, instr32(code_d3), CHK_MODRM);
+	set_funcflag(0xf7, instr32(code_f7), CHK_MODRM);
 	set_funcflag(0xff, instr32(code_ff), CHK_MODRM);
 	set_funcflag(0x0f00, instr32(code_0f00), CHK_MODRM);
 	set_funcflag(0x0f01, instr32(code_0f01), CHK_MODRM);
@@ -330,16 +338,22 @@ void Instr32::cmp_eax_imm32(void){
 
 void Instr32::inc_r32(void){
 	uint8_t reg;
+	uint32_t r32;
 
 	reg = OPCODE & ((1<<3)-1);
-	UPDATE_GPREG(static_cast<reg32_t>(reg), 1);
+	r32 = GET_GPREG(static_cast<reg32_t>(reg));
+	SET_GPREG(static_cast<reg32_t>(reg), r32+1);
+	EFLAGS_UPDATE_ADD(r32, 1);
 }
 
 void Instr32::dec_r32(void){
 	uint8_t reg;
+	uint32_t r32;
 
 	reg = OPCODE & ((1<<3)-1);
-	UPDATE_GPREG(static_cast<reg32_t>(reg), -1);
+	r32 = GET_GPREG(static_cast<reg32_t>(reg));
+	SET_GPREG(static_cast<reg32_t>(reg), r32-1);
+	EFLAGS_UPDATE_SUB(r32, 1);
 }
 
 void Instr32::push_r32(void){
@@ -481,15 +495,38 @@ void Instr32::cdq(void){
 void Instr32::callf_ptr16_32(void){
 	EMU->set_sgreg(CS, PTR16);
 	PUSH32(GET_EIP());
-	SET_EIP(IMM32);
+	SET_EIP_FLUSH(IMM32);
 }
 
-void Instr32::mov_eax_moffs(void){
-	SET_GPREG(EAX, READ_MEM32(MOFFS));
+void Instr32::pushf(void){
+	PUSH32(EMU->get_eflags());
 }
 
-void Instr32::mov_moffs_eax(void){
-	WRITE_MEM32(MOFFS, GET_GPREG(EAX));
+void Instr32::popf(void){
+	EMU->set_eflags(POP32());
+}
+
+void Instr32::mov_al_moffs8(void){
+	SET_GPREG(AL, READ_MEM8(IMM32));
+}
+
+void Instr32::mov_eax_moffs32(void){
+	SET_GPREG(EAX, READ_MEM32(IMM32));
+}
+
+void Instr32::mov_moffs8_al(void){
+	WRITE_MEM8(IMM32, GET_GPREG(AL));
+}
+
+void Instr32::mov_moffs32_eax(void){
+	WRITE_MEM32(IMM32, GET_GPREG(EAX));
+}
+
+void Instr32::test_eax_imm32(void){
+	uint32_t eax;
+
+	eax = GET_GPREG(EAX);
+	EFLAGS_UPDATE_AND(eax, IMM32);
 }
 
 void Instr32::mov_r32_imm32(void){
@@ -503,7 +540,7 @@ void Instr32::ret(void){
 	uint32_t addr;
 
 	addr = POP32();
-	SET_EIP(addr);
+	SET_EIP_FLUSH(addr);
 }
 
 void Instr32::mov_rm32_imm32(void){
@@ -531,16 +568,16 @@ void Instr32::out_imm8_eax(void){
 
 void Instr32::call_rel32(void){
 	PUSH32(GET_EIP());
-	UPDATE_EIP(IMM32);
+	UPDATE_EIP_FLUSH(IMM32);
 }
 
 void Instr32::jmp_rel32(void){
-	UPDATE_EIP(IMM32);
+	UPDATE_EIP_FLUSH(IMM32);
 }
 
 void Instr32::jmpf_ptr16_32(void){
 	EMU->set_sgreg(CS, PTR16);
-	SET_EIP(IMM32);
+	SET_EIP_FLUSH(IMM32);
 }
 
 void Instr32::in_eax_dx(void){
@@ -562,7 +599,7 @@ void Instr32::out_dx_eax(void){
 #define JCC_REL32(cc, is_flag) \
 void Instr32::j ## cc ## _rel32(void){ \
 	if(is_flag) \
-		UPDATE_EIP(IMM32); \
+		UPDATE_EIP_FLUSH(IMM32); \
 }
 
 JCC_REL32(o, EFLAGS_OF)
@@ -670,6 +707,19 @@ void Instr32::code_d3(void){
 		case 7: sar_rm32_cl();        break;
 		default:
 			ERROR("not implemented: 0xd3 /%d\n", REG);
+	}
+}
+
+void Instr32::code_f7(void){
+	switch(REG){
+		case 2:	not_rm32();		break;
+		case 3:	neg_rm32();		break;
+		case 4:	mul_edx_eax_rm32();	break;
+		case 5:	imul_edx_eax_rm32();	break;
+		case 6:	div_edx_eax_rm32();	break;
+		case 7:	idiv_edx_eax_rm32();	break;
+		default:
+			ERROR("not implemented: 0xf7 /%d\n", REG);
 	}
 }
 
@@ -916,11 +966,83 @@ void Instr32::sar_rm32_cl(void){
 
 /******************************************************************/
 
+void Instr32::not_rm32(void){
+	uint32_t rm32;
+
+	rm32 = get_rm32();
+	set_rm32(~rm32);
+}
+
+void Instr32::neg_rm32(void){
+	int32_t rm32_s;
+
+	rm32_s = get_rm32();
+	set_rm32(-rm32_s);
+	EFLAGS_UPDATE_SUB((uint32_t)0, rm32_s);
+}
+
+void Instr32::mul_edx_eax_rm32(void){
+	uint32_t rm32, eax;
+	uint64_t val;
+
+	rm32 = get_rm32();
+	eax = GET_GPREG(EAX);
+	val = eax*rm32;
+
+	SET_GPREG(EAX, val);
+	SET_GPREG(EDX, val>>32);
+
+	EFLAGS_UPDATE_MUL(eax, rm32);
+}
+
+void Instr32::imul_edx_eax_rm32(void){
+	int32_t rm32_s, eax_s;
+	int64_t val_s;
+
+	rm32_s = get_rm32();
+	eax_s = GET_GPREG(EAX);
+	val_s = eax_s*rm32_s;
+
+	SET_GPREG(EAX, val_s);
+	SET_GPREG(EDX, val_s>>32);
+
+	EFLAGS_UPDATE_IMUL(eax_s, rm32_s);
+}
+
+void Instr32::div_edx_eax_rm32(void){
+	uint32_t rm32;
+	uint64_t val;
+
+	rm32 = get_rm32();
+	val  = GET_GPREG(EDX);
+	val <<= 32;
+	val |= GET_GPREG(EAX);
+
+	SET_GPREG(EAX, val/rm32);
+	SET_GPREG(EDX, val%rm32);
+}
+
+void Instr32::idiv_edx_eax_rm32(void){
+	int32_t rm32_s;
+	int64_t val_s;
+
+	rm32_s = get_rm32();
+	val_s  = GET_GPREG(EDX);
+	val_s <<= 32;
+	val_s |= GET_GPREG(EAX);
+
+	SET_GPREG(EAX, val_s/rm32_s);
+	SET_GPREG(EDX, val_s%rm32_s);
+}
+
+/******************************************************************/
+
 void Instr32::inc_rm32(void){
 	uint32_t rm32;
 
 	rm32 = get_rm32();
 	set_rm32(rm32+1);
+	EFLAGS_UPDATE_ADD(rm32, 1);
 }
 
 void Instr32::dec_rm32(void){
@@ -928,6 +1050,7 @@ void Instr32::dec_rm32(void){
 
 	rm32 = get_rm32();
 	set_rm32(rm32-1);
+	EFLAGS_UPDATE_SUB(rm32, 1);
 }
 
 void Instr32::call_rm32(void){
@@ -936,14 +1059,14 @@ void Instr32::call_rm32(void){
 	rm32 = get_rm32();
 
 	PUSH32(GET_EIP());
-	SET_EIP(rm32);
+	SET_EIP_FLUSH(rm32);
 }
 
 void Instr32::jmp_rm32(void){
 	uint32_t rm32;
 
 	rm32 = get_rm32();
-	SET_EIP(rm32);
+	SET_EIP_FLUSH(rm32);
 }
 
 void Instr32::push_rm32(void){

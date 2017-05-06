@@ -16,7 +16,7 @@ Emulator::Emulator(size_t size, uint16_t cs, uint16_t ip, const char *disk_name)
 	set_pic(pic_m, true);
 	set_pic(pic_s, false);
 
-	ui	= new UI(3);
+	ui	= new UI(this, 3);
 	pit	= new PIT();
 	fdd	= new FDD();
 	syscon	= new SysControl(this);

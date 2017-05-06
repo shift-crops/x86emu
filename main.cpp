@@ -7,7 +7,7 @@
 #include "emulator/emulator.hpp"
 #include "emulator/exception.hpp"
 
-#define MEMORY_SIZE (1*MB)
+#define MEMORY_SIZE (4*MB)
 
 void run_emulator(const char *image_name, bool preload);
 
@@ -22,7 +22,7 @@ int main(int argc, char *argv[]){
 	th1.join();
 	th2.join();
 	*/
-	run_emulator(argc<2 ? "sample/kernel.img": argv[1], false);
+	run_emulator(argc<2 ? "sample/kernel.img": argv[1], true);
 
 	glfwTerminate();
 }
@@ -37,7 +37,7 @@ void run_emulator(const char *image_name, bool preload){
 	emu.load_binary("bios/bios.bin", 0xf0000, 0, 0x2000);
 	emu.load_binary("bios/crt0.bin", 0xffff0, 0, 0x10);
 	if(preload)
-		emu.load_binary(image_name, 0x10000, 0x200, 0x2000);
+		emu.load_binary(image_name, 0x8200, 0x200, 0x8000);
 
 
 	//while(!emu.is_halt()){
@@ -77,11 +77,9 @@ void run_emulator(const char *image_name, bool preload){
 			ERROR("Exception %d", n);
 			emu.queue_interrupt(n, true);
 		}
-		/*
-		emu.dump_regs();
-		if((emu.get_sgreg(SS)<<4)+emu.get_gpreg(ESP)>0x40)
-			emu.dump_mem((emu.get_sgreg(SS)<<4)+emu.get_gpreg(ESP)-0x40, 0x80);
-		MSG("\n");
-		*/
+		catch(...){
+			emu.dump_regs();
+			exit(-1);
+		}
 	}
 }

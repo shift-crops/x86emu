@@ -6,6 +6,7 @@
 #include "device/vga.hpp"
 #include "device/keyboard.hpp"
 #include "device/mouse.hpp"
+#include "hardware/memory.hpp" 	// A20 gate
 
 class UI {
 	private:
@@ -22,7 +23,7 @@ class UI {
 		};
 
 	public:
-		UI(uint8_t z = 2);
+		UI(Memory *m, uint8_t z = 2);
 		~UI();
 		VGA *get_vga(void) const { return vga; };
 		Keyboard *get_keyboard(void) const { return keyboard; };

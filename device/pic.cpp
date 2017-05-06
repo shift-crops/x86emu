@@ -19,7 +19,7 @@ int8_t PIC::get_nintr(void){
 		return -1;
 	INFO("IRQ %d", i);
 
-	if(ic4.AEOI)	isr |= 1<<i;
+	if(!ic4.AEOI)	isr |= 1<<i;
 	irr ^= 1<<i;
 
 	if(!ic1.SNGL){
@@ -45,7 +45,7 @@ bool PIC::chk_intreq(void){
 	for(i=0; i<MAX_IRQ && !((imr>>i)&1 && irq[i] && irq[i]->chk_intreq()); i++);
 	if(i == MAX_IRQ)
 		return false;
-	if((1<<i) < isr)
+	if(isr && (1<<i) >= isr)
 		return false;
 
 	irr = 1 << i;
@@ -56,8 +56,9 @@ bool PIC::chk_intreq(void){
 
 uint8_t PIC::in8(uint16_t addr){
 	// TODO
-	switch(addr&1){
-		case 1:
+	switch(addr){
+		case 0x21:
+		case 0xa1:
 			return ~imr;
 	}
 
@@ -65,15 +66,14 @@ uint8_t PIC::in8(uint16_t addr){
 }
 
 void PIC::out8(uint16_t addr, uint8_t v){
-	switch(addr&1){
-		case 0:
+	switch(addr){
+		case 0x20:
+		case 0xa0:
 			set_command(v);
 			break;
-		case 1:
-			if(init_icn > 1)
-				set_data(v);
-			else
-				imr = ~v;
+		case 0x21:
+		case 0xa1:
+			set_data(v);
 			break;
 
 	}
@@ -83,41 +83,50 @@ void PIC::set_command(uint8_t v){
 	if(init_icn){
 		ic1.raw = v;
 		INFO("ic1 : 0x%04x", v);
-		init_icn++;
+		init_icn = 2;
 	}
 	else{
 		OCW2 ocw2;
 
 		ocw2.raw = v;
-		if(ocw2.EOI)
-			isr = 0;
+		if(ocw2.EOI){
+			if(ocw2.SL){
+				isr &= ~(1<<ocw2.L);
+			}
+			else{
+				int i;
+				for(i=0; i<MAX_IRQ && !((isr>>i)&1); i++);
+				if(i<MAX_IRQ)
+					isr &= ~(1<<i);
+			}
+		}
 		// TODO
 	}
 }
 
 void PIC::set_data(uint8_t v){
-	switch(init_icn++){
-		case 2:
-			ic2.raw = v;
-			INFO("ic2 : 0x%04x", v);
-			if(ic1.SNGL)
-				goto done;
-			break;
-		case 3:
-			ic3.raw = v;
-			INFO("ic3 : 0x%04x", v);
-			if(!ic1.IC4)
-				goto done;
-			break;
-		case 4:
-			ic4.raw = v;
-			INFO("ic4 : 0x%04x", v);
-		default:
-			goto done;
+	if(init_icn){
+		switch(init_icn++){
+			case 2:
+				ic2.raw = v;
+				INFO("ic2 : 0x%04x", v);
+				if(ic1.SNGL)
+					goto done;
+				return;
+			case 3:
+				ic3.raw = v;
+				INFO("ic3 : 0x%04x", v);
+				if(!ic1.IC4)
+					goto done;
+				return;
+			case 4:
+				ic4.raw = v;
+				INFO("ic4 : 0x%04x", v);
+			default:
+done:				init_icn = 0;
+		}
 	}
-
-	return;
-done:	
-	init_icn = 0;
+	else
+		imr = ~v;
 }
 

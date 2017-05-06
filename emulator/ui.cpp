@@ -2,11 +2,11 @@
 #include <GLFW/glfw3.h>
 #include "emulator/ui.hpp"
 
-UI::UI(uint8_t z){
+UI::UI(Memory *m, uint8_t z){
 	std::thread main_th;
 
 	vga = new VGA();
-	keyboard = new Keyboard();
+	keyboard = new Keyboard(m);
 
 	zoom = z;
 	enable = true;
@@ -17,6 +17,9 @@ UI::UI(uint8_t z){
 	size_x = 320;
 	size_y = 200;
 	image = new uint8_t[size_x*size_y*3];
+
+	X = Y = 0;
+	click[0] = click[1] = false;
 }
 
 UI::~UI(void){
@@ -42,7 +45,7 @@ void UI::ui_main(void){
 	glRasterPos2i(-1, 1);
 
 	while (!glfwWindowShouldClose(window)) {
-		std::this_thread::sleep_for(std::chrono::milliseconds(50));
+		std::this_thread::sleep_for(std::chrono::milliseconds(40));
 
 		if(vga->need_refresh()){
 			uint16_t x, y;
@@ -101,13 +104,17 @@ void UI::cursor_callback(GLFWwindow *window, double xpos, double ypos){
 	Mouse *mouse = ui->keyboard->get_mouse();
 	int32_t _xpos = xpos, _ypos = ypos;
 	bool sx, sy;
+	static int count = 0;
+
+	if(count++ % 8)
+		return;
 
 	sx = _xpos < ui->X;
 	sy = _ypos > ui->Y;
 
 	mouse->send_code((sy<<5) + (sx<<4) + (1<<3) + (ui->click[1]<<1) + ui->click[0]);
 	mouse->send_code(_xpos-ui->X);
-	mouse->send_code(_ypos-ui->Y);
+	mouse->send_code(ui->Y-_ypos);
 
 	INFO("[%02x %02x %02x] xpos : %d, ypos : %d"
 			, (sy<<5) + (sx<<4) + (1<<3) + (ui->click[1]<<1) + ui->click[0], _xpos-ui->X, ui->Y-_ypos, _xpos, _ypos);

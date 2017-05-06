@@ -52,8 +52,8 @@ class InstrBase : public ExecInstr , public ParseInstr {
 		void mov_r8_rm8(void);
 		void mov_sreg_rm16(void);
 		void nop(void);
-		void mov_al_moffs8(void);
-		void mov_moffs8_al(void);
+		//void mov_al_moffs8(void);
+		//void mov_moffs8_al(void);
 		void test_al_imm8(void);
                 void mov_r8_imm8(void);
                 void mov_rm8_imm8(void);
@@ -92,6 +92,8 @@ class InstrBase : public ExecInstr , public ParseInstr {
 		virtual void code_81(void) = 0;
 		void code_82(void);
 		virtual void code_83(void) = 0;
+		void code_c0(void);
+                virtual void code_f7(void) = 0;
                 virtual void code_ff(void) = 0;
                 virtual void code_0f00(void) = 0;
                 virtual void code_0f01(void) = 0;
@@ -106,6 +108,11 @@ class InstrBase : public ExecInstr , public ParseInstr {
 		void xor_rm8_imm8(void);
 		void cmp_rm8_imm8(void);
 
+		//0xc0
+		void shl_rm8_imm8(void);
+		void shr_rm8_imm8(void);
+		void sal_rm8_imm8(void);
+		void sar_rm8_imm8(void);
 };
 
 class Instr16 : public InstrBase {
@@ -156,8 +163,13 @@ class Instr16 : public InstrBase {
                 void cbw(void);
                 void cwd(void);
                 void callf_ptr16_16(void);
-		void mov_ax_moffs(void);
-		void mov_moffs_ax(void);
+                void pushf(void);
+                void popf(void);
+		void mov_al_moffs8(void);
+		void mov_ax_moffs16(void);
+		void mov_moffs8_al(void);
+		void mov_moffs16_ax(void);
+		void test_ax_imm16(void);
                 void mov_r16_imm16(void);
                 void ret(void);
                 void leave(void);
@@ -195,6 +207,7 @@ class Instr16 : public InstrBase {
 		void code_83(void);
                 void code_c1(void);
                 void code_d3(void);
+                void code_f7(void);
                 void code_ff(void);
                 void code_0f00(void);
                 void code_0f01(void);
@@ -230,6 +243,14 @@ class Instr16 : public InstrBase {
 		void shr_rm16_cl(void);
 		void sal_rm16_cl(void);
 		void sar_rm16_cl(void);
+
+		//0xf7
+		void not_rm16(void);
+		void neg_rm16(void);
+		void mul_dx_ax_rm16(void);
+		void imul_dx_ax_rm16(void);
+		void div_dx_ax_rm16(void);
+		void idiv_dx_ax_rm16(void);
 
 		//0xff
 		void inc_rm16(void);
@@ -291,8 +312,13 @@ class Instr32 : public InstrBase {
                 void cwde(void);
                 void cdq(void);
                 void callf_ptr16_32(void);
-		void mov_eax_moffs(void);
-		void mov_moffs_eax(void);
+                void pushf(void);
+                void popf(void);
+		void mov_al_moffs8(void);
+		void mov_eax_moffs32(void);
+		void mov_moffs8_al(void);
+		void mov_moffs32_eax(void);
+		void test_eax_imm32(void);
                 void mov_r32_imm32(void);
                 void ret(void);
                 void leave(void);
@@ -330,6 +356,7 @@ class Instr32 : public InstrBase {
 		void code_83(void);
 		void code_c1(void);
                 void code_d3(void);
+                void code_f7(void);
                 void code_ff(void);
                 void code_0f00(void);
                 void code_0f01(void);
@@ -365,6 +392,14 @@ class Instr32 : public InstrBase {
 		void shr_rm32_cl(void);
 		void sal_rm32_cl(void);
 		void sar_rm32_cl(void);
+
+		//0xf7
+		void not_rm32(void);
+		void neg_rm32(void);
+		void mul_edx_eax_rm32(void);
+		void imul_edx_eax_rm32(void);
+		void div_edx_eax_rm32(void);
+		void idiv_edx_eax_rm32(void);
 
 		//0xff
 		void inc_rm32(void);

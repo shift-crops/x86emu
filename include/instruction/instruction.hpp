@@ -12,6 +12,10 @@
 #define SET_IP(v)			EMU->set_ip(v)
 #define UPDATE_EIP(v)			EMU->update_eip(v)
 #define UPDATE_IP(v)			EMU->update_ip(v)
+#define SET_EIP_FLUSH(v)		SET_EIP(v); EMU->flush()
+#define SET_IP_FLUSH(v)			SET_IP(v); EMU->flush()
+#define UPDATE_EIP_FLUSH(v)		UPDATE_EIP(v); EMU->flush()
+#define UPDATE_IP_FLUSH(v)		UPDATE_IP(v); EMU->flush()
 #define GET_GPREG(reg)			EMU->get_gpreg(reg)
 #define SET_GPREG(reg, v)		EMU->set_gpreg(reg, v)
 #define UPDATE_GPREG(reg, v)		EMU->update_gpreg(reg, v)
@@ -56,8 +60,6 @@
 #define IMM16		(instr->imm16)
 #define IMM8		(instr->imm8)
 #define PTR16		(instr->ptr16)
-#define MOFFS8		(instr->moffs8)
-#define MOFFS		(instr->moffs)
 #define PRE_SEGMENT	(instr->pre_segment)
 #define SEGMENT		(segment)
 
@@ -97,10 +99,6 @@ struct InstrData {
 		int32_t imm32;
 	};
 	int16_t ptr16;
-	union {
-		int8_t moffs8;
-		int32_t moffs;
-	};
 };
 
 class Instruction {
@@ -167,8 +165,6 @@ class ExecInstr : protected virtual Instruction {
 #define CHK_IMM16 	(1<<2)
 #define CHK_IMM8 	(1<<3)
 #define CHK_PTR16 	(1<<4)
-#define CHK_MOFFS 	(1<<5)
-#define CHK_MOFFS8 	(1<<6)
 
 #define CHSZ_NONE	0
 #define CHSZ_OP		1

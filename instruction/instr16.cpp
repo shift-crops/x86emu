@@ -87,10 +87,16 @@ Instr16::Instr16(Emulator *e, InstrData *id) : Instruction(e, id, false) {
 	set_funcflag(0x99, instr16(cwd), 0);
 	set_funcflag(0x9a, instr16(callf_ptr16_16), CHK_PTR16 | CHK_IMM16);
 
-	// 0xa0 : mov_al_moff8
-	set_funcflag(0xa1, instr16(mov_ax_moffs), CHK_MOFFS);
-	// 0xa2 : mov_moff8_al
-	set_funcflag(0xa3, instr16(mov_moffs_ax), CHK_MOFFS);
+	set_funcflag(0x9c, instr16(pushf), 0);
+	set_funcflag(0x9d, instr16(popf), 0);
+
+	set_funcflag(0xa0, instr16(mov_al_moffs8), CHK_IMM16);
+	set_funcflag(0xa1, instr16(mov_ax_moffs16), CHK_IMM16);
+	set_funcflag(0xa2, instr16(mov_moffs8_al), CHK_IMM16);
+	set_funcflag(0xa3, instr16(mov_moffs16_ax), CHK_IMM16);
+
+	// 0xa8 : test_al_imm8
+	set_funcflag(0xa9, instr16(test_ax_imm16), CHK_IMM16);
 
 	// 0xb0-0xb7 : mov_r8_imm
 	for (i=0; i<8; i++)	set_funcflag(0xb8+i, instr16(mov_r16_imm16) ,CHK_IMM16);
@@ -147,8 +153,10 @@ Instr16::Instr16(Emulator *e, InstrData *id) : Instruction(e, id, false) {
 	set_funcflag(0x81, instr16(code_81), CHK_MODRM | CHK_IMM16);
 	// 0x82 : code_82
 	set_funcflag(0x83, instr16(code_83), CHK_MODRM | CHK_IMM8);
+	// 0xc0 : code_c0
 	set_funcflag(0xc1, instr16(code_c1), CHK_MODRM | CHK_IMM8);
 	set_funcflag(0xd3, instr16(code_d3), CHK_MODRM);
+	set_funcflag(0xf7, instr16(code_f7), CHK_MODRM);
 	set_funcflag(0xff, instr16(code_ff), CHK_MODRM);
 	set_funcflag(0x0f00, instr16(code_0f00), CHK_MODRM);
 	set_funcflag(0x0f01, instr16(code_0f01), CHK_MODRM);
@@ -330,16 +338,22 @@ void Instr16::cmp_ax_imm16(void){
 
 void Instr16::inc_r16(void){
 	uint8_t reg;
+	uint16_t r16;
 
 	reg = OPCODE & ((1<<3)-1);
-	UPDATE_GPREG(static_cast<reg16_t>(reg), 1);
+	r16 = GET_GPREG(static_cast<reg16_t>(reg));
+	SET_GPREG(static_cast<reg16_t>(reg), r16+1);
+	EFLAGS_UPDATE_ADD(r16, 1);
 }
 
 void Instr16::dec_r16(void){
 	uint8_t reg;
+	uint16_t r16;
 
 	reg = OPCODE & ((1<<3)-1);
-	UPDATE_GPREG(static_cast<reg16_t>(reg), -1);
+	r16 = GET_GPREG(static_cast<reg16_t>(reg));
+	SET_GPREG(static_cast<reg16_t>(reg), r16-1);
+	EFLAGS_UPDATE_SUB(r16, 1);
 }
 
 void Instr16::push_r16(void){
@@ -481,15 +495,38 @@ void Instr16::cwd(void){
 void Instr16::callf_ptr16_16(void){
 	EMU->set_sgreg(CS, PTR16);
 	PUSH16(GET_IP());
-	SET_IP(IMM16);
+	SET_IP_FLUSH(IMM16);
 }
 
-void Instr16::mov_ax_moffs(void){
-	SET_GPREG(AX, READ_MEM16(MOFFS));
+void Instr16::pushf(void){
+	PUSH16(EMU->get_flags());
 }
 
-void Instr16::mov_moffs_ax(void){
-	WRITE_MEM16(MOFFS, GET_GPREG(AX));
+void Instr16::popf(void){
+	EMU->set_flags(POP16());
+}
+
+void Instr16::mov_al_moffs8(void){
+	SET_GPREG(AL, READ_MEM8(IMM16));
+}
+
+void Instr16::mov_ax_moffs16(void){
+	SET_GPREG(AX, READ_MEM16(IMM16));
+}
+
+void Instr16::mov_moffs8_al(void){
+	WRITE_MEM8(IMM16, GET_GPREG(AL));
+}
+
+void Instr16::mov_moffs16_ax(void){
+	WRITE_MEM16(IMM16, GET_GPREG(AX));
+}
+
+void Instr16::test_ax_imm16(void){
+	uint16_t ax;
+
+	ax = GET_GPREG(AX);
+	EFLAGS_UPDATE_AND(ax, IMM16);
 }
 
 void Instr16::mov_r16_imm16(void){
@@ -503,7 +540,7 @@ void Instr16::ret(void){
 	uint16_t addr;
 
 	addr = POP16();
-	SET_IP(addr);
+	SET_IP_FLUSH(addr);
 }
 
 void Instr16::mov_rm16_imm16(void){
@@ -531,16 +568,16 @@ void Instr16::out_imm8_ax(void){
 
 void Instr16::call_rel16(void){
 	PUSH16(GET_IP());
-	UPDATE_IP(IMM16);
+	UPDATE_IP_FLUSH(IMM16);
 }
 
 void Instr16::jmp_rel16(void){
-	UPDATE_IP(IMM16);
+	UPDATE_IP_FLUSH(IMM16);
 }
 
 void Instr16::jmpf_ptr16_16(void){
 	EMU->set_sgreg(CS, PTR16);
-	SET_IP(IMM16);
+	SET_IP_FLUSH(IMM16);
 }
 
 void Instr16::in_ax_dx(void){
@@ -561,7 +598,7 @@ void Instr16::out_dx_ax(void){
 #define JCC_REL16(cc, is_flag) \
 void Instr16::j ## cc ## _rel16(void){ \
 	if(is_flag) \
-		UPDATE_EIP(IMM16); \
+		UPDATE_EIP_FLUSH(IMM16); \
 }
 
 JCC_REL16(o, EFLAGS_OF)
@@ -669,6 +706,19 @@ void Instr16::code_d3(void){
 		case 7: sar_rm16_cl();        break;
 		default:
 			ERROR("not implemented: 0xd3 /%d\n", REG);
+	}
+}
+
+void Instr16::code_f7(void){
+	switch(REG){
+		case 2:	not_rm16();		break;
+		case 3:	neg_rm16();		break;
+		case 4:	mul_dx_ax_rm16();	break;
+		case 5:	imul_dx_ax_rm16();	break;
+		case 6:	div_dx_ax_rm16();	break;
+		case 7:	idiv_dx_ax_rm16();	break;
+		default:
+			ERROR("not implemented: 0xf7 /%d\n", REG);
 	}
 }
 
@@ -915,11 +965,79 @@ void Instr16::sar_rm16_cl(void){
 
 /******************************************************************/
 
+void Instr16::not_rm16(void){
+	uint16_t rm16;
+
+	rm16 = get_rm16();
+	set_rm16(~rm16);
+}
+
+void Instr16::neg_rm16(void){
+	int16_t rm16_s;
+
+	rm16_s = get_rm16();
+	set_rm16(-rm16_s);
+	EFLAGS_UPDATE_SUB((uint16_t)0, rm16_s);
+}
+
+void Instr16::mul_dx_ax_rm16(void){
+	uint16_t rm16, ax;
+	uint32_t val;
+
+	rm16 = get_rm16();
+	ax = GET_GPREG(AX);
+	val = ax*rm16;
+
+	SET_GPREG(AX, val&((1<<16)-1));
+	SET_GPREG(DX, (val>>16)&((1<<16)-1));
+
+	EFLAGS_UPDATE_MUL(ax, rm16);
+}
+
+void Instr16::imul_dx_ax_rm16(void){
+	int16_t rm16_s, ax_s;
+	int32_t val_s;
+
+	rm16_s = get_rm16();
+	ax_s = GET_GPREG(AX);
+	val_s = ax_s*rm16_s;
+
+	SET_GPREG(AX, val_s&((1<<16)-1));
+	SET_GPREG(DX, (val_s>>16)&((1<<16)-1));
+
+	EFLAGS_UPDATE_IMUL(ax_s, rm16_s);
+}
+
+void Instr16::div_dx_ax_rm16(void){
+	uint16_t rm16;
+	uint32_t val;
+
+	rm16 = get_rm16();
+	val = (GET_GPREG(DX)<<16)|GET_GPREG(AX);
+
+	SET_GPREG(AX, val/rm16);
+	SET_GPREG(DX, val%rm16);
+}
+
+void Instr16::idiv_dx_ax_rm16(void){
+	int16_t rm16_s;
+	int32_t val_s;
+
+	rm16_s = get_rm16();
+	val_s = (GET_GPREG(DX)<<16)|GET_GPREG(AX);
+
+	SET_GPREG(AX, val_s/rm16_s);
+	SET_GPREG(DX, val_s%rm16_s);
+}
+
+/******************************************************************/
+
 void Instr16::inc_rm16(void){
 	uint16_t rm16;
 
 	rm16 = get_rm16();
 	set_rm16(rm16+1);
+	EFLAGS_UPDATE_ADD(rm16, 1);
 }
 
 void Instr16::dec_rm16(void){
@@ -927,6 +1045,7 @@ void Instr16::dec_rm16(void){
 
 	rm16 = get_rm16();
 	set_rm16(rm16-1);
+	EFLAGS_UPDATE_SUB(rm16, 1);
 }
 
 void Instr16::call_rm16(void){
@@ -935,14 +1054,14 @@ void Instr16::call_rm16(void){
 	rm16 = get_rm16();
 
 	PUSH16(GET_IP());
-	SET_IP(rm16);
+	SET_IP_FLUSH(rm16);
 }
 
 void Instr16::jmp_rm16(void){
 	uint16_t rm16;
 
 	rm16 = get_rm16();
-	SET_IP(rm16);
+	SET_IP_FLUSH(rm16);
 }
 
 void Instr16::push_rm16(void){

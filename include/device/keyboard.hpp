@@ -5,6 +5,7 @@
 #include "dev_irq.hpp"
 #include "dev_io.hpp"
 #include "mouse.hpp"
+#include "hardware/memory.hpp"
 
 struct CCB {
 	uint8_t KIE : 1;
@@ -20,6 +21,7 @@ class Keyboard : public IRQ, public PortIO {
 	friend Mouse;
 	private:
 		Mouse *mouse;
+		Memory *mem;		// A20 gate
 		uint8_t mode;
 
 		union {
@@ -42,7 +44,7 @@ class Keyboard : public IRQ, public PortIO {
 		CCB *ccb = (CCB*)&controller_ram[0];
 
 	public:
-		Keyboard() { mouse = new Mouse(this); kcsr.raw = 0; };
+		Keyboard(Memory *m) { mouse = new Mouse(this); kcsr.raw = 0; mem = m; };
 		Mouse *get_mouse(void) const { return mouse; };
 
 		uint8_t in8(uint16_t addr);
@@ -51,6 +53,7 @@ class Keyboard : public IRQ, public PortIO {
 		uint8_t read_outbuf(void);
 		void write_outbuf(uint8_t v);
 		void send_code(uint8_t scancode);
+		void a20gate(uint8_t v);
 };
 
 #endif

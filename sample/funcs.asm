@@ -101,6 +101,8 @@ irq_timer:
 
 irq_keyboard:
 	pusha
+	mov al, 0x61
+	out 0x20, al
 	in al, 0x60
 	push ax
 	call print_key
@@ -110,6 +112,10 @@ irq_keyboard:
 
 irq_mouse:
 	push ax
+	mov al, 0x64
+	out 0xa0, al
+	mov al, 0x62
+	out 0x20, al
 	in al, 0x60
 	mov esi, msg_mouse
 	pop ax

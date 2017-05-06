@@ -10,7 +10,7 @@
 union OCW2 {
 	uint8_t raw;
 	struct {
-		uint8_t L : 1;
+		uint8_t L : 3;
 		uint8_t : 2;
 		uint8_t EOI : 1;
 		uint8_t SL : 1;

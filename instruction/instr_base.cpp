@@ -46,8 +46,6 @@ InstrBase::InstrBase() {
 	set_funcflag(0x8a, instrbase(mov_r8_rm8), CHK_MODRM);
 	set_funcflag(0x8e, instrbase(mov_sreg_rm16), CHK_MODRM);
 	set_funcflag(0x90, instrbase(nop), 0);
-	set_funcflag(0xa0, instrbase(mov_al_moffs8), CHK_MOFFS8);
-	set_funcflag(0xa2, instrbase(mov_moffs8_al), CHK_MOFFS8);
 	set_funcflag(0xa8, instrbase(test_al_imm8), CHK_IMM8);
 	for (i=0; i<8; i++)	set_funcflag(0xb0+i, instrbase(mov_r8_imm8) ,CHK_IMM8);
 	set_funcflag(0xc6, instrbase(mov_rm8_imm8), CHK_MODRM | CHK_IMM8);
@@ -84,7 +82,8 @@ InstrBase::InstrBase() {
 
 
 	set_funcflag(0x80, instrbase(code_80), CHK_MODRM | CHK_IMM8);
-	set_funcflag(0x80, instrbase(code_82), CHK_MODRM | CHK_IMM8);
+	set_funcflag(0x82, instrbase(code_82), CHK_MODRM | CHK_IMM8);
+	set_funcflag(0xc0, instrbase(code_c0), CHK_MODRM | CHK_IMM8);
 }
 
 
@@ -241,7 +240,7 @@ void InstrBase::cmp_al_imm8(void){
 #define JCC_REL8(cc, is_flag) \
 void InstrBase::j ## cc ## _rel8(void){ \
 	if(is_flag) \
-		UPDATE_EIP(IMM8); \
+		UPDATE_IP_FLUSH(IMM8); \
 }
 
 JCC_REL8(o, EFLAGS_OF)
@@ -301,14 +300,6 @@ void InstrBase::mov_sreg_rm16(void){
 
 void InstrBase::nop(void){} 		// xchg eax, eax
 
-void InstrBase::mov_al_moffs8(void){
-	SET_GPREG(AL, READ_MEM8(MOFFS8));
-}
-
-void InstrBase::mov_moffs8_al(void){
-	WRITE_MEM8(MOFFS8, GET_GPREG(AL));
-}
-
 void InstrBase::test_al_imm8(void){
 	uint8_t al;
 
@@ -352,7 +343,7 @@ void InstrBase::out_imm8_al(void){
 }
 
 void InstrBase::jmp(void){
-	UPDATE_EIP(IMM8);
+	UPDATE_IP_FLUSH(IMM8);
 }
 
 void InstrBase::in_al_dx(void){
@@ -448,6 +439,21 @@ void InstrBase::code_82(void){
 	code_80();
 }
 
+void InstrBase::code_c0(void){
+	switch(REG){
+	//	case 0:	rol_rm8_imm8();		break;
+	//	case 1:	ror_rm8_imm8();		break;
+	//	case 2:	rcl_rm8_imm8();		break;
+	//	case 3:	rcr_rm8_imm8();		break;
+		case 4:	shl_rm8_imm8();		break;
+		case 5:	shr_rm8_imm8();		break;
+		case 6:	sal_rm8_imm8();		break;
+		case 7:	sar_rm8_imm8();		break;
+		default:
+			ERROR("not implemented: 0xc0 /%d\n", REG);
+	}
+}
+
 /******************************************************************/
 
 void InstrBase::add_rm8_imm8(void){
@@ -512,4 +518,38 @@ void InstrBase::cmp_rm8_imm8(void){
 
 	rm8 = get_rm8();
 	EFLAGS_UPDATE_SUB(rm8, IMM8);
+}
+
+/******************************************************************/
+
+void InstrBase::shl_rm8_imm8(void){
+	uint8_t rm8;
+
+	rm8 = get_rm8();
+	set_rm8(rm8<<IMM8);
+	EFLAGS_UPDATE_SHL(rm8, IMM8);
+}
+
+void InstrBase::shr_rm8_imm8(void){
+	uint8_t rm8;
+
+	rm8 = get_rm8();
+	set_rm8(rm8>>IMM8);
+	EFLAGS_UPDATE_SHR(rm8, IMM8);
+}
+
+void InstrBase::sal_rm8_imm8(void){
+	int8_t rm8_s;
+
+	rm8_s = get_rm8();
+	set_rm8(rm8_s<<IMM8);
+//	EFLAGS_UPDATE_SAL(rm8_s, IMM8);
+}
+
+void InstrBase::sar_rm8_imm8(void){
+	int8_t rm8_s;
+
+	rm8_s = get_rm8();
+	set_rm8(rm8_s>>IMM8);
+//	EFLAGS_UPDATE_SAR(rm8_s, IMM8);
 }

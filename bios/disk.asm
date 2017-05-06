@@ -16,6 +16,8 @@ bsv_disk:
 bsv_irq_disk:
 	cli
 	pusha
+	mov al, 0x66
+	out 0x20, al
 	mov dx, 0x03f4
 	in al, dx
 	test al, 0x80
@@ -37,6 +39,8 @@ irq_disk_end:
 
 ; disk_read_sector
 disk_read_sector:
+	pusha
+
 	mov ah, al
 	xchg dh, ch
 	xchg ch, cl
@@ -68,6 +72,14 @@ read_status:
 	add ch, 1
 	test ah, ah
 	jne read_loop
+
+	mov di, sp
+	add di, 0x14	
+	mov ax, [ss:di]
+	and ax, 0xfffe
+	mov [ss:di], ax
+
+	popa
 	iret
 
 ; disk_write_sector
