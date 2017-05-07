@@ -51,7 +51,7 @@ void run_emulator(const char *image_name, bool preload){
 		try{
 			if(emu.chk_irq())	emu.do_halt(false);
 			if(emu.is_halt()){
-				std::this_thread::sleep_for(std::chrono::microseconds(100));
+				std::this_thread::sleep_for(std::chrono::milliseconds(50));
 				continue;
 			}
 			emu.hundle_interrupt();

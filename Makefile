@@ -23,14 +23,20 @@ $(SUB_OBJS):
 	make -C instruction
 	make -C device
 
-all:
+_emu:
 	make -C hardware
 	make -C emulator
 	make -C instruction
 	make -C device
+	make $(TARGET)
+
+_soft:
 	make -C bios
 	make -C sample
-	make $(TARGET)
+
+all:
+	make _emu
+	make _soft
 
 clean:
 	make clean -C hardware

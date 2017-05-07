@@ -176,7 +176,7 @@ void FDD::worker(void){
 
 	while(true){
 		while(data_q.queue.empty())
-			std::this_thread::sleep_for(std::chrono::microseconds(10));
+			std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
 		mode = dequeue(&data_q);
 		if(!fddfuncs.count(mode)){
@@ -292,7 +292,7 @@ uint8_t FDD::read_datareg(void){
 	uint8_t v;
 	
 	while(!sra.INT)
-		std::this_thread::sleep_for(std::chrono::microseconds(10));
+		std::this_thread::sleep_for(std::chrono::microseconds(50));
 	v = data;
 	sra.INT = 0;
 
@@ -301,14 +301,14 @@ uint8_t FDD::read_datareg(void){
 
 void FDD::write_datareg(uint8_t v){
 	while(sra.INT)
-		std::this_thread::sleep_for(std::chrono::microseconds(10));
+		std::this_thread::sleep_for(std::chrono::microseconds(50));
 	data = v;
 	sra.INT = 1;
 }
 
 void FDD::enqueue(QUEUE *q, uint8_t v){
 	while(q->max && q->queue.size() >= q->max)
-		std::this_thread::sleep_for(std::chrono::microseconds(10));
+		std::this_thread::sleep_for(std::chrono::microseconds(50));
 	q->mtx.lock();
 	q->queue.push(v);
 	q->mtx.unlock();
@@ -320,7 +320,7 @@ uint8_t FDD::dequeue(QUEUE *q){
 	q->mtx.lock();
 	while(q->queue.empty()){
 		q->mtx.unlock();
-		std::this_thread::sleep_for(std::chrono::microseconds(10));
+		std::this_thread::sleep_for(std::chrono::microseconds(50));
 		q->mtx.lock();
 	}
 

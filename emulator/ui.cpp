@@ -40,33 +40,34 @@ void UI::ui_main(void){
 	glfwSetKeyCallback(window, keyboard_callback);
 	glfwSetMouseButtonCallback(window, mouse_callback);
 	glfwSetCursorPosCallback(window, cursorpos_callback);
-	glfwSetCursorEnterCallback(window, cursorenter_callback);
+	//glfwSetCursorEnterCallback(window, cursorenter_callback);
 
 	glPixelZoom(zoom, -zoom);
 	glRasterPos2i(-1, 1);
 
 	while (!glfwWindowShouldClose(window)) {
-		std::this_thread::sleep_for(std::chrono::milliseconds(40));
+		uint16_t x, y;
 
-		if(vga->need_refresh()){
-			uint16_t x, y;
-
-			vga->get_windowsize(&x, &y);
-			if(x && y && ((size_x^x) || (size_y*y))){
-				size_x = x;
-				size_y = y;
-				glfwSetWindowSize(window, x*zoom, y*zoom);
-
-				delete[] image;
-				image = new uint8_t[x*y*3];
-			}
-			vga->rgb_image(image, x*y);
-			glDrawPixels(x, y, GL_RGB, GL_UNSIGNED_BYTE, image);
+		if(!vga->need_refresh()){
+			glfwPollEvents();
+			std::this_thread::sleep_for(std::chrono::milliseconds(40));
+			//glfwWaitEventsTimeout(40.0/1000);
+			continue;
 		}
 
+		vga->get_windowsize(&x, &y);
+		if(x && y && ((size_x^x) || (size_y*y))){
+			size_x = x;
+			size_y = y;
+			glfwSetWindowSize(window, x*zoom, y*zoom);
+
+			delete[] image;
+			image = new uint8_t[x*y*3];
+		}
+		vga->rgb_image(image, x*y);
+		glDrawPixels(x, y, GL_RGB, GL_UNSIGNED_BYTE, image);
+
 		glfwSwapBuffers(window);
-		//glfwWaitEvents();
-		glfwPollEvents();
 	}
 
 	glfwDestroyWindow(window);
