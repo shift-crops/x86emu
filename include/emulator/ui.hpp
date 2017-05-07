@@ -11,6 +11,7 @@
 class UI {
 	private:
 		bool enable;
+		bool capture;
 		VGA *vga;
 		Keyboard *keyboard;
 		uint16_t size_x, size_y;
@@ -32,7 +33,8 @@ class UI {
 		void ui_main(void);
 		static void keyboard_callback(GLFWwindow *window, int key, int scancode, int action, int mods);
 		static void mouse_callback(GLFWwindow *window, int button, int action, int mods);
-		static void cursor_callback(GLFWwindow *window, double xpos, double ypos);
+		static void cursorpos_callback(GLFWwindow *window, double xpos, double ypos);
+		static void cursorenter_callback(GLFWwindow *window, int entered);
 };
 
 #endif
