@@ -1,18 +1,17 @@
 #ifndef _MEMORY_H
 #define _MEMORY_H
 
-#include <assert.h>
 #include "common.hpp" 
 
 #define DEFAULT_MEMORY_SIZE 	(1*KB)
-//#define CHECK_RANGE(addr, len)	assert(addr+len-1 < mem_size)
-#define CHECK_RANGE(addr, len)	if(addr+len-1 >= mem_size) ERROR("memory access out of range");
+#define CHECK_RANGE(addr, len)	ASSERT(addr+len-1 < mem_size)
+//#define CHECK_RANGE(addr, len)	if(addr+len-1 >= mem_size) ERROR("memory access out of range");
 
 class Memory {
 	private:
 		uint32_t mem_size;
 		uint8_t *memory;
-		bool a20_gate;
+		bool a20gate;
 
 	public:
 		Memory(size_t size = DEFAULT_MEMORY_SIZE);
@@ -31,8 +30,8 @@ class Memory {
 		void write_mem16(uint32_t addr, uint16_t v){ CHECK_RANGE(addr, 2); *((uint16_t*)&memory[addr]) = v; };
 		void write_mem8(uint32_t addr, uint8_t v){ CHECK_RANGE(addr, 1); memory[addr] = v; };
 
-		bool is_ena_a20gate(void) { return a20_gate; };
-		void set_a20gate(bool ena) { a20_gate = ena; };
+		bool is_ena_a20gate(void) { return a20gate; };
+		void set_a20gate(bool ena) { a20gate = ena; };
 };
 
 #endif

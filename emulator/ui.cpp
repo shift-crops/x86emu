@@ -2,13 +2,13 @@
 #include <GLFW/glfw3.h>
 #include "emulator/ui.hpp"
 
-UI::UI(Memory *m, uint8_t z){
+UI::UI(Memory *m, UISetting s){
 	std::thread main_th;
 
 	vga = new VGA();
 	keyboard = new Keyboard(m);
 
-	zoom = z;
+	set = s;
 	enable = true;
 	capture = false;
 
@@ -32,7 +32,7 @@ UI::~UI(void){
 void UI::ui_main(void){
 	GLFWwindow* window;
 
-	window = glfwCreateWindow(size_x*zoom, size_y*zoom, "x86emu", NULL, NULL);
+	window = glfwCreateWindow(size_x*set.zoom, size_y*set.zoom, "x86emu", NULL, NULL);
 
 	glfwSetWindowUserPointer(window, this);
 	glfwMakeContextCurrent(window);
@@ -42,32 +42,31 @@ void UI::ui_main(void){
 	glfwSetCursorPosCallback(window, cursorpos_callback);
 	//glfwSetCursorEnterCallback(window, cursorenter_callback);
 
-	glPixelZoom(zoom, -zoom);
+	glPixelZoom(set.zoom, -set.zoom);
 	glRasterPos2i(-1, 1);
 
 	while (!glfwWindowShouldClose(window)) {
-		uint16_t x, y;
+		glfwPollEvents();
+		std::this_thread::sleep_for(std::chrono::milliseconds(40));
+		//glfwWaitEventsTimeout(40.0/1000);
 
-		if(!vga->need_refresh()){
-			glfwPollEvents();
-			std::this_thread::sleep_for(std::chrono::milliseconds(40));
-			//glfwWaitEventsTimeout(40.0/1000);
-			continue;
+		if(vga->need_refresh()){
+			uint16_t x, y;
+
+			vga->get_windowsize(&x, &y);
+			if(x && y && ((size_x^x) || (size_y*y))){
+				size_x = x;
+				size_y = y;
+				glfwSetWindowSize(window, x*set.zoom, y*set.zoom);
+
+				delete[] image;
+				image = new uint8_t[x*y*3];
+			}
+			vga->rgb_image(image, x*y);
+			glDrawPixels(x, y, GL_RGB, GL_UNSIGNED_BYTE, image);
+
+			glfwSwapBuffers(window);
 		}
-
-		vga->get_windowsize(&x, &y);
-		if(x && y && ((size_x^x) || (size_y*y))){
-			size_x = x;
-			size_y = y;
-			glfwSetWindowSize(window, x*zoom, y*zoom);
-
-			delete[] image;
-			image = new uint8_t[x*y*3];
-		}
-		vga->rgb_image(image, x*y);
-		glDrawPixels(x, y, GL_RGB, GL_UNSIGNED_BYTE, image);
-
-		glfwSwapBuffers(window);
 	}
 
 	glfwDestroyWindow(window);
@@ -81,7 +80,7 @@ void UI::keyboard_callback(GLFWwindow *window, int key, int scancode, int action
 	if(!ui->capture)
 		return;
 
-	INFO("key : %d, scancode : %d, action : %d, mods : %d", key, scancode, action, mods);
+	DEBUG_MSG(1, "key : %d, scancode : %d, action : %d, mods : %d\n", key, scancode, action, mods);
 	switch(key){
 		case 0x159:	// right CTRL
 			ui->capture = false;
@@ -106,7 +105,8 @@ void UI::mouse_callback(GLFWwindow *window, int button, int action, int mods){
 
 	if(!ui->capture){
 		ui->capture = true;
-		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+		glfwSetInputMode(window, GLFW_CURSOR, ui->set.cursor ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_HIDDEN);
+		MSG("To cancel the input capture, press the right control key.\n");
 	}
 
 	ui->click[button%2] = action;
@@ -114,7 +114,7 @@ void UI::mouse_callback(GLFWwindow *window, int button, int action, int mods){
 	mouse->send_code(0);
 	mouse->send_code(0);
 
-	INFO("[%02x %02x %02x] button : %d, action : %d, mods : %d", (1<<3) + (ui->click[1]<<1) + ui->click[0], 0 ,0, button, action, mods);
+	DEBUG_MSG(1, "[%02x %02x %02x] button : %d, action : %d, mods : %d\n", (1<<3) + (ui->click[1]<<1) + ui->click[0], 0 ,0, button, action, mods);
 }
 
 void UI::cursorpos_callback(GLFWwindow *window, double xpos, double ypos){
@@ -124,7 +124,7 @@ void UI::cursorpos_callback(GLFWwindow *window, double xpos, double ypos){
 	bool sx, sy;
 	static int count = 0;
 
-	if(!ui->capture || count++ % 8)
+	if(!ui->capture || count++ % 4)
 		return;
 
 	sx = _xpos < ui->X;
@@ -134,11 +134,13 @@ void UI::cursorpos_callback(GLFWwindow *window, double xpos, double ypos){
 	mouse->send_code(_xpos-ui->X);
 	mouse->send_code(ui->Y-_ypos);
 
-	INFO("[%02x %02x %02x] _xpos : %d, _ypos : %d"
-			, (sy<<5) + (sx<<4) + (1<<3) + (ui->click[1]<<1) + ui->click[0], _xpos-ui->X, ui->Y-_ypos, _xpos, _ypos);
+	DEBUG_MSG(1, "[%02x %02x %02x] _xpos : %d, _ypos : %d\n"
+			, (sy<<5) + (sx<<4) + (1<<3) + (ui->click[1]<<1) + ui->click[0]
+			, (uint8_t)(_xpos-ui->X), (uint8_t)(ui->Y-_ypos), _xpos, _ypos);
 	ui->X = _xpos;
 	ui->Y = _ypos;
 }
-
+/*
 void UI::cursorenter_callback(GLFWwindow *window, int entered){
 }
+*/

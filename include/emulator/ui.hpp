@@ -8,14 +8,20 @@
 #include "device/mouse.hpp"
 #include "hardware/memory.hpp" 	// A20 gate
 
+struct UISetting {
+	uint8_t zoom;
+	bool cursor;
+};
+
 class UI {
 	private:
-		bool enable;
-		bool capture;
+		UISetting set;
 		VGA *vga;
 		Keyboard *keyboard;
+
+		bool enable;
+		bool capture;
 		uint16_t size_x, size_y;
-		uint8_t zoom;
 		uint8_t *image;
 
 		struct {
@@ -24,7 +30,7 @@ class UI {
 		};
 
 	public:
-		UI(Memory *m, uint8_t z = 2);
+		UI(Memory *m, UISetting set);
 		~UI();
 		VGA *get_vga(void) const { return vga; };
 		Keyboard *get_keyboard(void) const { return keyboard; };
@@ -34,7 +40,7 @@ class UI {
 		static void keyboard_callback(GLFWwindow *window, int key, int scancode, int action, int mods);
 		static void mouse_callback(GLFWwindow *window, int button, int action, int mods);
 		static void cursorpos_callback(GLFWwindow *window, double xpos, double ypos);
-		static void cursorenter_callback(GLFWwindow *window, int entered);
+		//static void cursorenter_callback(GLFWwindow *window, int entered);
 };
 
 #endif

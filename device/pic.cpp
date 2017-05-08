@@ -17,7 +17,7 @@ int8_t PIC::get_nintr(void){
 	for(i=0; i<MAX_IRQ && !((irr>>i)&1); i++);
 	if(i == MAX_IRQ)
 		return -1;
-	INFO("IRQ %d", i);
+	INFO(3, "IRQ %d", i);
 
 	if(!ic4.AEOI)	isr |= 1<<i;
 	irr ^= 1<<i;
@@ -82,7 +82,7 @@ void PIC::out8(uint16_t addr, uint8_t v){
 void PIC::set_command(uint8_t v){
 	if(init_icn){
 		ic1.raw = v;
-		INFO("ic1 : 0x%04x", v);
+		INFO(2, "ic1 : 0x%04x", v);
 		init_icn = 2;
 	}
 	else{
@@ -109,19 +109,19 @@ void PIC::set_data(uint8_t v){
 		switch(init_icn++){
 			case 2:
 				ic2.raw = v;
-				INFO("ic2 : 0x%04x", v);
+				INFO(2, "ic2 : 0x%04x", v);
 				if(ic1.SNGL)
 					goto done;
 				return;
 			case 3:
 				ic3.raw = v;
-				INFO("ic3 : 0x%04x", v);
+				INFO(2, "ic3 : 0x%04x", v);
 				if(!ic1.IC4)
 					goto done;
 				return;
 			case 4:
 				ic4.raw = v;
-				INFO("ic4 : 0x%04x", v);
+				INFO(2, "ic4 : 0x%04x", v);
 			default:
 done:				init_icn = 0;
 		}

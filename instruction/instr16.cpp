@@ -1077,15 +1077,15 @@ void Instr16::lgdt_m16(void){
 	uint16_t m16;
 
 	m16 = get_m();
-	//INFO("DISP16:0x%04x data:0x%04x", DISP16, EMU->get_data32(SEGMENT, DISP16+2));
+	INFO(2, "m16 = 0x%04x", m16);
 	EMU->set_dtreg(GDTR, READ_MEM32(m16+2)&((1<<24)-1), READ_MEM16(m16));
-	//INFO("[0x%04x:0x%08x] limit:0x%04x gdt:0x%04x", EMU->get_sgreg(get_segment()), m16, READ_MEM32(m16+2)&((1<<24)-1), READ_MEM16(m16));
 }
 
 void Instr16::lidt_m16(void){
 	uint16_t m16;
 
 	m16 = get_m();
+	INFO(2, "m16 = 0x%04x", m16);
 	EMU->set_dtreg(IDTR, READ_MEM32(m16+2)&((1<<24)-1), READ_MEM16(m16));
 }
 

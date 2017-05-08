@@ -53,7 +53,7 @@ class Keyboard : public IRQ, public PortIO {
 		uint8_t read_outbuf(void);
 		void write_outbuf(uint8_t v);
 		void send_code(uint8_t scancode);
-		void a20gate(uint8_t v);
+		void swt_a20gate(uint8_t v);
 };
 
 #endif

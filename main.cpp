@@ -1,6 +1,7 @@
 #include <thread>
-#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+#include <getopt.h>
 #include <GLFW/glfw3.h>
 #include "common.hpp"
 #include "instruction/base.hpp"
@@ -9,40 +10,111 @@
 
 #define MEMORY_SIZE (4*MB)
 
-void run_emulator(const char *image_name, bool preload);
+struct Setting {
+	const char *image_name;
+	uint32_t load_addr;
+	size_t load_size;
+	uint8_t zoom;
+	bool cursor;
+};
 
-int main(int argc, char *argv[]){
-	glfwInit();
+void run_emulator(const Setting set);
+void help(const char *name);
 
+__attribute__((constructor))
+void init(void){
 	setbuf(stdout, NULL);
 	setbuf(stderr, NULL);
-	/*
-	std::thread th1 = std::thread(run_emulator, argc<2 ? "sample/kernel.img": argv[1], false);
-	std::thread th2 = std::thread(run_emulator, argc<2 ? "sample/kernel.img": argv[1], false);
-	th1.join();
-	th2.join();
-	*/
-	run_emulator(argc<2 ? "sample/kernel.img": argv[1], true);
 
+	glfwInit();
+}
+
+__attribute__((destructor))
+void fini(void){
 	glfwTerminate();
 }
 
-void run_emulator(const char *image_name, bool preload){
-	Emulator emu = Emulator(MEMORY_SIZE, 0xf000, 0xfff0, image_name);
+int main(int argc, char *argv[]){
+	Setting set = {
+		.image_name = "sample/kernel.img",
+		.load_addr = 0x0,
+		.load_size = (size_t)-1,
+		.zoom = 3,
+		.cursor = true,
+	};
+
+	char opt;
+	struct option long_options[] = {
+		{"zoom",	required_argument, NULL, 'z'},
+		{"load_addr",	required_argument, NULL, 'a'},
+		{"load_size",	required_argument, NULL, 's'},
+		{"vm_cursor",	no_argument,       NULL, 'V'},
+		{"help",	no_argument,       NULL, 'h'},
+		{0, 0, 0, 0}};
+
+	while((opt=getopt_long(argc, argv, DEBUG_OPT"z:a:s:h", long_options, NULL)) != -1){
+		switch(opt){
+#ifdef DEBUG
+			case 'v':
+				set_debuglv(optarg);
+				break;
+#endif
+			case 'z':
+				set.zoom = atoi(optarg);
+				break;
+			case 'a':
+				set.load_addr = strtol(optarg, NULL, 0);
+				break;
+			case 's':
+				set.load_size = strtol(optarg, NULL, 0);
+				break;
+			case 'V':
+				set.cursor = false;
+				break;
+			case 'h':
+			case '?':
+				help(argv[0]);
+		}
+	}
+
+	if(argc > optind)
+		set.image_name = argv[optind];
+
+	/*
+	std::thread th1 = std::thread(set);
+	std::thread th2 = std::thread(set);
+	th1.join();
+	th2.join();
+	*/
+	run_emulator(set);
+}
+
+void run_emulator(const Setting set){
+	EmuSetting emuset = {
+		.mem_size = MEMORY_SIZE,
+		.cs = 0xf000, 
+		.ip = 0xfff0,
+		.uiset = {
+			.zoom = set.zoom,
+			.cursor = set.cursor,
+		},
+	};
+	Emulator emu = Emulator(emuset);
 	InstrData instr;
 
 	Instr16 instr16(&emu, &instr);
 	Instr32 instr32(&emu, &instr);
 
+	emu.insert_fdd(0, set.image_name, false);
 	emu.load_binary("bios/bios.bin", 0xf0000, 0, 0x2000);
 	emu.load_binary("bios/crt0.bin", 0xffff0, 0, 0x10);
-	if(preload)
-		emu.load_binary(image_name, 0x8200, 0x200, 0x8000);
+	if(set.load_addr)
+		emu.load_binary(set.image_name, set.load_addr, 0x200, set.load_size);
 
 
 	//while(!emu.is_halt()){
 	//while(true){
-	while(emu.running()){
+	while(emu.is_running()){
 		bool is_protected;
 		uint8_t chsz;
 		bool chsz_op, chsz_ad;
@@ -74,12 +146,39 @@ void run_emulator(const char *image_name, bool preload){
 		}
 		catch(exception_t n){
 			emu.dump_regs();
-			ERROR("Exception %d", n);
 			emu.queue_interrupt(n, true);
+			ERROR("Exception %d", n);
 		}
 		catch(...){
 			emu.dump_regs();
-			exit(-1);
+			emu.stop();
 		}
 	}
 }
+
+__attribute__((noreturn))
+void help(const char *name){
+	MSG(	"Simple x86 Emulator\n\n"
+
+		"Usage :\n"
+		"\t%s [options] <disk image>\n\n", name);
+
+	MSG(	"Options : \n"
+		"\t-z X, --zoom=X\n"
+		"\t\tZoom magnification\n\n"
+		"\t-a ADDR, --load_addr=ADDR\n"
+		"\t\tAddress to preload disk image\n\n"
+		"\t-s SIZE, --load_size=SIZE\n"
+		"\t\tSize to load (Enabled when 'load_addr' is specified)\n\n"
+		"\t--vm_cursor\n"
+		"\t\ton Vmware or VirtualBox\n\n"
+#ifdef DEBUG
+		"\t-v...\n"
+		"\t\tverbose level\n\n"
+#endif
+		"\t-h, --help\n"
+		"\t\tshow this help\n");
+
+	_exit(0);
+}
+

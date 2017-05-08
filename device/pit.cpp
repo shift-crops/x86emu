@@ -52,7 +52,7 @@ void PIT::out8(uint16_t addr, uint8_t v){
 						count[rgn] = (v<<8) + (count[rgn]&0xff);
 			}
 			def[rgn] = count[rgn];
-			//INFO("count[%d] = 0x%04x", rgn, count[rgn]);
+			INFO(2, "count[%d] = 0x%04x", rgn, count[rgn]);
 			break;
 		case 3:
 			cwr.raw = v;

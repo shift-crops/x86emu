@@ -36,7 +36,7 @@ uint32_t DataAccess::trans_v2p(acsmode_t mode, sgreg_t seg, uint32_t vaddr){
 		EXCEPTION_WITH(EXP_PF, !pte.RW && mode == MODE_WRITE, set_crn(2, laddr));
 		EXCEPTION_WITH(EXP_PF, !pte.US && cpl>2, set_crn(2, laddr));
 
-		//INFO("pdir_base=0x%04x, ptbl_base=0x%04x, page_base=0x%04x", pdir_base, ptbl_base, (pte.page_base << 12));
+		INFO(6, "pdir_base=0x%04x, ptbl_base=0x%04x, page_base=0x%04x", pdir_base, ptbl_base, (pte.page_base << 12));
 		paddr = (pte.page_base << 12) + page_offset;
 	}
 	else
@@ -68,7 +68,7 @@ uint32_t DataAccess::trans_v2l(acsmode_t mode, sgreg_t seg, uint32_t vaddr){
 		dt_base = get_dtreg_base(sg.TI ? LDTR : GDTR);
 		dt_limit = get_dtreg_limit(sg.TI ? LDTR : GDTR);
 
-		//INFO("dt_base=0x%04x, dt_limit=0x%02x, dt_index=0x%02x", dt_base, dt_limit, dt_index);
+		INFO(6, "dt_base=0x%04x, dt_limit=0x%02x, dt_index=0x%02x", dt_base, dt_limit, dt_index);
 		EXCEPTION(EXP_GP, !dt_index || dt_index > dt_limit);
 
 		read_data(&gdt, dt_base + dt_index, sizeof(SGDescriptor));
@@ -91,7 +91,7 @@ uint32_t DataAccess::trans_v2l(acsmode_t mode, sgreg_t seg, uint32_t vaddr){
 		EXCEPTION(EXP_GP, vaddr > limit);
 
 		laddr = base + vaddr;
-		//INFO("base=0x%04x, limit=0x%02x, laddr=0x%02x", base, limit, laddr);
+		INFO(6, "base=0x%04x, limit=0x%02x, laddr=0x%02x", base, limit, laddr);
 	}
 	else
 		laddr = (get_sgreg(seg) << 4) + vaddr;
@@ -180,7 +180,6 @@ void DataAccess::write_mem8_seg(sgreg_t seg, uint32_t addr, uint8_t v){
 	uint32_t paddr;
        
 	paddr = trans_v2p(MODE_WRITE, seg, addr);
-	//INFO("Write : 0x%04x(0x%04x)", paddr, v);
 	if(chk_memio(paddr))
 		write_memio8(paddr, v);
 	else

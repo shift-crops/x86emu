@@ -10,7 +10,13 @@ SUB_OBJS += instruction/instruction.a
 SUB_OBJS += device/device.a
 
 CXXFLAGS := -Wall -MMD -std=c++11 -I./include
-LDFLAGS  := -lglfw -lGL -lpthread
+
+ifeq ($(OS),Windows_NT)
+	LDFLAGS  := -lglfw3 -lopengl32
+else
+	LDFLAGS  := -lglfw -lGL
+endif
+LDFLAGS  += $(LIBGLFW) $(LIBGL) -lpthread
 
 $(TARGET): $(OBJS) $(SUB_OBJS)
 	$(CXX) $(CXXFLAGS) $^ -o $@ $(LDFLAGS)
@@ -23,21 +29,23 @@ $(SUB_OBJS):
 	make -C instruction
 	make -C device
 
-_emu:
+.PHONY: emu
+emu:
 	make -C hardware
 	make -C emulator
 	make -C instruction
 	make -C device
 	make $(TARGET)
 
-_soft:
+.PHONY: os
+os:
 	make -C bios
 	make -C sample
 
-all:
-	make _emu
-	make _soft
+.PHONY: all
+all: emu os
 
+.PHONY: clean
 clean:
 	make clean -C hardware
 	make clean -C emulator

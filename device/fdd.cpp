@@ -25,7 +25,7 @@ FDD::FDD(){
 
 FDD::~FDD(){
 	for(int i=0; i<MAX_FDD; i++)
-		remove_disk(i);
+		eject_disk(i);
 
 	th.join();
 }
@@ -50,7 +50,7 @@ void FDD::insert_disk(uint8_t slot, const char* fname, bool write){
 	drive[slot] = d;
 }
 
-void FDD::remove_disk(uint8_t slot){
+void FDD::eject_disk(uint8_t slot){
 	if(slot>=MAX_FDD || !drive[slot])
 		return;
 
@@ -75,7 +75,7 @@ int32_t FDD::seek(uint8_t slot, uint8_t c, uint8_t h, uint8_t s){
 	dc = (c - drive[slot]->cylinder) * SIZE_SECTOR * N_SpH * N_HpC;
 	offset = dc+dh+ds;
 
-	INFO("seek : %d, ds : %d(%d->%d), dh : %d(%d->%d), dc : %d(%d->%d)\n"
+	INFO(3, "seek : %d, ds : %d(%d->%d), dh : %d(%d->%d), dc : %d(%d->%d)\n"
 				, offset, ds, drive[slot]->sector, s, dh, drive[slot]->head, h, dc, drive[slot]->cylinder, c);
 	drive[slot]->cylinder = c;
 	drive[slot]->head = h;
@@ -126,24 +126,23 @@ void FDD::sync_position(uint8_t slot){
 
 uint8_t FDD::in8(uint16_t addr){
 	uint8_t v;
-	INFO("in %x", addr);
-	switch(addr&7){
-		case 0:
+	switch(addr){
+		case 0x3f0:
 			v = sra.raw;
 			break;
-		case 1:
+		case 0x3f1:
 			v = srb.raw;
 			break;
-		case 3:
+		case 0x3f3:
 			v = tdr.raw;
 			break;
-		case 4:
+		case 0x3f4:
 			v = msr.raw;
 			break;
-		case 5:
+		case 0x3f5:
 			v = read_datareg();
 			break;
-		case 7:
+		case 0x3f7:
 			v = ccr.raw;
 			break;
 	}
@@ -151,21 +150,20 @@ uint8_t FDD::in8(uint16_t addr){
 }
 
 void FDD::out8(uint16_t addr, uint8_t v){
-	INFO("out %x <- %x", addr, v);
-	switch(addr&7){
-		case 2:
+	switch(addr){
+		case 0x3f2:
 			dor.raw = v;
 			break;
-		case 3:
+		case 0x3f3:
 			tdr.raw = v;
 			break;
-		case 4:
+		case 0x3f4:
 			dsr.raw = v;
 			break;
-		case 5:
+		case 0x3f5:
 			enqueue(&data_q, v);
 			break;
-		case 7:
+		case 0x3f7:
 			dir.raw = v;
 			break;
 	}

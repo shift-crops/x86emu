@@ -6,6 +6,7 @@ DEPS := $(SRCS:.cpp=.d)
 
 CXXFLAGS := -Wall -MMD -std=c++11 -I../include
 
+.PHONY: all
 all: $(TARGET)
 
 -include $(DEPS)
@@ -13,5 +14,6 @@ all: $(TARGET)
 $(TARGET): $(OBJS)
 	$(AR) rcs $@ $^
 
+.PHONY: clean
 clean:
 	$(RM) $(DEPS) $(OBJS) $(TARGET)

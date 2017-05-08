@@ -48,6 +48,7 @@ uint8_t IO::in_io8(uint16_t addr){
 		v = port_io[base]->in8(addr);
 	else
 		ERROR("no device connected at port : 0x%04x", addr);
+	INFO(4, "in [0x%04x] (0x%04x)", addr, v);
 	return v;
 }
 
@@ -67,6 +68,7 @@ void IO::out_io8(uint16_t addr, uint8_t value){
 		port_io[base]->out8(addr, value);
 	else
 		ERROR("no device connected at port : 0x%04x", addr);
+	INFO(4, "out [0x%04x] (0x%04x)", addr, value);
 }
 
 

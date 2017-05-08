@@ -55,7 +55,7 @@ void Keyboard::command(uint8_t v){
 		else{
 			switch(mode){
 				case 0xd1:
-					a20gate(v);
+					swt_a20gate(v);
 					break;
 				case 0xd2:
 					send_code(v);
@@ -91,12 +91,12 @@ uint8_t Keyboard::read_outbuf(void){
 }
 
 void Keyboard::send_code(uint8_t scancode){
-	INFO("scancode : %0x", scancode);
+	INFO(2, "scancode : %0x", scancode);
 	if(!ccb->KE) 	// enable
 		write_outbuf(scancode);
 }
 
-void Keyboard::a20gate(uint8_t v){
+void Keyboard::swt_a20gate(uint8_t v){
 	switch(v){
 		case 0xdd:
 			mem->set_a20gate(false);

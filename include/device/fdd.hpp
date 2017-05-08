@@ -182,7 +182,7 @@ class FDD : public IRQ, public PortIO {
 		FDD();
 		~FDD();
 		void insert_disk(uint8_t slot, const char *fname, bool write);
-		void remove_disk(uint8_t slot);
+		void eject_disk(uint8_t slot);
 		uint8_t in8(uint16_t addr);
 		void out8(uint16_t addr, uint8_t v);
 		//bool chk_intreq(void) { if(sra.INT){ sra.INT = false; return true; } return false; };

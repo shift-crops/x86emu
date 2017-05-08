@@ -1,4 +1,3 @@
-#include <assert.h>
 #include "instruction/instruction.hpp"
 
 bool ExecInstr::exec(void){
@@ -90,7 +89,7 @@ uint16_t ExecInstr::get_sreg(void){
 }
 
 void ExecInstr::set_crn(uint32_t value){
-	INFO("set CR%d = %x", REG, value);
+	INFO(2, "set CR%d = %x", REG, value);
 	EMU->set_crn(REG, value);
 }
 
@@ -99,7 +98,7 @@ uint32_t ExecInstr::get_crn(void){
 }
 
 uint32_t ExecInstr::calc_modrm(void){
-	assert(MOD != 3);
+	ASSERT(MOD != 3);
 
 	if(is_protected() ^ chsz_ad)
 		return calc_modrm32();

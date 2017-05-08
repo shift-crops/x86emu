@@ -1082,7 +1082,7 @@ void Instr32::lgdt_m32(void){
 	uint32_t m32;
 
 	m32 = get_m();
-	INFO("m32 = 0x%08x", m32);
+	INFO(2, "m32 = 0x%08x", m32);
 	EMU->set_dtreg(GDTR, READ_MEM32(m32+2), READ_MEM16(m32));
 }
 
@@ -1090,7 +1090,7 @@ void Instr32::lidt_m32(void){
 	uint32_t m32;
 
 	m32 = get_m();
-	INFO("m32 = 0x%08x", m32);
+	INFO(2, "m32 = 0x%08x", m32);
 	EMU->set_dtreg(IDTR, READ_MEM32(m32+2), READ_MEM16(m32));
 }
 

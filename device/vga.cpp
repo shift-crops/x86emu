@@ -56,9 +56,13 @@ uint8_t VGA::read8(uint32_t offset){
 }
 
 void VGA::write8(uint32_t offset, uint8_t v){
-	refresh = true;
-	if(mor.ER)
+	static int count = 0;
+
+	if(mor.ER){
 		seq.write(offset, v);
+		if(!(count++ % 0x10))
+			refresh = true;
+	}
 }
 
 uint8_t VGA::read_plane(uint8_t nplane, uint32_t offset){
@@ -223,7 +227,7 @@ void VGA::GraphicController::write(uint8_t nplane, uint32_t offset, uint8_t v){
 		case 3:
 			break;
 	}
-	INFO("write : plane[%d][0x%x] = 0x%02x", nplane, offset, v);
+	INFO(4, "plane[%d][0x%x] = 0x%02x", nplane, offset, v);
 }
 
 bool VGA::GraphicController::chk_offset(uint32_t *offset){
