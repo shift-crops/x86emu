@@ -727,7 +727,9 @@ void Instr16::code_ff(void){
 		case 0:	inc_rm16();		break;
 		case 1:	dec_rm16();		break;
 		case 2:	call_rm16();		break;
+		case 3:	callf_m16_16();		break;
 		case 4:	jmp_rm16();		break;
+		case 5:	jmpf_m16_16();		break;
 		case 6:	push_rm16();		break;
 		default:
 			ERROR("not implemented: 0xff /%d\n", REG);
@@ -744,8 +746,8 @@ void Instr16::code_0f00(void){
 
 void Instr16::code_0f01(void){
 	switch(REG){
-		case 2: lgdt_m16();		break;
-		case 3: lidt_m16();		break;
+		case 2: lgdt_m24();		break;
+		case 3: lidt_m24();		break;
 		default:
 			ERROR("not implemented: 0x0f01 /%d\n", REG);
 	}
@@ -1057,11 +1059,35 @@ void Instr16::call_rm16(void){
 	SET_IP_FLUSH(rm16);
 }
 
+void Instr16::callf_m16_16(void){
+	uint16_t m32, cs, ip;
+
+	m32 = get_m();
+	ip  = READ_MEM16(m32);
+	cs  = READ_MEM16(m32+2);
+
+	PUSH16(EMU->get_sgreg(CS));
+	PUSH16(GET_IP());
+	EMU->set_sgreg(CS, cs);
+	SET_IP_FLUSH(ip);
+}
+
 void Instr16::jmp_rm16(void){
 	uint16_t rm16;
 
 	rm16 = get_rm16();
 	SET_IP_FLUSH(rm16);
+}
+
+void Instr16::jmpf_m16_16(void){
+	uint16_t m32, cs, ip;
+
+	m32 = get_m();
+	ip  = READ_MEM16(m32);
+	cs  = READ_MEM16(m32+2);
+
+	EMU->set_sgreg(CS, cs);
+	SET_IP_FLUSH(ip);
 }
 
 void Instr16::push_rm16(void){
@@ -1073,19 +1099,23 @@ void Instr16::push_rm16(void){
 
 /******************************************************************/
 
-void Instr16::lgdt_m16(void){
-	uint16_t m16;
+void Instr16::lgdt_m24(void){
+	uint16_t m48, base, limit;
 
-	m16 = get_m();
-	INFO(2, "m16 = 0x%04x", m16);
-	EMU->set_dtreg(GDTR, READ_MEM32(m16+2)&((1<<24)-1), READ_MEM16(m16));
+	m48 = get_m();
+	limit = READ_MEM16(m48);
+	base  = READ_MEM32(m48+2)&((1<<24)-1);
+
+	EMU->set_dtreg(GDTR, base, limit);
 }
 
-void Instr16::lidt_m16(void){
-	uint16_t m16;
+void Instr16::lidt_m24(void){
+	uint16_t m48, base, limit;
 
-	m16 = get_m();
-	INFO(2, "m16 = 0x%04x", m16);
-	EMU->set_dtreg(IDTR, READ_MEM32(m16+2)&((1<<24)-1), READ_MEM16(m16));
+	m48 = get_m();
+	limit = READ_MEM16(m48);
+	base  = READ_MEM32(m48+2)&((1<<24)-1);
+
+	EMU->set_dtreg(IDTR, base, limit);
 }
 

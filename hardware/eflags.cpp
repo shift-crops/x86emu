@@ -13,7 +13,7 @@ template <class T> uint32_t Eflags::update_eflags_add(T v1, uint32_t v2){
 	uint8_t size;
 
 	v2 = (T)v2;
-	result = v1 + v2;
+	result = (uint64_t)v1 + v2;
 	size = sizeof(T)*8;
 
 	s1 = v1 >> (size-1);
@@ -33,7 +33,7 @@ template uint32_t Eflags::update_eflags_or(uint32_t v1, uint32_t v2);
 template uint32_t Eflags::update_eflags_or(uint16_t v1, uint32_t v2);
 template uint32_t Eflags::update_eflags_or(uint8_t v1, uint32_t v2);
 template <class T> uint32_t Eflags::update_eflags_or(T v1, uint32_t v2){
-	uint64_t result;
+	T result;
 	uint8_t size;
 
 	v2 = (T)v2;
@@ -53,7 +53,7 @@ template uint32_t Eflags::update_eflags_and(uint32_t v1, uint32_t v2);
 template uint32_t Eflags::update_eflags_and(uint16_t v1, uint32_t v2);
 template uint32_t Eflags::update_eflags_and(uint8_t v1, uint32_t v2);
 template <class T> uint32_t Eflags::update_eflags_and(T v1, uint32_t v2){
-	uint64_t result;
+	T result;
 	uint8_t size;
 
 	v2 = (T)v2;
@@ -78,7 +78,7 @@ template <class T> uint32_t Eflags::update_eflags_sub(T v1, uint32_t v2){
 	uint8_t size;
 
 	v2 = (T)v2;
-	result = v1 - v2;
+	result = (uint64_t)v1 - v2;
 	size = sizeof(T)*8;
 
 	s1 = v1 >> (size-1);
@@ -102,7 +102,7 @@ template <class T> uint32_t Eflags::update_eflags_mul(T v1, uint32_t v2){
 	uint8_t size;
 
 	v2 = (T)v2;
-	result = v1 * v2;
+	result = (uint64_t)v1 * v2;
 	size = sizeof(T)*8;
 
 	set_carry(result >> size);
@@ -119,7 +119,7 @@ template <class T> uint32_t Eflags::update_eflags_imul(T v1, int32_t v2){
 	uint8_t size;
 
 	v2 = (T)v2;
-	result = v1 * v2;
+	result = (int64_t)v1 * v2;
 	size = sizeof(T)*8;
 
 	set_carry((result >> size) != -1);

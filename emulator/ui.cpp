@@ -32,7 +32,7 @@ UI::~UI(void){
 void UI::ui_main(void){
 	GLFWwindow* window;
 
-	window = glfwCreateWindow(size_x*set.zoom, size_y*set.zoom, "x86emu", NULL, NULL);
+	window = glfwCreateWindow(size_x*set.zoom, size_y*set.zoom, "x86emu", set.full ? glfwGetPrimaryMonitor() : NULL, NULL);
 
 	glfwSetWindowUserPointer(window, this);
 	glfwMakeContextCurrent(window);

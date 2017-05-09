@@ -10,6 +10,7 @@
 
 struct UISetting {
 	uint8_t zoom;
+	bool full;
 	bool cursor;
 };
 

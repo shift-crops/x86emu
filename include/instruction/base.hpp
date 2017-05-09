@@ -256,12 +256,14 @@ class Instr16 : public InstrBase {
 		void inc_rm16(void);
 		void dec_rm16(void);
 		void call_rm16(void);
+		void callf_m16_16(void);
 		void jmp_rm16(void);
+		void jmpf_m16_16(void);
 		void push_rm16(void);
 
 		//0x0f01
-		void lgdt_m16(void);
-		void lidt_m16(void);
+		void lgdt_m24(void);
+		void lidt_m24(void);
 };
 
 class Instr32 : public InstrBase {
@@ -405,7 +407,9 @@ class Instr32 : public InstrBase {
 		void inc_rm32(void);
 		void dec_rm32(void);
 		void call_rm32(void);
+		void callf_m16_32(void);
 		void jmp_rm32(void);
+		void jmpf_m16_32(void);
 		void push_rm32(void);
 
 		//0x0f01

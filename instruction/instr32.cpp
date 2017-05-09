@@ -728,7 +728,9 @@ void Instr32::code_ff(void){
 		case 0:	inc_rm32();		break;
 		case 1:	dec_rm32();		break;
 		case 2:	call_rm32();		break;
+		case 3:	callf_m16_32();		break;
 		case 4:	jmp_rm32();		break;
+		case 5:	jmpf_m16_32();		break;
 		case 6:	push_rm32();		break;
 		default:
 			ERROR("not implemented: 0xff /%d\n", REG);
@@ -1062,11 +1064,39 @@ void Instr32::call_rm32(void){
 	SET_EIP_FLUSH(rm32);
 }
 
+void Instr32::callf_m16_32(void){
+	uint32_t m48, eip;
+	uint16_t cs;
+
+	m48 = get_m();
+	eip = READ_MEM32(m48);
+	cs  = READ_MEM16(m48+4);
+	INFO(2, "cs = 0x%04x, eip = 0x%08x", cs, eip);
+
+	PUSH32(EMU->get_sgreg(CS));
+	PUSH32(GET_EIP());
+	EMU->set_sgreg(CS, cs);
+	SET_EIP_FLUSH(eip);
+}
+
 void Instr32::jmp_rm32(void){
 	uint32_t rm32;
 
 	rm32 = get_rm32();
 	SET_EIP_FLUSH(rm32);
+}
+
+void Instr32::jmpf_m16_32(void){
+	uint32_t m48, eip;
+	uint16_t cs;
+
+	m48 = get_m();
+	eip = READ_MEM32(m48);
+	cs  = READ_MEM16(m48+4);
+	INFO(2, "cs = 0x%04x, eip = 0x%08x", cs, eip);
+
+	EMU->set_sgreg(CS, cs);
+	SET_EIP_FLUSH(eip);
 }
 
 void Instr32::push_rm32(void){
@@ -1079,18 +1109,26 @@ void Instr32::push_rm32(void){
 /******************************************************************/
 
 void Instr32::lgdt_m32(void){
-	uint32_t m32;
+	uint32_t m48, base;
+	uint16_t limit;
 
-	m32 = get_m();
-	INFO(2, "m32 = 0x%08x", m32);
-	EMU->set_dtreg(GDTR, READ_MEM32(m32+2), READ_MEM16(m32));
+	m48 = get_m();
+	limit = READ_MEM16(m48);
+	base  = READ_MEM32(m48+2);
+	INFO(2, "base = 0x%08x, limit = 0x%04x", base, limit);
+
+	EMU->set_dtreg(GDTR, base, limit);
 }
 
 void Instr32::lidt_m32(void){
-	uint32_t m32;
+	uint32_t m48, base;
+	uint16_t limit;
 
-	m32 = get_m();
-	INFO(2, "m32 = 0x%08x", m32);
-	EMU->set_dtreg(IDTR, READ_MEM32(m32+2), READ_MEM16(m32));
+	m48 = get_m();
+	limit = READ_MEM16(m48);
+	base  = READ_MEM32(m48+2);
+	INFO(2, "base = 0x%08x, limit = 0x%04x", base, limit);
+
+	EMU->set_dtreg(IDTR, base, limit);
 }
 

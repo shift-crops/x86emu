@@ -11,10 +11,12 @@
 #define MEMORY_SIZE (4*MB)
 
 struct Setting {
+	size_t mem_size;
 	const char *image_name;
 	uint32_t load_addr;
 	size_t load_size;
 	uint8_t zoom;
+	bool full;
 	bool cursor;
 };
 
@@ -36,31 +38,43 @@ void fini(void){
 
 int main(int argc, char *argv[]){
 	Setting set = {
+		.mem_size = MEMORY_SIZE, 
 		.image_name = "sample/kernel.img",
 		.load_addr = 0x0,
 		.load_size = (size_t)-1,
 		.zoom = 3,
+		.full = false,
 		.cursor = true,
 	};
 
 	char opt;
 	struct option long_options[] = {
+		{"memory",	required_argument, NULL, 'm'},
 		{"zoom",	required_argument, NULL, 'z'},
 		{"load_addr",	required_argument, NULL, 'a'},
 		{"load_size",	required_argument, NULL, 's'},
+		{"full",	no_argument,       NULL, 'F'},
 		{"vm_cursor",	no_argument,       NULL, 'V'},
 		{"help",	no_argument,       NULL, 'h'},
 		{0, 0, 0, 0}};
 
-	while((opt=getopt_long(argc, argv, DEBUG_OPT"z:a:s:h", long_options, NULL)) != -1){
+	while((opt=getopt_long(argc, argv, DEBUG_OPT"m:z:a:s:h", long_options, NULL)) != -1){
 		switch(opt){
-#ifdef DEBUG
-			case 'v':
-				set_debuglv(optarg);
+			uint32_t v;
+			case 'm':
+				v = atoi(optarg);
+
+				if(v)
+					set.mem_size = v*MB;
+				else
+					WARN("memory size is zero");
 				break;
-#endif
 			case 'z':
-				set.zoom = atoi(optarg);
+				v = atoi(optarg);
+				if(v)
+					set.zoom = v;
+				else
+					WARN("zoom error");
 				break;
 			case 'a':
 				set.load_addr = strtol(optarg, NULL, 0);
@@ -68,9 +82,17 @@ int main(int argc, char *argv[]){
 			case 's':
 				set.load_size = strtol(optarg, NULL, 0);
 				break;
+			case 'F':
+				set.full = true;
+				break;
 			case 'V':
 				set.cursor = false;
 				break;
+#ifdef DEBUG
+			case 'v':
+				set_debuglv(optarg);
+				break;
+#endif
 			case 'h':
 			case '?':
 				help(argv[0]);
@@ -91,11 +113,12 @@ int main(int argc, char *argv[]){
 
 void run_emulator(const Setting set){
 	EmuSetting emuset = {
-		.mem_size = MEMORY_SIZE,
+		.mem_size = set.mem_size,
 		.cs = 0xf000, 
 		.ip = 0xfff0,
 		.uiset = {
 			.zoom = set.zoom,
+			.full = set.full,
 			.cursor = set.cursor,
 		},
 	};
@@ -164,14 +187,18 @@ void help(const char *name){
 		"\t%s [options] <disk image>\n\n", name);
 
 	MSG(	"Options : \n"
+		"\t-m MB, --memory=MB\n"
+		"\t\tMemory size (MB)\n\n"
 		"\t-z X, --zoom=X\n"
 		"\t\tZoom magnification\n\n"
 		"\t-a ADDR, --load_addr=ADDR\n"
 		"\t\tAddress to preload disk image\n\n"
 		"\t-s SIZE, --load_size=SIZE\n"
 		"\t\tSize to load (Enabled when 'load_addr' is specified)\n\n"
+		"\t--full\n"
+		"\t\tfull screen\n\n"
 		"\t--vm_cursor\n"
-		"\t\ton Vmware or VirtualBox\n\n"
+		"\t\trunning on VMware or VirtualBox\n\n"
 #ifdef DEBUG
 		"\t-v...\n"
 		"\t\tverbose level\n\n"

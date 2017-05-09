@@ -20,7 +20,7 @@ enum {F_ASSERT, F_ERROR, F_WARN, F_INFO, F_MSG};
 
 #define ASSERT(cond)			if(!(cond)) DEBUG_PRINT(F_ASSERT, 0, #cond)
 #define ERROR(fmt, ...)			DEBUG_PRINT(F_ERROR, 0, fmt, ##__VA_ARGS__)
-#define WARN(fmt, ...)			ON_DEBUG(F_WARN, 1, fmt, ##__VA_ARGS__)
+#define WARN(fmt, ...)			ON_DEBUG(F_WARN, 0, fmt, ##__VA_ARGS__)
 #define INFO(lv, fmt, ...)		ON_DEBUG(F_INFO, lv, fmt, ##__VA_ARGS__)
 #define DEBUG_MSG(lv, fmt, ...)		ON_DEBUG(F_MSG, lv, fmt, ##__VA_ARGS__)
 #define MSG(fmt, ...)			fprintf(stdout, fmt, ##__VA_ARGS__)
