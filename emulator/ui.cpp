@@ -46,9 +46,8 @@ void UI::ui_main(void){
 	glRasterPos2i(-1, 1);
 
 	while (!glfwWindowShouldClose(window)) {
-		glfwPollEvents();
 		std::this_thread::sleep_for(std::chrono::milliseconds(40));
-		//glfwWaitEventsTimeout(40.0/1000);
+		glfwPollEvents();
 
 		if(vga->need_refresh()){
 			uint16_t x, y;
@@ -131,7 +130,9 @@ void UI::cursorpos_callback(GLFWwindow *window, double xpos, double ypos){
 	sy = _ypos > ui->Y;
 
 	mouse->send_code((sy<<5) + (sx<<4) + (1<<3) + (ui->click[1]<<1) + ui->click[0]);
+	std::this_thread::sleep_for(std::chrono::microseconds(100));
 	mouse->send_code(_xpos-ui->X);
+	std::this_thread::sleep_for(std::chrono::microseconds(100));
 	mouse->send_code(ui->Y-_ypos);
 
 	DEBUG_MSG(1, "[%02x %02x %02x] _xpos : %d, _ypos : %d\n"

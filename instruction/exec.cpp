@@ -1,7 +1,8 @@
 #include "instruction/instruction.hpp"
 
 bool ExecInstr::exec(void){
-        if(!instrfuncs.count(OPCODE)){
+        //if(!instrfuncs.count(OPCODE)){
+        if(!instrfuncs[OPCODE]){
                 ERROR("not implemented OPCODE 0x%02x", OPCODE);
 		return false;
 	}

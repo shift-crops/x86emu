@@ -63,6 +63,8 @@
 #define PRE_SEGMENT	(instr->pre_segment)
 #define SEGMENT		(segment)
 
+#define MAX_OPCODE	0x1000
+
 struct ModRM {  
         uint8_t rm : 3; 
         uint8_t reg : 3; 
@@ -123,7 +125,8 @@ class Instruction {
 class ExecInstr : protected virtual Instruction {
 	protected:
 		typedef void (ExecInstr::*instrfunc_t)(void);
-		std::map<uint16_t, instrfunc_t> instrfuncs;
+		//std::map<uint16_t, instrfunc_t> instrfuncs;
+		instrfunc_t instrfuncs[MAX_OPCODE];
 
 	public:
 		bool exec(void);
@@ -185,7 +188,8 @@ union InstrFlags {
 
 class ParseInstr : protected virtual Instruction {
 	protected:
-		std::map<uint16_t, InstrFlags> chk;
+		//std::map<uint16_t, InstrFlags> chk;
+		InstrFlags chk[MAX_OPCODE];
 
 	public:
 		//ParseInstr(Emulator *e) : Instruction(e) {}; 

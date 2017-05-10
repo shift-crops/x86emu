@@ -136,52 +136,52 @@ uint16_t DataAccess::pop16(void){
 }
 
 uint32_t DataAccess::read_mem32_seg(sgreg_t seg, uint32_t addr){
-	uint32_t paddr;
+	uint32_t paddr, io_base;
        
 	paddr = trans_v2p(MODE_READ, seg, addr);
-	return chk_memio(paddr) ? read_memio32(paddr) : read_mem32(paddr);
+	return (io_base = chk_memio(paddr)) ? read_memio32(io_base, paddr-io_base) : read_mem32(paddr);
 }
 
 uint16_t DataAccess::read_mem16_seg(sgreg_t seg, uint32_t addr) {
-	uint32_t paddr;
+	uint32_t paddr, io_base;
        
 	paddr = trans_v2p(MODE_READ, seg, addr);
-	return chk_memio(paddr) ? read_memio16(paddr) : read_mem16(paddr);
+	return (io_base = chk_memio(paddr)) ? read_memio16(io_base, paddr-io_base) : read_mem16(paddr);
 }
 
 uint8_t DataAccess::read_mem8_seg(sgreg_t seg, uint32_t addr){
-	uint32_t paddr;
+	uint32_t paddr, io_base;
        
 	paddr = trans_v2p(MODE_READ, seg, addr);
-	return chk_memio(paddr) ? read_memio8(paddr) : read_mem8(paddr);
+	return (io_base = chk_memio(paddr)) ? read_memio8(io_base, paddr-io_base) : read_mem8(paddr);
 }
 
 void DataAccess::write_mem32_seg(sgreg_t seg, uint32_t addr, uint32_t v){
-	uint32_t paddr;
+	uint32_t paddr, io_base;
        
 	paddr = trans_v2p(MODE_WRITE, seg, addr);
-	if(chk_memio(paddr))
-		write_memio32(paddr, v);
+	if((io_base = chk_memio(paddr)))
+		write_memio32(io_base, paddr-io_base, v);
 	else
 		write_mem32(paddr, v);
 }
 
 void DataAccess::write_mem16_seg(sgreg_t seg, uint32_t addr, uint16_t v){
-	uint32_t paddr;
+	uint32_t paddr, io_base;
        
 	paddr = trans_v2p(MODE_WRITE, seg, addr);
-	if(chk_memio(paddr))
-		write_memio16(paddr, v);
+	if((io_base = chk_memio(paddr)))
+		write_memio16(io_base, paddr-io_base, v);
 	else
 		write_mem16(paddr, v);
 }
 
 void DataAccess::write_mem8_seg(sgreg_t seg, uint32_t addr, uint8_t v){
-	uint32_t paddr;
+	uint32_t paddr, io_base;
        
 	paddr = trans_v2p(MODE_WRITE, seg, addr);
-	if(chk_memio(paddr))
-		write_memio8(paddr, v);
+	if((io_base = chk_memio(paddr)))
+		write_memio8(io_base, paddr-io_base, v);
 	else
 		write_mem8(paddr, v);
 }

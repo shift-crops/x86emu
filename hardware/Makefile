@@ -4,7 +4,7 @@ SRCS := processor.cpp memory.cpp eflags.cpp io.cpp
 OBJS := $(SRCS:.cpp=.o)
 DEPS := $(SRCS:.cpp=.d)
 
-CXXFLAGS := -Wall -MMD -std=c++11 -I../include
+CXXFLAGS := -Wall -MMD -std=c++11 -I../include $(DEBUG)
 
 .PHONY: all
 all: $(TARGET)

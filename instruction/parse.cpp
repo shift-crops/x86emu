@@ -41,12 +41,12 @@ next:				UPDATE_EIP(1);
 
 void ParseInstr::parse(void){
 	parse_opcode();
-
+/*
 	if(!chk.count(OPCODE)){
 		DEBUG_MSG(5, "\n");
 		ERROR("no opecode : %x", OPCODE);
 	}
-
+*/
 	if(chk[OPCODE].modrm)
 		parse_modrm_sib_disp();
 
@@ -65,24 +65,6 @@ void ParseInstr::parse(void){
 		DEBUG_MSG(5, "imm8:0x%02x ", IMM8);
 		UPDATE_EIP(1);
 	}
-/*
-	else if(chk[OPCODE].moffs8){
-		MOFFS8 = (int8_t)get_emu()->get_code8(0);
-		DEBUG_MSG(5, "moffs8:0x%02x ", MOFFS8);
-		UPDATE_EIP(1);
-	}
-	else if(chk[OPCODE].moffs){
-		if(is_protected() ^ chsz_ad){
-			MOFFS = get_emu()->get_code32(0);
-			UPDATE_EIP(4);
-		}
-		else{
-			MOFFS = get_emu()->get_code16(0);
-			UPDATE_EIP(2);
-		}
-		DEBUG_MSG(5, "moffs:0x%04x", MOFFS);
-	}
-*/
 	if(chk[OPCODE].ptr16){
 		PTR16 = get_emu()->get_code16(0);
 		DEBUG_MSG(5, "ptr16:0x%04x", PTR16);

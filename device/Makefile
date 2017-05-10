@@ -4,7 +4,7 @@ SRCS := com.cpp syscontrol.cpp pic.cpp pit.cpp fdd.cpp vga.cpp keyboard.cpp mous
 OBJS := $(SRCS:.cpp=.o)
 DEPS := $(SRCS:.cpp=.d)
 
-CXXFLAGS := -Wall -MMD -std=c++11 -I../include
+CXXFLAGS := -Wall -MMD -std=c++11 -I../include $(DEBUG)
 
 .PHONY: all
 all: $(TARGET)

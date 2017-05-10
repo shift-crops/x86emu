@@ -16,6 +16,14 @@ IO::~IO(){
 	mem_io_map.clear();
 }
 
+/* port IO */
+void IO::set_portio(uint16_t addr, size_t len, PortIO *dev) {
+	addr &= ~1;
+
+	port_io[addr] = dev;
+	port_io_map[addr] = len;
+}
+
 uint16_t IO::get_portio_base(uint16_t addr){
 	for(int i=0; i<5; i++){	// max_mask : 0xfff0
 		uint16_t base = (addr&(~1)) - (2*i);
@@ -71,90 +79,50 @@ void IO::out_io8(uint16_t addr, uint8_t value){
 	INFO(4, "out [0x%04x] (0x%04x)", addr, value);
 }
 
+/* memory mapped IO */
+void IO::set_memio(uint32_t base, size_t len, MemoryIO *dev) {
+	uint32_t addr;
+
+	ASSERT(!(base&((1<<12)-1)));
+
+	dev->set_mem(memory, base, len);
+	mem_io[base] = dev;
+
+	for(addr=base; addr<base+len; addr+=(1<<12))
+		mem_io_map[addr] = base;
+};
 
 uint32_t IO::get_memio_base(uint32_t addr){
-	std::map<uint32_t, size_t>::iterator it;
-
-	for(it = mem_io_map.begin(); it != mem_io_map.end() && it->first <= addr; it++)
-		if(addr >= it->first && addr < it->first+it->second)
-			return it->first;
-	return 0;
+	addr &= (~((1<<12)-1));
+	return mem_io_map.count(addr) ? mem_io_map[addr] : 0;
 }
 
-uint32_t IO::read_memio32(uint32_t addr){
-	uint32_t v = 0;
-	uint32_t base, offset;
-
-	base = get_memio_base(addr);
-	if(base){
-		offset = addr - base;
-		v = mem_io[base]->read32(offset);
-	}
-	else
-		ERROR("no device mapped : 0x%04x", addr);
-	return v;
+uint32_t IO::read_memio32(uint32_t base, uint32_t offset){
+	ASSERT(mem_io.count(base));
+	return mem_io[base]->read32(offset);
 }
 
-uint16_t IO::read_memio16(uint32_t addr){
-	uint16_t v = 0;
-	uint32_t base, offset;
-
-	base = get_memio_base(addr);
-	if(base){
-		offset = addr - base;
-		v = mem_io[base]->read16(offset);
-	}
-	else
-		ERROR("no device mapped : 0x%04x", addr);
-	return v;
+uint16_t IO::read_memio16(uint32_t base, uint32_t offset){
+	ASSERT(mem_io.count(base));
+	return mem_io[base]->read16(offset);
 }
 
-uint8_t IO::read_memio8(uint32_t addr){
-	uint8_t v = 0;
-	uint32_t base, offset;
-
-	base = get_memio_base(addr);
-	if(base){
-		offset = addr - base;
-		v = mem_io[base]->read8(offset);
-	}
-	else
-		ERROR("no device mapped : 0x%04x", addr);
-	return v;
+uint8_t IO::read_memio8(uint32_t base, uint32_t offset){
+	ASSERT(mem_io.count(base));
+	return mem_io[base]->read8(offset);
 }
 
-void IO::write_memio32(uint32_t addr, uint32_t value){
-	uint32_t base, offset;
-
-	base = get_memio_base(addr);
-	if(base){
-		offset = addr - base;
-		mem_io[base]->write32(offset, value);
-	}
-	else
-		ERROR("no device mapped : 0x%04x", addr);
+void IO::write_memio32(uint32_t base, uint32_t offset, uint32_t value){
+	ASSERT(mem_io.count(base));
+	mem_io[base]->write32(offset, value);
 }
 
-void IO::write_memio16(uint32_t addr, uint16_t value){
-	uint32_t base, offset;
-
-	base = get_memio_base(addr);
-	if(base){
-		offset = addr - base;
-		mem_io[base]->write16(offset, value);
-	}
-	else
-		ERROR("no device mapped : 0x%04x", addr);
+void IO::write_memio16(uint32_t base, uint32_t offset, uint16_t value){
+	ASSERT(mem_io.count(base));
+	mem_io[base]->write16(offset, value);
 }
 
-void IO::write_memio8(uint32_t addr, uint8_t value){
-	uint32_t base, offset;
-
-	base = get_memio_base(addr);
-	if(base){
-		offset = addr - base;
-		mem_io[base]->write8(offset, value);
-	}
-	else
-		ERROR("no device mapped : 0x%04x", addr);
+void IO::write_memio8(uint32_t base, uint32_t offset, uint8_t value){
+	ASSERT(mem_io.count(base));
+	mem_io[base]->write8(offset, value);
 }
