@@ -7,7 +7,7 @@ PIC::PIC(PIC* master) {
 		irq[i] = NULL;
 	irr = 0;
 	isr = 0;
-	init_icn = 1;
+	init_icn = -1;
 };
 
 int8_t PIC::get_nintr(void){
@@ -39,16 +39,13 @@ bool PIC::chk_intreq(void){
 	if(init_icn)
 		return false;
 
-	if(irr)
-		return false;
-
-	for(i=0; i<MAX_IRQ && !((imr>>i)&1 && irq[i] && irq[i]->chk_intreq()); i++);
+	for(i=0; i<MAX_IRQ && !(irq[i] && (imr>>i)&1 && irq[i]->chk_intreq()); i++);
 	if(i == MAX_IRQ)
 		return false;
 	if(isr && (1<<i) >= isr)
 		return false;
 
-	irr = 1 << i;
+	irr |= 1 << i;
 	return true;
 }
 
@@ -83,7 +80,7 @@ void PIC::set_command(uint8_t v){
 	if(init_icn){
 		ic1.raw = v;
 		INFO(2, "ic1 : 0x%04x", v);
-		init_icn = 2;
+		init_icn = 1;
 	}
 	else{
 		OCW2 ocw2;
@@ -105,8 +102,8 @@ void PIC::set_command(uint8_t v){
 }
 
 void PIC::set_data(uint8_t v){
-	if(init_icn){
-		switch(init_icn++){
+	if(init_icn > 0){
+		switch(++init_icn){
 			case 2:
 				ic2.raw = v;
 				INFO(2, "ic2 : 0x%04x", v);
@@ -124,6 +121,8 @@ void PIC::set_data(uint8_t v){
 				INFO(2, "ic4 : 0x%04x", v);
 			default:
 done:				init_icn = 0;
+				for(int i=0; i<MAX_IRQ; i++)
+					if(irq[i]) irq[i]->chk_intreq();
 		}
 	}
 	else

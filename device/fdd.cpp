@@ -75,7 +75,7 @@ int32_t FDD::seek(uint8_t slot, uint8_t c, uint8_t h, uint8_t s){
 	dc = (c - drive[slot]->cylinder) * SIZE_SECTOR * N_SpH * N_HpC;
 	offset = dc+dh+ds;
 
-	INFO(3, "seek : %d, ds : %d(%d->%d), dh : %d(%d->%d), dc : %d(%d->%d)\n"
+	INFO(3, "seek : %d, ds : %d(%d->%d), dh : %d(%d->%d), dc : %d(%d->%d)"
 				, offset, ds, drive[slot]->sector, s, dh, drive[slot]->head, h, dc, drive[slot]->cylinder, c);
 	drive[slot]->cylinder = c;
 	drive[slot]->head = h;
@@ -116,11 +116,8 @@ void FDD::sync_position(uint8_t slot){
 	drive[slot]->sector++;
 	if(drive[slot]->sector > N_SpH){
 		drive[slot]->sector = 1;
-		drive[slot]->head++;
-	}
-	if(drive[slot]->head >= N_HpC){
-		drive[slot]->head = 0;
-		drive[slot]->cylinder++;
+		if(drive[slot]->head++)
+			drive[slot]->cylinder++;
 	}
 }
 

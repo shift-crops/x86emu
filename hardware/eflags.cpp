@@ -1,8 +1,6 @@
 #include "hardware/eflags.hpp"
 
-Eflags::Eflags(){
-	eflags.reg32 = 0x00000002;
-}
+Eflags::Eflags(){}
 
 template uint32_t Eflags::update_eflags_add(uint32_t v1, uint32_t v2);
 template uint32_t Eflags::update_eflags_add(uint16_t v1, uint32_t v2);
@@ -165,6 +163,16 @@ template <class T> uint32_t Eflags::update_eflags_shr(T v, uint8_t c){
 	if(c==1)
 		set_overflow((v >> (size-1)) & 1);
 
+	return eflags.reg32;
+}
+
+uint32_t Eflags::update_eflags_cld(void){
+	eflags.DF = 0;
+	return eflags.reg32;
+}
+
+uint32_t Eflags::update_eflags_std(void){
+	eflags.DF = 1;
 	return eflags.reg32;
 }
 

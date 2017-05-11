@@ -75,7 +75,7 @@ class PIC : public IRQ, public PortIO {
 			};
 		} ic4;
 
-		uint8_t init_icn;
+		int8_t init_icn;
 
 	public:
 		PIC(PIC* master = NULL);

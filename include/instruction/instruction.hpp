@@ -27,6 +27,8 @@
 #define EFLAGS_UPDATE_IMUL(v1, v2)	EMU->update_eflags_imul(v1, v2)
 #define EFLAGS_UPDATE_SHL(v1, v2)	EMU->update_eflags_shl(v1, v2)
 #define EFLAGS_UPDATE_SHR(v1, v2)	EMU->update_eflags_shr(v1, v2)
+#define EFLAGS_UPDATE_CLD()		EMU->update_eflags_cld()
+#define EFLAGS_UPDATE_STD()		EMU->update_eflags_std()
 #define EFLAGS_CF			EMU->is_carry()
 #define EFLAGS_PF			EMU->is_parity()
 #define EFLAGS_ZF			EMU->is_zero()
@@ -63,7 +65,7 @@
 #define PRE_SEGMENT	(instr->pre_segment)
 #define SEGMENT		(segment)
 
-#define MAX_OPCODE	0x1000
+#define MAX_OPCODE	0x200
 
 struct ModRM {  
         uint8_t rm : 3; 
@@ -132,6 +134,7 @@ class ExecInstr : protected virtual Instruction {
 		bool exec(void);
 	protected:
 		//ExecInstr(Emulator *e) : Instruction(e) {}; 
+		ExecInstr() { for(int i=0; i<MAX_OPCODE; i++) instrfuncs[i]=NULL; }; 
 		void set_rm32(uint32_t value);
 		uint32_t get_rm32(void);
 		void set_r32(uint32_t value);

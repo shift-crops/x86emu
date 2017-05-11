@@ -1,13 +1,18 @@
 #include "instruction/instruction.hpp"
 
 bool ExecInstr::exec(void){
-        //if(!instrfuncs.count(OPCODE)){
-        if(!instrfuncs[OPCODE]){
+	uint16_t opcode = OPCODE;
+
+	if(opcode>>8 == 0x0f)
+		opcode = (opcode & 0xff) | 0x0100;
+
+        //if(!instrfuncs.count(opcode)){
+        if(!instrfuncs[opcode]){
                 ERROR("not implemented OPCODE 0x%02x", OPCODE);
 		return false;
 	}
 
-        (this->*instrfuncs[OPCODE])();
+        (this->*instrfuncs[opcode])();
 	return true;
 }
 

@@ -9,8 +9,6 @@
 
 struct EmuSetting {
 	size_t mem_size;
-	uint16_t cs;
-	uint16_t ip;
 	UISetting uiset;
 };
 

@@ -4,8 +4,8 @@
 PIT::PIT(){
 	count[0] = def[0] = 0xffff;
 
-	std::thread th = std::thread(&PIT::counter, this);
-	th.detach();
+	//std::thread th = std::thread(&PIT::counter, this);
+	//th.detach();
 };
 
 uint8_t PIT::in8(uint16_t addr){
@@ -62,9 +62,9 @@ void PIT::out8(uint16_t addr, uint8_t v){
 			break;
 	}
 }
-/*
+
 bool PIT::chk_intreq(void){
-	//INFO("counter = 0x%04x", count[0]);
+	INFO(5, "counter = 0x%04x", count[0]);
 	if(cwr.BCD){
 	}
 	else	count[0]--;
@@ -80,11 +80,12 @@ bool PIT::chk_intreq(void){
 
 	return false;
 }
-*/
 
+/*
 void PIT::counter(void){
 	while(true){
 		std::this_thread::sleep_for(std::chrono::milliseconds(100*def[0]/119318));
 		intr = true;
 	}
 }
+*/

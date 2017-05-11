@@ -4,7 +4,19 @@
 Processor::Processor(void){
 	memset(gpregs, 0, sizeof(gpregs));
 	memset(sgregs, 0, sizeof(sgregs));
-	eip = 0;
+
+	set_eip(0x0000fff0);
+	set_sgreg(CS, 0xf000);
+	set_crn(0, 0x60000010);
+	set_eflags(0x00000002);
+
+	dtregs[IDTR].base  = 0x0000;
+	dtregs[IDTR].limit = 0xffff;
+	dtregs[GDTR].base  = 0x0000;
+	dtregs[GDTR].limit = 0xffff;
+	dtregs[LDTR].base  = 0x0000;
+	dtregs[LDTR].limit = 0xffff;
+
 	halt = false;
 	mode_protected = false;
 }

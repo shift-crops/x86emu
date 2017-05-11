@@ -14,7 +14,7 @@ start:
 	xor ax, ax
 	mov es, ax
 
-	call init_pic
+	;call init_pic
 	call init_fdd
 	call init_vga
 	call dword bios_init

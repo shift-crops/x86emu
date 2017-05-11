@@ -34,7 +34,6 @@ irq_disk_read:
 irq_disk_end:
 	popa
 	inc bx
-	sti
 	iret
 
 ; disk_read_sector
@@ -54,10 +53,19 @@ read_loop:
 	push dx
 	call fdd_read_data
 read_busywait:
-	cmp bx, di
-	jl read_busywait
+	mov dx, 0x03f4
+	in al, dx
+	test al, 0x80
+	jz read_busywait
 
 	mov dx, 0x03f5
+read_next:
+	in  al, dx
+	mov [es:bx], al
+	inc bx
+	cmp bx, di
+	jl read_next
+
 	mov cx, 0
 read_status:
 	in al, dx

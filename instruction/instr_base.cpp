@@ -59,6 +59,8 @@ InstrBase::InstrBase() {
 	set_funcflag(0xee, instrbase(out_dx_al), 0);
 	set_funcflag(0xfa, instrbase(cli), 0);
 	set_funcflag(0xfb, instrbase(sti), 0);
+	set_funcflag(0xfc, instrbase(cld), 0);
+	set_funcflag(0xfd, instrbase(std), 0);
 	set_funcflag(0xf4, instrbase(hlt), 0);
 
 	set_funcflag(0x0f20, instrbase(mov_r32_crn), CHK_MODRM);
@@ -86,6 +88,13 @@ InstrBase::InstrBase() {
 	set_funcflag(0xc0, instrbase(code_c0), CHK_MODRM | CHK_IMM8);
 }
 
+void InstrBase::set_funcflag(uint16_t opcode, instrfunc_t func, uint8_t flags){
+	if(opcode>>8 == 0x0f)
+		opcode = (opcode & 0xff) | 0x0100;
+	ASSERT(opcode < MAX_OPCODE);
+
+	instrfuncs[opcode] = func; chk[opcode].flags = flags;
+};
 
 void InstrBase::add_rm8_r8(void){
 	uint8_t rm8, r8;
@@ -368,6 +377,14 @@ void InstrBase::cli(void){
 
 void InstrBase::sti(void){
 	EMU->set_interruptable(true);
+}
+
+void InstrBase::cld(void){
+	EFLAGS_UPDATE_CLD();
+}
+
+void InstrBase::std(void){
+	EFLAGS_UPDATE_STD();
 }
 
 void InstrBase::hlt(void){

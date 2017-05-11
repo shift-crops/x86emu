@@ -63,6 +63,8 @@ class Eflags {
 		template <class T> uint32_t update_eflags_imul(T v1, int32_t v2);
 		template <class T> uint32_t update_eflags_shl(T v, uint8_t c);
 		template <class T> uint32_t update_eflags_shr(T v, uint8_t c);
+		uint32_t update_eflags_cld(void);
+		uint32_t update_eflags_std(void);
 	private:
 		bool chk_parity(uint8_t v);
 };

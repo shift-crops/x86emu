@@ -1,5 +1,5 @@
 global write_esb, write_esw, write_esd
-global in_port, out_port, cli, sti
+global in_port, out_port, _cli, _sti
 
 BITS 16
 write_esb:
@@ -59,10 +59,10 @@ out_port:
 	o32 leave
 	o32 ret
 
-cli:
+_cli:
 	cli
 	o32 ret
 
-sti:
+_sti:
 	sti
 	o32 ret

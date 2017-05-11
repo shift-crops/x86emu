@@ -50,8 +50,16 @@ void Interrupt::hundle_interrupt(void){
 			set_interruptable(false);
 	}
 	else{
+		uint32_t idt_base;
+		uint16_t idt_limit, idt_offset;
 		IVT ivt;
-		ivt.raw = read_mem32(n*4);
+
+		idt_base = get_dtreg_base(IDTR);
+		idt_limit = get_dtreg_limit(IDTR);
+		idt_offset = n<<2;
+
+		EXCEPTION(EXP_GP, idt_offset > idt_limit);
+		ivt.raw = read_mem32(idt_base + idt_offset);
 
 		save_regs(false);
 		set_ip(ivt.offset);

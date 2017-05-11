@@ -40,32 +40,39 @@ next:				UPDATE_EIP(1);
 }
 
 void ParseInstr::parse(void){
+	uint16_t opcode;
+
 	parse_opcode();
+
+	opcode = OPCODE;
+	if(opcode>>8 == 0x0f)
+		opcode = (opcode & 0xff) | 0x0100;
+
 /*
-	if(!chk.count(OPCODE)){
+	if(!chk.count(opcode)){
 		DEBUG_MSG(5, "\n");
-		ERROR("no opecode : %x", OPCODE);
+		ERROR("no opecode : %x", opcode);
 	}
 */
-	if(chk[OPCODE].modrm)
+	if(chk[opcode].modrm)
 		parse_modrm_sib_disp();
 
-	if(chk[OPCODE].imm32){
+	if(chk[opcode].imm32){
 		IMM32 = get_emu()->get_code32(0);
 		DEBUG_MSG(5, "imm32:0x%08x ", IMM32);
 		UPDATE_EIP(4);
 	}
-	else if(chk[OPCODE].imm16){
+	else if(chk[opcode].imm16){
 		IMM16 = get_emu()->get_code16(0);
 		DEBUG_MSG(5, "imm16:0x%04x ", IMM16);
 		UPDATE_EIP(2);
 	}
-	else if(chk[OPCODE].imm8){
+	else if(chk[opcode].imm8){
 		IMM8 = (int8_t)get_emu()->get_code8(0);
 		DEBUG_MSG(5, "imm8:0x%02x ", IMM8);
 		UPDATE_EIP(1);
 	}
-	if(chk[OPCODE].ptr16){
+	if(chk[opcode].ptr16){
 		PTR16 = get_emu()->get_code16(0);
 		DEBUG_MSG(5, "ptr16:0x%04x", PTR16);
 		UPDATE_EIP(2);

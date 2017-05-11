@@ -63,7 +63,7 @@ void gc_configure(void){
 }
 
 void load_font(void){
-	cli();
+	_cli();
 	out_port(0x3c4, 2);
 	out_port(0x3c5, 0x4);
 	out_port(0x3c4, 4);
@@ -73,7 +73,7 @@ void load_font(void){
 	out_port(0x3cf, 0x0);
 	out_port(0x3ce, 6);
 	out_port(0x3cf, 0x0);
-	sti();
+	_sti();
 
 	__asm__("push es\n"
 		"mov ax, 0xa000\n"

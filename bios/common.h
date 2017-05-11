@@ -13,8 +13,8 @@ void write_esw(uint16_t *addr, uint16_t v);
 void write_esd(uint32_t *addr, uint32_t v);
 uint8_t in_port(uint16_t port);
 void out_port(uint16_t port, uint8_t v);
-void cli(void);
-void sti(void);
+void _cli(void);
+void _sti(void);
 
 void bsv_test(void);
 void bsv_video(void);

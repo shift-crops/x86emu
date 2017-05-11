@@ -49,8 +49,8 @@ Emulator::Emulator(EmuSetting set) : Hardware(set.mem_size) {
 	set_portio(0x3f8, 1, com);		// 0x3f8
 	set_memio(0xa0000, 0x20000, vga);
 
-	set_sgreg(CS, set.cs);
-	set_ip(set.ip);
+	//set_sgreg(CS, set.cs);
+	//set_ip(set.ip);
 }
 
 void Emulator::load_binary(const char* fname, uint32_t addr, uint32_t offset, size_t size){

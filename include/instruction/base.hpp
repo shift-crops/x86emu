@@ -10,10 +10,7 @@ class InstrBase : public ExecInstr , public ParseInstr {
 		InstrBase();
 		void set_chsz_ad(bool ad){ chsz_ad = ad; };
 	protected:
-		void set_funcflag(uint16_t opcode, instrfunc_t func, uint8_t flags){
-			ASSERT(opcode < MAX_OPCODE);
-			instrfuncs[opcode] = func; chk[opcode].flags = flags;
-		};
+		void set_funcflag(uint16_t opcode, instrfunc_t func, uint8_t flags);
 
 		void add_rm8_r8(void);
 		void add_r8_rm8(void);
@@ -70,6 +67,8 @@ class InstrBase : public ExecInstr , public ParseInstr {
 		void out_dx_al(void);
 		void cli(void);
 		void sti(void);
+		void cld(void);
+		void std(void);
 		void hlt(void);
 		void ltr_rm16(void);
 		void mov_r32_crn(void);

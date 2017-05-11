@@ -12,15 +12,16 @@ UI::UI(Memory *m, UISetting s){
 	enable = true;
 	capture = false;
 
-	main_th = std::thread(&UI::ui_main, this);
-	main_th.detach();
-
 	size_x = 320;
 	size_y = 200;
 	image = new uint8_t[size_x*size_y*3];
 
-	X = Y = 0;
+	X = size_x/2;
+	Y = size_y/2;
 	click[0] = click[1] = false;
+
+	main_th = std::thread(&UI::ui_main, this);
+	main_th.detach();
 }
 
 UI::~UI(void){
@@ -123,7 +124,7 @@ void UI::cursorpos_callback(GLFWwindow *window, double xpos, double ypos){
 	bool sx, sy;
 	static int count = 0;
 
-	if(!ui->capture || count++ % 4)
+	if(!ui->capture || count++ % 6)
 		return;
 
 	sx = _xpos < ui->X;

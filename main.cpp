@@ -114,8 +114,6 @@ int main(int argc, char *argv[]){
 void run_emulator(const Setting set){
 	EmuSetting emuset = {
 		.mem_size = set.mem_size,
-		.cs = 0xf000, 
-		.ip = 0xfff0,
 		.uiset = {
 			.zoom = set.zoom,
 			.full = set.full,
@@ -168,9 +166,9 @@ void run_emulator(const Setting set){
 			}
 		}
 		catch(exception_t n){
-			emu.dump_regs();
 			emu.queue_interrupt(n, true);
-			ERROR("Exception %d", n);
+			INFO(3, "Exception %d", n);
+			//ERROR("Exception %d", n);
 		}
 		catch(...){
 			emu.dump_regs();

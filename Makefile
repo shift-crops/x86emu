@@ -12,10 +12,14 @@ SUB_OBJS += device/device.a
 CXXFLAGS := -Wall -MMD -std=c++11 -I./include $(DEBUG)
 
 LDFLAGS  := -lpthread
+
+UNAME = ${shell uname}
 ifeq ($(OS),Windows_NT)
 	LDFLAGS  += -lglfw3 -lopengl32
-else
+else ifeq ($(UNAME),Linux)
 	LDFLAGS  += -lglfw -lGL
+else ifeq ($(UNAME),Darwin)
+	LDFLAGS  += -lglfw -framework OpenGL
 endif
 
 $(TARGET): $(OBJS) $(SUB_OBJS)
