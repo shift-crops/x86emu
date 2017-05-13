@@ -189,11 +189,11 @@ void Instr32::add_eax_imm32(void){
 }
 
 void Instr32::push_es(void){
-	PUSH32(EMU->get_sgreg(ES));
+	PUSH32(EMU->get_segment(ES));
 }
 
 void Instr32::pop_es(void){
-	EMU->set_sgreg(ES, POP32());
+	EMU->set_segment(ES, POP32());
 }
 
 void Instr32::or_rm32_r32(void){
@@ -223,19 +223,19 @@ void Instr32::or_eax_imm32(void){
 }
 
 void Instr32::push_ss(void){
-	PUSH32(EMU->get_sgreg(SS));
+	PUSH32(EMU->get_segment(SS));
 }
 
 void Instr32::pop_ss(void){
-	EMU->set_sgreg(SS, POP32());
+	EMU->set_segment(SS, POP32());
 }
 
 void Instr32::push_ds(void){
-	PUSH32(EMU->get_sgreg(DS));
+	PUSH32(EMU->get_segment(DS));
 }
 
 void Instr32::pop_ds(void){
-	EMU->set_sgreg(DS, POP32());
+	EMU->set_segment(DS, POP32());
 }
 
 void Instr32::and_rm32_r32(void){
@@ -493,9 +493,9 @@ void Instr32::cdq(void){
 }
 
 void Instr32::callf_ptr16_32(void){
-	EMU->set_sgreg(CS, PTR16);
+	EMU->set_segment(CS, PTR16);
 	PUSH32(GET_EIP());
-	SET_EIP_FLUSH(IMM32);
+	SET_EIP(IMM32);
 }
 
 void Instr32::pushf(void){
@@ -540,7 +540,7 @@ void Instr32::ret(void){
 	uint32_t addr;
 
 	addr = POP32();
-	SET_EIP_FLUSH(addr);
+	SET_EIP(addr);
 }
 
 void Instr32::mov_rm32_imm32(void){
@@ -568,16 +568,16 @@ void Instr32::out_imm8_eax(void){
 
 void Instr32::call_rel32(void){
 	PUSH32(GET_EIP());
-	UPDATE_EIP_FLUSH(IMM32);
+	UPDATE_EIP(IMM32);
 }
 
 void Instr32::jmp_rel32(void){
-	UPDATE_EIP_FLUSH(IMM32);
+	UPDATE_EIP(IMM32);
 }
 
 void Instr32::jmpf_ptr16_32(void){
-	EMU->set_sgreg(CS, PTR16);
-	SET_EIP_FLUSH(IMM32);
+	EMU->set_segment(CS, PTR16);
+	SET_EIP(IMM32);
 }
 
 void Instr32::in_eax_dx(void){
@@ -599,7 +599,7 @@ void Instr32::out_dx_eax(void){
 #define JCC_REL32(cc, is_flag) \
 void Instr32::j ## cc ## _rel32(void){ \
 	if(is_flag) \
-		UPDATE_EIP_FLUSH(IMM32); \
+		UPDATE_EIP(IMM32); \
 }
 
 JCC_REL32(o, EFLAGS_OF)
@@ -1061,7 +1061,7 @@ void Instr32::call_rm32(void){
 	rm32 = get_rm32();
 
 	PUSH32(GET_EIP());
-	SET_EIP_FLUSH(rm32);
+	SET_EIP(rm32);
 }
 
 void Instr32::callf_m16_32(void){
@@ -1073,17 +1073,17 @@ void Instr32::callf_m16_32(void){
 	cs  = READ_MEM16(m48+4);
 	INFO(2, "cs = 0x%04x, eip = 0x%08x", cs, eip);
 
-	PUSH32(EMU->get_sgreg(CS));
+	PUSH32(EMU->get_segment(CS));
 	PUSH32(GET_EIP());
-	EMU->set_sgreg(CS, cs);
-	SET_EIP_FLUSH(eip);
+	EMU->set_segment(CS, cs);
+	SET_EIP(eip);
 }
 
 void Instr32::jmp_rm32(void){
 	uint32_t rm32;
 
 	rm32 = get_rm32();
-	SET_EIP_FLUSH(rm32);
+	SET_EIP(rm32);
 }
 
 void Instr32::jmpf_m16_32(void){
@@ -1095,8 +1095,8 @@ void Instr32::jmpf_m16_32(void){
 	cs  = READ_MEM16(m48+4);
 	INFO(2, "cs = 0x%04x, eip = 0x%08x", cs, eip);
 
-	EMU->set_sgreg(CS, cs);
-	SET_EIP_FLUSH(eip);
+	EMU->set_segment(CS, cs);
+	SET_EIP(eip);
 }
 
 void Instr32::push_rm32(void){

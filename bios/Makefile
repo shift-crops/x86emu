@@ -22,4 +22,5 @@ $(TARGET) : $(OBJS) crt0.bin
 	$(LD) $(LDFLAGS) -o $@ $(OBJS)
 
 clean:
-	$(RM) $(OBJS) $(TARGET) crt0.bin
+	#$(RM) $(OBJS) $(TARGET) crt0.bin
+	$(RM) $(OBJS)

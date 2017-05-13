@@ -35,8 +35,6 @@ class Eflags {
 		} eflags;
 
 	public:
-		Eflags();
-
 		uint32_t get_eflags(void){ return eflags.reg32; };
 		void set_eflags(uint32_t v){ eflags.reg32 = v; };
 		uint16_t get_flags(void){ return eflags.reg16; };

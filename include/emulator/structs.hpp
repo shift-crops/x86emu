@@ -6,26 +6,24 @@ struct SGDescriptor {
 	uint16_t base_l;
 	uint8_t base_m;
 	union {
-		struct {
-			union {
-				struct {
-					uint8_t : 1;
-					uint8_t w : 1;
-					uint8_t exd: 1;
-					uint8_t : 5;
-				} data;
-				struct {
-					uint8_t : 1;
-					uint8_t r : 1;
-					uint8_t cnf : 1;
-					uint8_t : 5;
-				} code;
-				struct{
-					uint8_t A : 1;
-					uint8_t : 2;
-					uint8_t segc : 1;
-					uint8_t : 4;
-				};
+		union {
+			struct {
+				uint8_t : 1;
+				uint8_t w : 1;		// 0:r, 1:rw
+				uint8_t exd: 1;
+				uint8_t : 5;
+			} data;
+			struct {
+				uint8_t : 1;
+				uint8_t r : 1;		// 0:x, 1;xr
+				uint8_t cnf : 1;
+				uint8_t : 5;
+			} code;
+			struct{
+				uint8_t A : 1;
+				uint8_t : 2;
+				uint8_t segc : 1;
+				uint8_t : 4;
 			};
 		} type;
 

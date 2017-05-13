@@ -87,11 +87,11 @@ uint32_t ExecInstr::get_m(void){
 }
 
 void ExecInstr::set_sreg(uint16_t value){
-	EMU->set_sgreg(static_cast<sgreg_t>(REG), value);
+	EMU->set_segment(static_cast<sgreg_t>(REG), value);
 }
 
 uint16_t ExecInstr::get_sreg(void){
-	return EMU->get_sgreg(static_cast<sgreg_t>(REG));
+	return EMU->get_segment(static_cast<sgreg_t>(REG));
 }
 
 void ExecInstr::set_crn(uint32_t value){

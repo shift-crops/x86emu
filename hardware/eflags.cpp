@@ -1,7 +1,5 @@
 #include "hardware/eflags.hpp"
 
-Eflags::Eflags(){}
-
 template uint32_t Eflags::update_eflags_add(uint32_t v1, uint32_t v2);
 template uint32_t Eflags::update_eflags_add(uint16_t v1, uint32_t v2);
 template uint32_t Eflags::update_eflags_add(uint8_t v1, uint32_t v2);

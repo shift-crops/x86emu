@@ -18,7 +18,7 @@ uint32_t DataAccess::trans_v2p(acsmode_t mode, sgreg_t seg, uint32_t vaddr){
 
 		EXCEPTION(EXP_GP, !is_protected());
 
-		cpl = get_sgreg(CS)&3;
+		cpl = get_segment(CS) & 3;
 
 		pdir_index = laddr >> 22;
 		ptbl_index = (laddr >> 12) & ((1<<10)-1);
@@ -50,42 +50,29 @@ uint32_t DataAccess::trans_v2p(acsmode_t mode, sgreg_t seg, uint32_t vaddr){
 
 uint32_t DataAccess::trans_v2l(acsmode_t mode, sgreg_t seg, uint32_t vaddr){
 	uint32_t laddr;
+	SGRegister sg;
+
+	get_sgreg(seg, &sg);
 
 	if(is_protected()){
-		uint32_t dt_base, base, limit;
-		uint16_t dt_limit, dt_index;
-		SGRegister sg;
-		SGDescriptor gdt;
+		uint32_t base, limit;
+		SGRegCache cache = sg.cache;
 
-		*((uint16_t*)&sg) = get_sgreg(seg);
-		dt_index = sg.index << 3;
+		base = cache.base;
+		limit = cache.limit;
+		if(cache.flags.G) limit <<= 12;
 
-		// TODO
-		if(!dt_index)
-			return vaddr;
-
-		// TODO
-		dt_base = get_dtreg_base(sg.TI ? LDTR : GDTR);
-		dt_limit = get_dtreg_limit(sg.TI ? LDTR : GDTR);
-
-		INFO(6, "dt_base=0x%04x, dt_limit=0x%02x, dt_index=0x%02x", dt_base, dt_limit, dt_index);
-		EXCEPTION(EXP_GP, !dt_index || dt_index > dt_limit);
-
-		read_data(&gdt, dt_base + dt_index, sizeof(SGDescriptor));
-
-		base = (gdt.base_h << 24) + (gdt.base_m << 16) + gdt.base_l;
-		limit = (gdt.limit_h << 16) + gdt.limit_l;
-		if(gdt.G) limit <<= 12;
-
-		if(gdt.type.segc){
-			EXCEPTION(EXP_GP, mode == MODE_WRITE || (mode == MODE_READ && !gdt.type.code.r));
-			EXCEPTION(EXP_GP, sg.RPL > gdt.DPL && !(mode == MODE_EXEC && gdt.type.code.cnf));
+		if(cache.flags.type.segc){
+			EXCEPTION(EXP_GP, mode == MODE_WRITE);
+			EXCEPTION(EXP_GP, mode == MODE_READ && !cache.flags.type.code.r);
+			EXCEPTION(EXP_GP, sg.RPL > cache.flags.DPL && !(mode == MODE_EXEC && cache.flags.type.code.cnf));
 		}
 		else{
-			EXCEPTION(EXP_GP, mode == MODE_EXEC || (mode == MODE_WRITE && !gdt.type.data.w));
-			EXCEPTION(EXP_GP, sg.RPL > gdt.DPL);
+			EXCEPTION(EXP_GP, mode == MODE_EXEC);
+			EXCEPTION(EXP_GP, mode == MODE_WRITE && !cache.flags.type.data.w);
+			EXCEPTION(EXP_GP, sg.RPL > cache.flags.DPL);
 
-			if(gdt.type.data.exd)
+			if(cache.flags.type.data.exd)
 				base -= limit;
 		}
 		EXCEPTION(EXP_GP, vaddr > limit);
@@ -94,9 +81,58 @@ uint32_t DataAccess::trans_v2l(acsmode_t mode, sgreg_t seg, uint32_t vaddr){
 		INFO(6, "base=0x%04x, limit=0x%02x, laddr=0x%02x", base, limit, laddr);
 	}
 	else
-		laddr = (get_sgreg(seg) << 4) + vaddr;
+		laddr = (sg.raw << 4) + vaddr;
 
 	return laddr;
+}
+
+void DataAccess::set_segment(sgreg_t reg, uint16_t v){
+	SGRegister sg;
+	SGRegCache *cache = &sg.cache;
+
+	get_sgreg(reg, &sg);
+	sg.raw = v;
+
+	if(is_protected()){
+		uint32_t dt_base;
+		uint16_t dt_limit, dt_index;
+		SGDescriptor gdt;
+		const char* sgreg_name[] = { "ES", "CS", "SS", "DS", "FS", "GS" };
+
+		dt_index = sg.index << 3;
+
+		// TODO
+		dt_base = get_dtreg_base(sg.TI ? LDTR : GDTR);
+		dt_limit = get_dtreg_limit(sg.TI ? LDTR : GDTR);
+
+		EXCEPTION(EXP_GP, (reg == CS || reg == SS) && !dt_index);
+		EXCEPTION(EXP_GP, dt_index > dt_limit);
+
+		read_data(&gdt, dt_base + dt_index, sizeof(SGDescriptor));
+
+		cache->base = (gdt.base_h << 24) + (gdt.base_m << 16) + gdt.base_l;
+		cache->limit = (gdt.limit_h << 16) + gdt.limit_l;
+
+		*(uint8_t*)&cache->flags.type = *(uint8_t*)&gdt.type;
+		cache->flags.AVL = gdt.AVL;
+		cache->flags.DB = gdt.DB;
+		cache->flags.G = gdt.G;
+
+		INFO(3, "%s : dt_base=0x%04x, dt_limit=0x%02x, dt_index=0x%02x {base=0x%08x, limit=0x%08x, flags=0x%04x}"
+				, sgreg_name[reg], dt_base, dt_limit, dt_index, cache->base, cache->limit, cache->flags.raw);
+
+	}
+	else
+		cache->base = (uint32_t)v << 4;
+
+	set_sgreg(reg, &sg);
+}
+
+inline uint16_t DataAccess::get_segment(sgreg_t reg){
+	SGRegister sg;
+
+	get_sgreg(reg, &sg);
+	return sg.raw;
 }
 
 void DataAccess::push32(uint32_t value){

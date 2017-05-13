@@ -249,7 +249,7 @@ void InstrBase::cmp_al_imm8(void){
 #define JCC_REL8(cc, is_flag) \
 void InstrBase::j ## cc ## _rel8(void){ \
 	if(is_flag) \
-		UPDATE_IP_FLUSH(IMM8); \
+		UPDATE_IP(IMM8); \
 }
 
 JCC_REL8(o, EFLAGS_OF)
@@ -329,7 +329,7 @@ void InstrBase::mov_rm8_imm8(void){
 
 void InstrBase::int3(void){
 	EMU->dump_regs();
-	EMU->dump_mem((EMU->get_sgreg(SS)<<4)+EMU->get_gpreg(ESP)-0x40, 0x80);
+	EMU->dump_mem((EMU->get_segment(SS)<<4)+EMU->get_gpreg(ESP)-0x40, 0x80);
 }
 
 void InstrBase::int_imm8(void){
@@ -352,7 +352,7 @@ void InstrBase::out_imm8_al(void){
 }
 
 void InstrBase::jmp(void){
-	UPDATE_IP_FLUSH(IMM8);
+	UPDATE_IP(IMM8);
 }
 
 void InstrBase::in_al_dx(void){

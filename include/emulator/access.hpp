@@ -8,6 +8,9 @@ enum acsmode_t { MODE_READ, MODE_WRITE, MODE_EXEC };
 
 class DataAccess : public virtual Hardware {
 	public:
+		void set_segment(sgreg_t seg, uint16_t v);
+		uint16_t get_segment(sgreg_t seg);
+
 		uint8_t get_data8(sgreg_t seg, uint32_t addr){ return read_mem8_seg(seg, addr); };
 		uint16_t get_data16(sgreg_t seg, uint32_t addr){ return read_mem16_seg(seg, addr); };
 		uint32_t get_data32(sgreg_t seg, uint32_t addr){ return read_mem32_seg(seg, addr); };

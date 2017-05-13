@@ -4,9 +4,9 @@ SRCS := main.cpp debug.cpp
 OBJS := $(SRCS:.cpp=.o)
 DEPS := $(SRCS:.cpp=.d)
 
-SUB_OBJS := hardware/hardware.a
-SUB_OBJS += emulator/emulator.a
+SUB_OBJS := emulator/emulator.a
 SUB_OBJS += instruction/instruction.a
+SUB_OBJS += hardware/hardware.a
 SUB_OBJS += device/device.a
 
 CXXFLAGS := -Wall -MMD -std=c++11 -I./include $(DEBUG)

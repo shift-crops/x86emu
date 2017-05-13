@@ -93,9 +93,9 @@ void ParseInstr::parse_opcode(void){
 	}
 
 	if(is_protected())
-		DEBUG_MSG(5, "CS:%04x EIP:0x%04x opcode:%02x ", EMU->get_sgreg(CS), GET_EIP()-1, OPCODE);
+		DEBUG_MSG(5, "CS:%04x EIP:0x%04x opcode:%02x ", EMU->get_segment(CS), GET_EIP()-1, OPCODE);
 	else
-		DEBUG_MSG(5, "CS:%04x  IP:0x%04x opcode:%02x ", EMU->get_sgreg(CS), GET_IP()-1, OPCODE);
+		DEBUG_MSG(5, "CS:%04x  IP:0x%04x opcode:%02x ", EMU->get_segment(CS), GET_IP()-1, OPCODE);
 }
 
 void ParseInstr::parse_modrm_sib_disp(void){

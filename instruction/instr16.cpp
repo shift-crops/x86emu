@@ -189,11 +189,11 @@ void Instr16::add_ax_imm16(void){
 }
 
 void Instr16::push_es(void){
-	PUSH16(EMU->get_sgreg(ES));
+	PUSH16(EMU->get_segment(ES));
 }
 
 void Instr16::pop_es(void){
-	EMU->set_sgreg(ES, POP16());
+	EMU->set_segment(ES, POP16());
 }
 
 void Instr16::or_rm16_r16(void){
@@ -223,19 +223,19 @@ void Instr16::or_ax_imm16(void){
 }
 
 void Instr16::push_ss(void){
-	PUSH16(EMU->get_sgreg(SS));
+	PUSH16(EMU->get_segment(SS));
 }
 
 void Instr16::pop_ss(void){
-	EMU->set_sgreg(SS, POP16());
+	EMU->set_segment(SS, POP16());
 }
 
 void Instr16::push_ds(void){
-	PUSH16(EMU->get_sgreg(DS));
+	PUSH16(EMU->get_segment(DS));
 }
 
 void Instr16::pop_ds(void){
-	EMU->set_sgreg(DS, POP16());
+	EMU->set_segment(DS, POP16());
 }
 
 void Instr16::and_rm16_r16(void){
@@ -493,9 +493,9 @@ void Instr16::cwd(void){
 }
 
 void Instr16::callf_ptr16_16(void){
-	EMU->set_sgreg(CS, PTR16);
+	EMU->set_segment(CS, PTR16);
 	PUSH16(GET_IP());
-	SET_IP_FLUSH(IMM16);
+	SET_IP(IMM16);
 }
 
 void Instr16::pushf(void){
@@ -540,7 +540,7 @@ void Instr16::ret(void){
 	uint16_t addr;
 
 	addr = POP16();
-	SET_IP_FLUSH(addr);
+	SET_IP(addr);
 }
 
 void Instr16::mov_rm16_imm16(void){
@@ -568,16 +568,16 @@ void Instr16::out_imm8_ax(void){
 
 void Instr16::call_rel16(void){
 	PUSH16(GET_IP());
-	UPDATE_IP_FLUSH(IMM16);
+	UPDATE_IP(IMM16);
 }
 
 void Instr16::jmp_rel16(void){
-	UPDATE_IP_FLUSH(IMM16);
+	UPDATE_IP(IMM16);
 }
 
 void Instr16::jmpf_ptr16_16(void){
-	EMU->set_sgreg(CS, PTR16);
-	SET_IP_FLUSH(IMM16);
+	EMU->set_segment(CS, PTR16);
+	SET_IP(IMM16);
 }
 
 void Instr16::in_ax_dx(void){
@@ -598,7 +598,7 @@ void Instr16::out_dx_ax(void){
 #define JCC_REL16(cc, is_flag) \
 void Instr16::j ## cc ## _rel16(void){ \
 	if(is_flag) \
-		UPDATE_EIP_FLUSH(IMM16); \
+		UPDATE_EIP(IMM16); \
 }
 
 JCC_REL16(o, EFLAGS_OF)
@@ -1056,7 +1056,7 @@ void Instr16::call_rm16(void){
 	rm16 = get_rm16();
 
 	PUSH16(GET_IP());
-	SET_IP_FLUSH(rm16);
+	SET_IP(rm16);
 }
 
 void Instr16::callf_m16_16(void){
@@ -1066,17 +1066,17 @@ void Instr16::callf_m16_16(void){
 	ip  = READ_MEM16(m32);
 	cs  = READ_MEM16(m32+2);
 
-	PUSH16(EMU->get_sgreg(CS));
+	PUSH16(EMU->get_segment(CS));
 	PUSH16(GET_IP());
-	EMU->set_sgreg(CS, cs);
-	SET_IP_FLUSH(ip);
+	EMU->set_segment(CS, cs);
+	SET_IP(ip);
 }
 
 void Instr16::jmp_rm16(void){
 	uint16_t rm16;
 
 	rm16 = get_rm16();
-	SET_IP_FLUSH(rm16);
+	SET_IP(rm16);
 }
 
 void Instr16::jmpf_m16_16(void){
@@ -1086,8 +1086,8 @@ void Instr16::jmpf_m16_16(void){
 	ip  = READ_MEM16(m32);
 	cs  = READ_MEM16(m32+2);
 
-	EMU->set_sgreg(CS, cs);
-	SET_IP_FLUSH(ip);
+	EMU->set_segment(CS, cs);
+	SET_IP(ip);
 }
 
 void Instr16::push_rm16(void){

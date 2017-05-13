@@ -136,7 +136,7 @@ void run_emulator(const Setting set){
 	//while(!emu.is_halt()){
 	//while(true){
 	while(emu.is_running()){
-		bool is_protected;
+		bool is_mode32;
 		uint8_t chsz;
 		bool chsz_op, chsz_ad;
 
@@ -149,18 +149,18 @@ void run_emulator(const Setting set){
 			}
 			emu.hundle_interrupt();
 
-			is_protected = emu.is_protected();
-			chsz = (is_protected ? instr32.parse_prefix() : instr16.parse_prefix());
+			is_mode32 = emu.is_mode32();
+			chsz = (is_mode32 ? instr32.parse_prefix() : instr16.parse_prefix());
 			chsz_op = chsz & CHSZ_OP;
 			chsz_ad = chsz & CHSZ_AD;
 
-			if(is_protected ^ chsz_op){
-				instr32.set_chsz_ad(!(is_protected ^ chsz_ad));
+			if(is_mode32 ^ chsz_op){
+				instr32.set_chsz_ad(!(is_mode32 ^ chsz_ad));
 				instr32.parse();
 				instr32.exec();
 			}
 			else{
-				instr16.set_chsz_ad(is_protected ^ chsz_ad);
+				instr16.set_chsz_ad(is_mode32 ^ chsz_ad);
 				instr16.parse();
 				instr16.exec();
 			}
@@ -168,7 +168,7 @@ void run_emulator(const Setting set){
 		catch(exception_t n){
 			emu.queue_interrupt(n, true);
 			INFO(3, "Exception %d", n);
-			//ERROR("Exception %d", n);
+			ERROR("Exception %d", n);
 		}
 		catch(...){
 			emu.dump_regs();

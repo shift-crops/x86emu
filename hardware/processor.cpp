@@ -6,9 +6,18 @@ Processor::Processor(void){
 	memset(sgregs, 0, sizeof(sgregs));
 
 	set_eip(0x0000fff0);
-	set_sgreg(CS, 0xf000);
 	set_crn(0, 0x60000010);
 	set_eflags(0x00000002);
+
+	sgregs[CS].raw = 0xf000;
+	sgregs[CS].cache.base = 0xffff0000;
+	sgregs[CS].cache.flags.type.segc = 1;
+	for(int i=0; i<SGREGS_COUNT; i++){
+		sgregs[i].cache.limit = 0xffff;
+		sgregs[i].cache.flags.P = 1;
+		sgregs[i].cache.flags.type.A = 1;
+		sgregs[i].cache.flags.type.data.w = 1;
+	}
 
 	dtregs[IDTR].base  = 0x0000;
 	dtregs[IDTR].limit = 0xffff;
@@ -18,7 +27,6 @@ Processor::Processor(void){
 	dtregs[LDTR].limit = 0xffff;
 
 	halt = false;
-	mode_protected = false;
 }
 
 void Processor::dump_regs(void){
@@ -31,9 +39,10 @@ void Processor::dump_regs(void){
 		MSG("%s = 0x%08x : 0x%04x (0x%02x/0x%02x)\n"
 			, gpreg_name[i], gpregs[i].reg32, gpregs[i].reg16, gpregs[i].reg8_h, gpregs[i].reg8_l);
 	MSG("EFLAGS = 0x%08x\n", get_eflags());
-	for(i=0; i<SGREGS_COUNT; i++)
-		MSG("%s=0x%04x ", sgreg_name[i], *((uint16_t*)&sgregs[i]));
-	MSG("\n");
+	for(i=0; i<SGREGS_COUNT; i++){
+		SGRegCache cache = sgregs[i].cache;
+		MSG("%s=0x%04x {base = 0x%08x, limit = %08x, flags = %04x}\n", sgreg_name[i], sgregs[i].raw, cache.base, cache.limit, cache.flags.raw);
+	}
 
 	for(i=0; i<5; i++)
 		MSG("CR%d=0x%08x ", i, get_crn(i));
