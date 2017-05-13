@@ -9,6 +9,11 @@ start:
 	mov eax, 0x28
 	ltr ax
 
+	mov ax, 0x10
+	mov ds, ax
+	mov ss, ax
+	call 0x8:next
+next:
 	; idt
 	cli
 	call init_idt
@@ -23,8 +28,47 @@ start:
 	or eax, 0x80000000
 	mov cr0, eax
 
+	call init_pic
+	;call init_timer
+	call init_key_mouse
+	call init_vga
+
+	mov ax, 0x23
+	mov ds, ax
+	mov ss, ax
+	call 0x1b:main
+	hlt
+
+init_pic:
 	cli
+	mov al, 0x11
+	out 0x20, al
+	out 0xa0, al
+
+	mov al, 0x20
+	out 0x21, al
+	mov al, 0x28
+	out 0xa1, al
+
+	mov al, 0x4
+	out 0x21, al
+	mov al, 2
+	out 0xa1, al
+
+	mov al, 0x3
+	out 0x21, al
+	out 0xa1, al
+
+	mov al, 0xfb
+	out 0x21, al
+	mov al, 0xff
+	out 0xa1, al
+	sti
+	ret
+
+init_timer:
 	; timer
+	cli
 	mov al, 0x34
 	out 0x43, al
 	mov al, 0x9c
@@ -34,9 +78,13 @@ start:
 
 	in al, 0x21
 	and al, 0xfe
-	;out 0x21, al
+	out 0x21, al
+	sti
+	ret
 
+init_key_mouse:
 	; keyboard
+	cli
 	mov al, 0x60
 	out 0x64, al
 	mov al, 0x47
@@ -56,14 +104,7 @@ start:
 	and al, 0xef
 	out 0xa1, al
 	sti
-
-	call init_vga
-
-	mov ax, 0x23
-	mov ds, ax
-	mov ss, ax
-	call 0x1b:main
- 	jmp 0x0:0x0
+	ret
 
 align 8
 gdtr:

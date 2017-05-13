@@ -2,7 +2,7 @@
 #define _COMMON_H
 
 #include <stdint.h>
-#include "debug.hpp"
+#include "util/debug.hpp"
 
 #define KB	1024
 #define MB	(KB*1024)

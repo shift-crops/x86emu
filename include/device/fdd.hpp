@@ -2,7 +2,7 @@
 #define _FDD_H
 
 #include <thread>
-#include <map>
+#include <unordered_map>
 #include <queue>
 #include <mutex>
 #include "common.hpp"
@@ -42,7 +42,7 @@ struct QUEUE {
 class FDD : public IRQ, public PortIO {
 	private:
 		typedef void (FDD::*fddfunc_t)(void);
-		std::map<uint8_t, fddfunc_t> fddfuncs;
+		std::unordered_map<uint8_t, fddfunc_t> fddfuncs;
 		DRIVE *drive[MAX_FDD];
 
 		union {

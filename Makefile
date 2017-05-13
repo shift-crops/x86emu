@@ -1,6 +1,6 @@
 TARGET := x86emu
 
-SRCS := main.cpp debug.cpp
+SRCS := main.cpp
 OBJS := $(SRCS:.cpp=.o)
 DEPS := $(SRCS:.cpp=.d)
 
@@ -8,6 +8,7 @@ SUB_OBJS := emulator/emulator.a
 SUB_OBJS += instruction/instruction.a
 SUB_OBJS += hardware/hardware.a
 SUB_OBJS += device/device.a
+SUB_OBJS += util/util.a
 
 CXXFLAGS := -Wall -MMD -std=c++11 -I./include $(DEBUG)
 
@@ -57,6 +58,7 @@ clean:
 	make clean -C emulator
 	make clean -C instruction
 	make clean -C device
+	make clean -C util
 	make clean -C bios
 	make clean -C sample
 	$(RM) $(DEPS) $(OBJS) $(TARGET)

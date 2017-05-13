@@ -24,8 +24,8 @@ class PIT : public IRQ, public PortIO {
 		PIT();
 		uint8_t in8(uint16_t addr);
 		void out8(uint16_t addr, uint8_t v);
-		bool chk_intreq(void);
-		//void counter(void);
+		//bool chk_intreq(void);
+		void counter(void);
 };
 
 #endif

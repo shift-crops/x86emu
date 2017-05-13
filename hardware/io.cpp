@@ -1,10 +1,10 @@
 #include <stdint.h>
-#include <map>
+#include <unordered_map>
 #include "hardware/io.hpp"
 
 IO::~IO(){
-	std::map<uint16_t, PortIO*>::iterator it_p;
-	std::map<uint32_t, MemoryIO*>::iterator it_m;
+	std::unordered_map<uint16_t, PortIO*>::iterator it_p;
+	std::unordered_map<uint32_t, MemoryIO*>::iterator it_m;
 
 //	for(it_p = port_io.begin(); it_p != port_io.end(); it_p++)
 //		delete it_p->second;

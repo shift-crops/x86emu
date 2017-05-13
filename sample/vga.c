@@ -268,26 +268,26 @@ const rgb_t palette[0x100] = {
 uint16_t cursor_x=0, cursor_y=0;
 bool graphic = false;
 
-void cli(void);
-void sti(void);
+void _cli(void);
+void _sti(void);
 void out_port(uint16_t port, uint8_t v);
 
 void gc_configure(void){
-	cli();
+	_cli();
 	out_port(0x3ce, 0x6);
 	out_port(0x3cf, 0x1);
-	sti();
+	_sti();
 }
 
 void dac_configure(void){
-	cli();
+	_cli();
 	out_port(0x3c8, 0);
 	for(int i=0; i<0x100; i++){
 		out_port(0x3c9, palette[i].red);
 		out_port(0x3c9, palette[i].green);
 		out_port(0x3c9, palette[i].blue);
 	}
-	sti();
+	_sti();
 }
 
 void init_vga(void){
@@ -333,7 +333,7 @@ uint32_t put_text(const uint8_t *s){
 void set_graphicmode(void){
 	graphic = true;
 
-	cli();
+	_cli();
         out_port(0x3c4, 2);
         out_port(0x3c5, 0x4);
         out_port(0x3c4, 4);
@@ -343,6 +343,6 @@ void set_graphicmode(void){
 	out_port(0x3cf, 0x0);
 	out_port(0x3ce, 6);
 	out_port(0x3cf, 0x5);
-	sti();
+	_sti();
 }
 

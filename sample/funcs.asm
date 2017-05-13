@@ -1,5 +1,5 @@
 global _puts, _putc, _gets
-global in_port, out_port, cli, sti
+global in_port, out_port, _cli, _sti
 global sys_puts, sys_gets, irq_timer, irq_keyboard, irq_mouse
 
 extern print_key, put_text
@@ -43,11 +43,11 @@ out_port:
 	leave
 	ret
 
-cli:
+_cli:
 	cli
 	ret
 
-sti:
+_sti:
 	sti
 	ret
 

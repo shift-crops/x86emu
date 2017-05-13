@@ -1,7 +1,7 @@
 #ifndef _IO_H
 #define _IO_H
 
-#include <map>
+#include <unordered_map>
 #include "common.hpp" 
 #include "memory.hpp" 
 #include "device/dev_io.hpp" 
@@ -9,10 +9,10 @@
 class IO {
 	private:
 		Memory *memory;
-		std::map<uint16_t, PortIO*> port_io;
-		std::map<uint16_t, size_t> port_io_map;
-		std::map<uint32_t, MemoryIO*> mem_io;
-		std::map<uint32_t, uint32_t> mem_io_map;
+		std::unordered_map<uint16_t, PortIO*> port_io;
+		std::unordered_map<uint16_t, size_t> port_io_map;
+		std::unordered_map<uint32_t, MemoryIO*> mem_io;
+		std::unordered_map<uint32_t, uint32_t> mem_io_map;
 
 	public:
 		IO(Memory *mem) { memory = mem; };

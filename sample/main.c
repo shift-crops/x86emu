@@ -4,6 +4,7 @@ void set_graphicmode(void);
 
 int main(void){
 	uint8_t *vram = (uint8_t*)0xa0000;
+
 	_puts("Hello!\n");
 /*
 	uint8_t *font = (uint8_t*)0x10600;

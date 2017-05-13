@@ -2,7 +2,7 @@
 #include <unistd.h>
 #include <stdarg.h>
 #include <stdlib.h>
-#include "debug.hpp"
+#include "util/debug.hpp"
 
 struct TypeSet {
 	const char *name;
