@@ -40,10 +40,10 @@ int main(void){
 		for(int j=0; j<320/4; j++)
 			((uint32_t*)vram)[i*80+j] = c32;
 	}
-*/
 	while(1){
 		//_puts("puts in main function");
 		//for(int i=0; i<1000; i++);
 		__asm__("hlt");
 	}
+*/
 }

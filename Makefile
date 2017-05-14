@@ -37,11 +37,13 @@ ifdef DEBUG
 	make -C emulator DEBUG=$(DEBUG)
 	make -C instruction DEBUG=$(DEBUG)
 	make -C device DEBUG=$(DEBUG)
+	make -C util DEBUG=$(DEBUG)
 else
 	make -C hardware
 	make -C emulator
 	make -C instruction
 	make -C device
+	make -C util
 endif
 
 .PHONY: os

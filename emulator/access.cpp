@@ -1,10 +1,11 @@
 #include <map>
+#include <vector>
 #include "emulator/access.hpp"
 #include "emulator/exception.hpp"
 #include "emulator/structs.hpp"
 #include "hardware/processor.hpp"
 #include "hardware/cr.hpp"
-#include "util/lru.hpp"
+//#include "util/lru.hpp"
 
 uint32_t DataAccess::trans_v2p(acsmode_t mode, sgreg_t seg, uint32_t vaddr){
 	uint32_t laddr, paddr;
@@ -12,22 +13,21 @@ uint32_t DataAccess::trans_v2p(acsmode_t mode, sgreg_t seg, uint32_t vaddr){
 	laddr = trans_v2l(mode, seg, vaddr);
 
 	if(is_ena_paging()){
-		uint32_t vpn, pfn;
+		uint32_t vpn;
 		uint16_t offset;
+		uint8_t cpl;
+		PTE pte;
 
 		EXCEPTION(EXP_GP, !is_protected());
 
+		cpl = get_segment(CS) & 3;
 		vpn = laddr >> 12;
 		offset = laddr & ((1<<12)-1);
 
-		if(!search_tlb(vpn, &pfn)){
+		if(!search_tlb(vpn, &pte)){
 			uint32_t pdir_base, ptbl_base;
 			uint16_t pdir_index, ptbl_index;
-			uint8_t cpl;
 			PDE pde;
-			PTE pte;
-
-			cpl = get_segment(CS) & 3;
 
 			pdir_index = laddr >> 22;
 			ptbl_index = (laddr >> 12) & ((1<<10)-1);
@@ -40,16 +40,17 @@ uint32_t DataAccess::trans_v2p(acsmode_t mode, sgreg_t seg, uint32_t vaddr){
 
 			ptbl_base = pde.ptbl_base << 12;
 			read_data(&pte, ptbl_base + ptbl_index*sizeof(PTE), sizeof(PTE));
-			EXCEPTION_WITH(EXP_PF, !pte.P, set_crn(2, laddr));
-			EXCEPTION_WITH(EXP_PF, !pte.RW && mode == MODE_WRITE, set_crn(2, laddr));
-			EXCEPTION_WITH(EXP_PF, !pte.US && cpl>2, set_crn(2, laddr));
+			cache_tlb(vpn, pte);
 
-			pfn = pte.page_base;
-			INFO(3, "Cache TLB : pdir_base=0x%04x, ptbl_base=0x%04x {vpn=0x%04x, pfn=0x%04x}", pdir_base, ptbl_base, vpn, pfn);
-			cache_tlb(vpn, pfn);
+			INFO(3, "Cache TLB : pdir_base=0x%04x, ptbl_base=0x%04x {vpn=0x%04x, pfn=0x%04x}"
+					, pdir_base, ptbl_base, vpn, pte.page_base);
 		}
 
-		paddr = (pfn<<12) + offset;
+		EXCEPTION_WITH(EXP_PF, !pte.P, set_crn(2, laddr));
+		EXCEPTION_WITH(EXP_PF, !pte.RW && mode == MODE_WRITE, set_crn(2, laddr));
+		EXCEPTION_WITH(EXP_PF, !pte.US && cpl>2, set_crn(2, laddr));
+
+		paddr = (pte.page_base<<12) + offset;
 	}
 	else
 		paddr = laddr;
@@ -60,16 +61,22 @@ uint32_t DataAccess::trans_v2p(acsmode_t mode, sgreg_t seg, uint32_t vaddr){
 	return paddr;
 }
 
-bool DataAccess::search_tlb(uint32_t vpn, uint32_t *pfn){
-	if(!tlb->exist(vpn))
+bool DataAccess::search_tlb(uint32_t vpn, PTE *pte){
+	if(vpn+1 > tlb.size() || !tlb[vpn])
 		return false;
 
-	*pfn = tlb->get(vpn);
+	ASSERT(pte);
+	*pte = *tlb[vpn];
+
 	return true;
 }
 
-void DataAccess::cache_tlb(uint32_t vpn, uint32_t pfn){
-	tlb->put(vpn, pfn);
+void DataAccess::cache_tlb(uint32_t vpn, PTE pte){
+	if(vpn+1 > tlb.size())
+		tlb.resize(vpn+1, NULL);
+
+	tlb[vpn] = new PTE;
+	*tlb[vpn] = pte;
 }
 
 uint32_t DataAccess::trans_v2l(acsmode_t mode, sgreg_t seg, uint32_t vaddr){

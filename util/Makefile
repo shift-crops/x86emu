@@ -1,6 +1,6 @@
 TARGET := util.a
 
-SRCS := debug.cpp lru.cpp
+SRCS := debug.cpp
 OBJS := $(SRCS:.cpp=.o)
 DEPS := $(SRCS:.cpp=.d)
 

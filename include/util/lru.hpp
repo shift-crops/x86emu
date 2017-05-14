@@ -18,4 +18,30 @@ template <class K, class V> class LRU {
 		bool exist(K key){ return item_map.count(key) > 0;};
 };
 
+template <class K, class V> void LRU<K, V>::put(K key, V val){
+	auto it = item_map.find(key);
+
+	if(it != item_map.end()){
+		item_list.erase(it->second);
+		item_map.erase(it);
+	}
+	item_list.push_front(std::make_pair(key, val));
+	item_map.insert(make_pair(key, item_list.begin()));
+
+	if(item_map.size() > size){
+		auto it = item_list.end();
+		item_map.erase((--it)->first);
+		item_list.pop_back();
+	}
+}
+
+template <class K, class V> V LRU<K, V>::get(K key){
+	ASSERT(exist(key));
+
+	auto it = item_map[key];
+	item_list.splice(item_list.begin(), item_list, it);
+
+	return it->second;
+}
+
 #endif

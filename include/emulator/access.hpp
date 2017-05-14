@@ -2,17 +2,20 @@
 #define _DATA_ACCESS_H
 
 #include "common.hpp"
+#include <vector>
 #include "hardware/hardware.hpp"
-#include "util/lru.hpp"
+#include "emulator/structs.hpp"
+//#include "util/lru.hpp"
 
 enum acsmode_t { MODE_READ, MODE_WRITE, MODE_EXEC };
 
 class DataAccess : public virtual Hardware {
 	private:
-		LRU<uint32_t, uint32_t> *tlb;
+		//LRU<uint32_t, PTE> *tlb;
+		std::vector<PTE*> tlb;
 
 	public:
-		DataAccess(){ tlb = new LRU<uint32_t, uint32_t>(128); }
+		//DataAccess(){ tlb = new LRU<uint32_t, PTE>(128); }
 		void set_segment(sgreg_t seg, uint16_t v);
 		uint16_t get_segment(sgreg_t seg);
 
@@ -37,8 +40,8 @@ class DataAccess : public virtual Hardware {
 		uint32_t trans_v2p(acsmode_t mode, sgreg_t seg, uint32_t vaddr);
 		uint32_t trans_v2l(acsmode_t mode, sgreg_t seg, uint32_t vaddr);
 
-		bool search_tlb(uint32_t vpn, uint32_t *pfn);
-		void cache_tlb(uint32_t vpn, uint32_t pfn);
+		bool search_tlb(uint32_t vpn, PTE *pte);
+		void cache_tlb(uint32_t vpn, PTE pte);
 
 		uint32_t read_mem32_seg(sgreg_t seg, uint32_t addr);
 		uint16_t read_mem16_seg(sgreg_t seg, uint32_t addr);
