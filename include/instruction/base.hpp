@@ -247,6 +247,7 @@ class Instr16 : public InstrBase {
 		void sar_rm16_cl(void);
 
 		//0xf7
+		void test_rm16_imm16(void);
 		void not_rm16(void);
 		void neg_rm16(void);
 		void mul_dx_ax_rm16(void);
@@ -398,6 +399,7 @@ class Instr32 : public InstrBase {
 		void sar_rm32_cl(void);
 
 		//0xf7
+		void test_rm32_imm32(void);
 		void not_rm32(void);
 		void neg_rm32(void);
 		void mul_edx_eax_rm32(void);

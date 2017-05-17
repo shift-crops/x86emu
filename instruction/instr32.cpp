@@ -712,6 +712,7 @@ void Instr32::code_d3(void){
 
 void Instr32::code_f7(void){
 	switch(REG){
+		case 0:	test_rm32_imm32();	break;
 		case 2:	not_rm32();		break;
 		case 3:	neg_rm32();		break;
 		case 4:	mul_edx_eax_rm32();	break;
@@ -967,6 +968,15 @@ void Instr32::sar_rm32_cl(void){
 }
 
 /******************************************************************/
+
+void Instr32::test_rm32_imm32(void){
+	uint32_t rm32, imm32;
+
+	rm32 = get_rm32();
+	imm32 = EMU->get_code32(0);
+	UPDATE_EIP(4);
+	EFLAGS_UPDATE_AND(rm32, imm32);
+}
 
 void Instr32::not_rm32(void){
 	uint32_t rm32;

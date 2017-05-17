@@ -76,8 +76,7 @@ void Keyboard::command(uint8_t v){
 }
 
 void Keyboard::write_outbuf(uint8_t v){
-	if(kcsr.OBF)
-		return;
+	while(kcsr.OBF);
 
 	kcsr.OBF = 1;
 	out_buf = v;
@@ -91,7 +90,6 @@ uint8_t Keyboard::read_outbuf(void){
 }
 
 void Keyboard::send_code(uint8_t scancode){
-	INFO(2, "scancode : %0x", scancode);
 	if(!ccb->KE) 	// enable
 		write_outbuf(scancode);
 }

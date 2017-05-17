@@ -23,9 +23,13 @@ void debug_print(const int type, const char *file, const char *function, int lin
 	va_list ap;
 	TypeSet ts = typeset[type];
 
-	if(!ts.fatal && level > debug_level)
+	if(ts.fatal)
+		goto print;
+
+	if(!((1<<(level-1)) & debug_level))
 		return;
 
+print:
 	if(ts.name){
 		fprintf(ts.fp, level ? "[%s_%d] " : "[%s] ", ts.name, level);
 		fprintf(ts.fp, "%s (%s:%d) ", function, file, line);
@@ -44,10 +48,13 @@ void debug_print(const int type, const char *file, const char *function, int lin
 }
 
 void set_debuglv(const char *verbose){
+/*
 	int i = 0;
 
 	if(verbose)
 		for(; verbose[i]=='v'; i++);
 
 	debug_level = i+1;
+*/
+	debug_level = atoi(verbose);
 }

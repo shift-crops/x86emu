@@ -9,7 +9,7 @@ UI::UI(Memory *m, UISetting s){
 	keyboard = new Keyboard(m);
 
 	set = s;
-	enable = true;
+	working = true;
 	capture = false;
 
 	size_x = 320;
@@ -20,8 +20,10 @@ UI::UI(Memory *m, UISetting s){
 	Y = size_y/2;
 	click[0] = click[1] = false;
 
-	main_th = std::thread(&UI::ui_main, this);
-	main_th.detach();
+	if(set.enable){
+		main_th = std::thread(&UI::ui_main, this);
+		main_th.detach();
+	}
 }
 
 UI::~UI(void){
@@ -70,7 +72,7 @@ void UI::ui_main(void){
 	}
 
 	glfwDestroyWindow(window);
-	enable = false;
+	working = false;
 }
 
 void UI::keyboard_callback(GLFWwindow *window, int key, int scancode, int action, int mods){
@@ -80,7 +82,7 @@ void UI::keyboard_callback(GLFWwindow *window, int key, int scancode, int action
 	if(!ui->capture)
 		return;
 
-	DEBUG_MSG(1, "key : %d, scancode : %d, action : %d, mods : %d\n", key, scancode, action, mods);
+	DEBUG_MSG(1, "key : 0x%02x, scancode : 0x%02x, action : %d, mods : %d\n", key, scancode, action, mods);
 	switch(key){
 		case 0x159:	// right CTRL
 			ui->capture = false;
@@ -90,11 +92,11 @@ void UI::keyboard_callback(GLFWwindow *window, int key, int scancode, int action
 
 	switch(action){
 		case GLFW_RELEASE:
-			kb->send_code(scancode-8 + 0x80);
+			kb->send_code(scancode + 0x80);
 			break;
 		case GLFW_PRESS:
 		case GLFW_REPEAT:
-			kb->send_code(scancode-8);
+			kb->send_code(scancode);
 			break;
 	}
 }

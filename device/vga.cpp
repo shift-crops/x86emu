@@ -227,7 +227,7 @@ void VGA::GraphicController::write(uint8_t nplane, uint32_t offset, uint8_t v){
 		case 3:
 			break;
 	}
-	INFO(5, "plane[%d][0x%x] = 0x%02x", nplane, offset, v);
+	INFO(4, "plane[%d][0x%x] = 0x%02x", nplane, offset, v);
 }
 
 bool VGA::GraphicController::chk_offset(uint32_t *offset){

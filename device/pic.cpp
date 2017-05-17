@@ -17,7 +17,7 @@ int8_t PIC::get_nintr(void){
 	for(i=0; i<MAX_IRQ && !((irr>>i)&1); i++);
 	if(i == MAX_IRQ)
 		return -1;
-	INFO(3, "IRQ %d", !pic_m ? i : i+MAX_IRQ);
+	INFO(4, "IRQ %d", !pic_m ? i : i+MAX_IRQ);
 
 	if(!ic4.AEOI)	isr |= 1<<i;
 	irr ^= 1<<i;

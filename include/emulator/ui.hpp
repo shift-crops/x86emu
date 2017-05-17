@@ -9,6 +9,7 @@
 #include "hardware/memory.hpp" 	// A20 gate
 
 struct UISetting {
+	bool enable;
 	uint8_t zoom;
 	bool full;
 	bool cursor;
@@ -20,7 +21,7 @@ class UI {
 		VGA *vga;
 		Keyboard *keyboard;
 
-		bool enable;
+		bool working;
 		bool capture;
 		uint16_t size_x, size_y;
 		uint8_t *image;
@@ -35,7 +36,7 @@ class UI {
 		~UI();
 		VGA *get_vga(void) const { return vga; };
 		Keyboard *get_keyboard(void) const { return keyboard; };
-		bool get_status(void) const { return enable; };
+		bool get_status(void) const { return working; };
 	private:
 		void ui_main(void);
 		static void keyboard_callback(GLFWwindow *window, int key, int scancode, int action, int mods);

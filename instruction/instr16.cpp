@@ -711,6 +711,7 @@ void Instr16::code_d3(void){
 
 void Instr16::code_f7(void){
 	switch(REG){
+		case 0:	test_rm16_imm16();	break;
 		case 2:	not_rm16();		break;
 		case 3:	neg_rm16();		break;
 		case 4:	mul_dx_ax_rm16();	break;
@@ -966,6 +967,15 @@ void Instr16::sar_rm16_cl(void){
 }
 
 /******************************************************************/
+
+void Instr16::test_rm16_imm16(void){
+	uint16_t rm16, imm16;
+
+	rm16 = get_rm16();
+	imm16 = EMU->get_code16(0);
+	UPDATE_EIP(2);
+	EFLAGS_UPDATE_AND(rm16, imm16);
+}
 
 void Instr16::not_rm16(void){
 	uint16_t rm16;

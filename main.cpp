@@ -15,9 +15,10 @@ struct Setting {
 	const char *image_name;
 	uint32_t load_addr;
 	size_t load_size;
-	uint8_t zoom;
-	bool full;
-	bool cursor;
+	bool ui_enable;
+	uint8_t ui_zoom;
+	bool ui_full;
+	bool ui_cursor;
 };
 
 void run_emulator(const Setting set);
@@ -42,19 +43,21 @@ int main(int argc, char *argv[]){
 		.image_name = "sample/kernel.img",
 		.load_addr = 0x0,
 		.load_size = (size_t)-1,
-		.zoom = 3,
-		.full = false,
-		.cursor = true,
+		.ui_enable = true,
+		.ui_zoom = 3,
+		.ui_full = false,
+		.ui_cursor = true,
 	};
 
 	char opt;
 	struct option long_options[] = {
-		{"memory",	required_argument, NULL, 'm'},
-		{"zoom",	required_argument, NULL, 'z'},
-		{"load_addr",	required_argument, NULL, 'a'},
-		{"load_size",	required_argument, NULL, 's'},
-		{"full",	no_argument,       NULL, 'F'},
-		{"vm_cursor",	no_argument,       NULL, 'V'},
+		{"memory",	required_argument, NULL, 1},
+		{"zoom",	required_argument, NULL, 2},
+		{"load_addr",	required_argument, NULL, 3},
+		{"load_size",	required_argument, NULL, 4},
+		{"full",	no_argument,       NULL, 5},
+		{"vm_cursor",	no_argument,       NULL, 6},
+		{"no_graphic",	no_argument,       NULL, 7},
 		{"help",	no_argument,       NULL, 'h'},
 		{0, 0, 0, 0}};
 
@@ -62,6 +65,7 @@ int main(int argc, char *argv[]){
 		switch(opt){
 			uint32_t v;
 			case 'm':
+			case 1:
 				v = atoi(optarg);
 
 				if(v)
@@ -70,23 +74,29 @@ int main(int argc, char *argv[]){
 					WARN("memory size is zero");
 				break;
 			case 'z':
+			case 2:
 				v = atoi(optarg);
 				if(v)
-					set.zoom = v;
+					set.ui_zoom = v;
 				else
 					WARN("zoom error");
 				break;
 			case 'a':
+			case 3:
 				set.load_addr = strtol(optarg, NULL, 0);
 				break;
 			case 's':
+			case 4:
 				set.load_size = strtol(optarg, NULL, 0);
 				break;
-			case 'F':
-				set.full = true;
+			case 5:
+				set.ui_full = true;
 				break;
-			case 'V':
-				set.cursor = false;
+			case 6:
+				set.ui_cursor = false;
+				break;
+			case 7:
+				set.ui_enable = false;
 				break;
 #ifdef DEBUG
 			case 'v':
@@ -115,9 +125,10 @@ void run_emulator(const Setting set){
 	EmuSetting emuset = {
 		.mem_size = set.mem_size,
 		.uiset = {
-			.zoom = set.zoom,
-			.full = set.full,
-			.cursor = set.cursor,
+			.enable = set.ui_enable,
+			.zoom = set.ui_zoom,
+			.full = set.ui_full,
+			.cursor = set.ui_cursor,
 		},
 	};
 	Emulator emu = Emulator(emuset);
@@ -144,7 +155,7 @@ void run_emulator(const Setting set){
 		try{
 			if(emu.chk_irq())	emu.do_halt(false);
 			if(emu.is_halt()){
-				std::this_thread::sleep_for(std::chrono::milliseconds(50));
+				std::this_thread::sleep_for(std::chrono::milliseconds(10));
 				continue;
 			}
 			emu.hundle_interrupt();

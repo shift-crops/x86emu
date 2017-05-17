@@ -1,12 +1,22 @@
 #include <thread>
+#include <string.h>
 #include "device/pit.hpp"
 
 PIT::PIT(){
-	count[0] = def[0] = 0xffff;
+	memset(timer, 0, sizeof(timer));
+	for(int i=0; i<3; i++)
+		timer[i].count = timer[i].def = 0xffff;
+}
 
-	std::thread th = std::thread(&PIT::counter, this);
-	th.detach();
-};
+PIT::~PIT(){
+	for(int i=0; i<3; i++)
+		if(timer[i].th.joinable()){
+			timer[i].running = false;
+			timer[i].th.join();
+		}
+}
+
+bool rl_fst;
 
 uint8_t PIT::in8(uint16_t addr){
 	uint8_t rgn = addr&0x3;
@@ -16,15 +26,15 @@ uint8_t PIT::in8(uint16_t addr){
 		case 1:
 		case 2:
 			switch(cwr.RL){
-				case 1:
-					return count[rgn]>>8;
-				case 2:
-					return count[rgn]&0xff;
+				case 1:	// LSB
+					return timer[rgn].count>>8;
+				case 2:	// MSB
+					return timer[rgn].count&0xff;
 				case 3:
-					if(!(first ^= true))
-						return count[rgn]>>8;
-					else
-						return count[rgn]&0xff;
+					if(!(rl_fst ^= true))	// LSB
+						return timer[rgn].count>>8;
+					else			// MSB
+						return timer[rgn].count&0xff;
 			}
 		default:
 			return 0;
@@ -41,40 +51,56 @@ void PIT::out8(uint16_t addr, uint8_t v){
 			//if(cwr.SC != rgn)
 			//	break;
 			switch(cwr.RL){
-				case 1:
-					count[rgn] = (count[rgn]&0xff00) + v;
-				case 2:
-					count[rgn] = (v<<8) + (count[rgn]&0xff);
+				case 1:	// LSB
+					timer[rgn].count = (timer[rgn].count&0xff00) + v;
+					break;
+				case 2: // MSB
+					timer[rgn].count = (v<<8) + (timer[rgn].count&0xff);
+					break;
 				case 3:
-					if(!(first ^= true))
-						count[rgn] = v;
-					else
-						count[rgn] = (v<<8) + (count[rgn]&0xff);
+					if(!(rl_fst ^= true)) 	// LSB
+						timer[rgn].count = v;
+					else			// MSB
+						timer[rgn].count = (v<<8) + (timer[rgn].count&0xff);
+					break;
 			}
-			def[rgn] = count[rgn];
-			INFO(2, "count[%d] = 0x%04x", rgn, count[rgn]);
+			timer[rgn].def = timer[rgn].count;
+			INFO(2, "timer[%d].def = 0x%04x", rgn, timer[rgn].def);
 			break;
 		case 3:
 			cwr.raw = v;
-			first = true;
-			if(cwr.RL == 0 && cwr.SC < 3)
-				def[cwr.SC] = count[cwr.SC];
+			if(cwr.SC < 3){
+				timer[cwr.SC].mode = cwr.mode;
+				switch(cwr.RL){
+					case 0:
+						timer[cwr.SC].def = timer[cwr.SC].count;
+						break;
+					case 3:
+						rl_fst = true;
+						break;
+				}
+			}
+
+			if(!timer[cwr.SC].th.joinable()){
+				timer[cwr.SC].running = true;
+				timer[cwr.SC].th = std::thread(&PIT::counter, this, &timer[cwr.SC]);
+			}
+
 			break;
 	}
 }
 
 /*
 bool PIT::chk_intreq(void){
-	INFO(5, "counter = 0x%04x", count[0]);
 	if(cwr.BCD){
 	}
-	else	count[0]--;
+	else	timer[0].count--;
 
 	switch(cwr.mode){
 		// TODO
 		case 2:
-			if(count[0]==1){
-				count[0] = def[0];
+			if(timer[0].count==1){
+				timer[0].count = timer[0].def;
 				return true;
 			}
 	}
@@ -83,9 +109,15 @@ bool PIT::chk_intreq(void){
 }
 */
 
-void PIT::counter(void){
-	while(true){
-		std::this_thread::sleep_for(std::chrono::milliseconds(100*def[0]/119318));
-		intr = true;
+void PIT::counter(Timer *t){
+	while(t->running){
+		switch(t->mode){
+			case 2:
+				std::this_thread::sleep_for(std::chrono::milliseconds(100*t->def/119318));
+				intr = true;
+				break;
+			default:
+				std::this_thread::sleep_for(std::chrono::milliseconds(100));
+		}
 	}
 }

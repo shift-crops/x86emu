@@ -2,8 +2,18 @@
 #define _PIT_H
 
 #include "common.hpp"
+#include <thread>
 #include "dev_irq.hpp"
 #include "dev_io.hpp"
+
+struct Timer {
+	uint8_t mode;
+	uint16_t count;
+	uint16_t def;
+
+	bool running;
+	std::thread th;
+};
 
 class PIT : public IRQ, public PortIO {
 	private:
@@ -17,15 +27,15 @@ class PIT : public IRQ, public PortIO {
 			};
 		} cwr;
 
-		uint16_t count[3];
-		uint16_t def[3];
-		bool first;
+		Timer timer[3];
+
 	public:
 		PIT();
+		~PIT();
 		uint8_t in8(uint16_t addr);
 		void out8(uint16_t addr, uint8_t v);
 		//bool chk_intreq(void);
-		void counter(void);
+		void counter(Timer *t);
 };
 
 #endif

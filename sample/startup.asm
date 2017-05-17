@@ -29,7 +29,7 @@ next:
 	mov cr0, eax
 
 	call init_pic
-	;call init_timer
+	call init_timer
 	call init_key_mouse
 	call init_vga
 

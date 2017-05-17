@@ -33,7 +33,7 @@ void Interrupt::hundle_interrupt(void){
 		read_data(&idt, idt_base + idt_offset, sizeof(INTDescriptor));
 		RPL = ((SGRegister*)&(idt.selector))->RPL;
 
-		INFO(3, "int 0x%02x [CPL : %d, DPL : %d RPL : %d] (EIP : 0x%04x, CS : 0x%04x)"
+		INFO(4, "int 0x%02x [CPL : %d, DPL : %d RPL : %d] (EIP : 0x%04x, CS : 0x%04x)"
 				, n, CPL, idt.DPL, RPL, (idt.offset_h << 16) + idt.offset_l, idt.selector);
 
 		EXCEPTION(EXP_NP, !idt.P);
@@ -64,7 +64,7 @@ void Interrupt::hundle_interrupt(void){
 		set_segment(CS, ivt.segment);
 
 		//set_interruptable(false);
-		INFO(3, "int 0x%02x (IP : 0x%04x, CS : 0x%04x)", n, ivt.offset, ivt.segment);
+		INFO(4, "int 0x%02x (IP : 0x%04x, CS : 0x%04x)", n, ivt.offset, ivt.segment);
 	}
 }
 
@@ -72,9 +72,9 @@ void Interrupt::iret(void){
 	restore_regs();
 
 	if(is_protected())
-		INFO(3, "iret (EIP : 0x%08x, CS : 0x%04x)", get_eip(), get_segment(CS));
+		INFO(4, "iret (EIP : 0x%08x, CS : 0x%04x)", get_eip(), get_segment(CS));
 	else
-		INFO(3, "iret (IP : 0x%04x, CS : 0x%04x)", get_ip(), get_segment(CS));
+		INFO(4, "iret (IP : 0x%04x, CS : 0x%04x)", get_ip(), get_segment(CS));
 }
 
 bool Interrupt::chk_irq(void){
@@ -122,7 +122,7 @@ void Interrupt::save_regs(bool chpl){
 			set_segment(SS, tss.ss0);
 			set_gpreg(ESP, tss.esp0);
 
-			INFO(3, "save_regs (ESP : 0x%08x->0x%08x, SS : 0x%04x->0x%04x)", esp, tss.esp0, ss, tss.ss0);
+			INFO(4, "save_regs (ESP : 0x%08x->0x%08x, SS : 0x%04x->0x%04x)", esp, tss.esp0, ss, tss.ss0);
 			push32(ss);
 			push32(esp);
 		}
@@ -152,7 +152,7 @@ void Interrupt::restore_regs(void){
 
 			esp = pop32();
 			ss = pop32();
-			INFO(3, "restore_regs (CS : 0x%04x->0x%04x, ESP : 0x%08x->0x%08x, SS : 0x%04x->0x%04x)"
+			INFO(4, "restore_regs (CS : 0x%04x->0x%04x, ESP : 0x%08x->0x%08x, SS : 0x%04x->0x%04x)"
 					, cs0.raw, cs.raw, get_gpreg(ESP), esp, get_segment(SS), ss);
 			set_gpreg(ESP, esp);
 			set_segment(SS, ss);

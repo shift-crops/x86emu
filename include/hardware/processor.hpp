@@ -100,29 +100,32 @@ class Processor : public Eflags, public CR {
 
 		uint32_t get_eip(void){ return eip; };
 		uint32_t get_ip(void){ return ip; };
-		uint32_t get_gpreg(enum reg32_t n){ return gpregs[n].reg32; };
-		uint16_t get_gpreg(enum reg16_t n){ return gpregs[n].reg16; };
-		uint8_t get_gpreg(enum reg8_t n){ return n<AH ? gpregs[n].reg8_l : gpregs[n-AH].reg8_h; };
-		void get_sgreg(enum sgreg_t n, SGRegister *reg){ ASSERT(reg); *reg = sgregs[n]; };
+		uint32_t get_gpreg(enum reg32_t n){ ASSERT(n<GPREGS_COUNT); return gpregs[n].reg32; };
+		uint16_t get_gpreg(enum reg16_t n){ ASSERT((reg32_t)n<GPREGS_COUNT); return gpregs[n].reg16; };
+		uint8_t get_gpreg(enum reg8_t n){ ASSERT((reg32_t)n<GPREGS_COUNT); return n<AH ? gpregs[n].reg8_l : gpregs[n-AH].reg8_h; };
+		void get_sgreg(enum sgreg_t n, SGRegister *reg){ ASSERT(n<SGREGS_COUNT && reg); *reg = sgregs[n]; };
 		//uint16_t get_sgreg(enum sgreg_t n){ return sgregs[n].raw; };
-		uint32_t get_dtreg_base(enum dtreg_t n){ return dtregs[n].base; };
-		uint16_t get_dtreg_limit(enum dtreg_t n){ return dtregs[n].limit; };
+		uint32_t get_dtreg_base(enum dtreg_t n){ ASSERT(n<DTREGS_COUNT); return dtregs[n].base; };
+		uint16_t get_dtreg_limit(enum dtreg_t n){ ASSERT(n<DTREGS_COUNT); return dtregs[n].limit; };
 		uint16_t get_tr(void){ return tr; };
 
 		void set_eip(uint32_t v){ eip = v; };
 		void set_ip(uint16_t v){ ip = v; };
-		void set_gpreg(enum reg32_t n, uint32_t v){ gpregs[n].reg32 = v; };
-		void set_gpreg(enum reg16_t n, uint16_t v){ gpregs[n].reg16 = v; };
-		void set_gpreg(enum reg8_t n, uint8_t v){ (n<AH ? gpregs[n].reg8_l : gpregs[n-AH].reg8_h) = v; };
-		void set_sgreg(enum sgreg_t n, SGRegister *reg){ ASSERT(reg); sgregs[n] = *reg; };
-		void set_dtreg(enum dtreg_t n, uint32_t base, uint16_t limit){ dtregs[n].base = base; dtregs[n].limit = limit; };
+		void set_gpreg(enum reg32_t n, uint32_t v){ ASSERT(n<GPREGS_COUNT); gpregs[n].reg32 = v; };
+		void set_gpreg(enum reg16_t n, uint16_t v){ ASSERT((reg32_t)n<GPREGS_COUNT); gpregs[n].reg16 = v; };
+		void set_gpreg(enum reg8_t n, uint8_t v){
+			ASSERT((reg32_t)n<GPREGS_COUNT); (n<AH ? gpregs[n].reg8_l : gpregs[n-AH].reg8_h) = v; };
+		void set_sgreg(enum sgreg_t n, SGRegister *reg){ ASSERT(n<SGREGS_COUNT && reg); sgregs[n] = *reg; };
+		void set_dtreg(enum dtreg_t n, uint32_t base, uint16_t limit){
+			ASSERT(n<DTREGS_COUNT); dtregs[n].base = base; dtregs[n].limit = limit; };
 		void set_tr(uint16_t v){ tr = v; };
 
 		uint32_t update_eip(int32_t v){ return eip += v; };
 		uint32_t update_ip(int32_t v){ return ip += v; };
-		uint32_t update_gpreg(enum reg32_t n, int32_t v){ return gpregs[n].reg32 += v; };
-		uint16_t update_gpreg(enum reg16_t n, int16_t v){ return gpregs[n].reg16 += v; };
-		uint8_t update_gpreg(enum reg8_t n, int8_t v){ return (n<AH ? gpregs[n].reg8_l : gpregs[n-AH].reg8_h) += v; };
+		uint32_t update_gpreg(enum reg32_t n, int32_t v){ ASSERT(n<GPREGS_COUNT); return gpregs[n].reg32 += v; };
+		uint16_t update_gpreg(enum reg16_t n, int16_t v){ ASSERT((reg32_t)n<GPREGS_COUNT); return gpregs[n].reg16 += v; };
+		uint8_t update_gpreg(enum reg8_t n, int8_t v){
+			ASSERT((reg32_t)n<GPREGS_COUNT); return (n<AH ? gpregs[n].reg8_l : gpregs[n-AH].reg8_h) += v; };
 
 		bool is_halt(void){ return halt; };
 		void do_halt(bool h){ halt = h; };
