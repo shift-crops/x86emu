@@ -26,7 +26,7 @@ void debug_print(const int type, const char *file, const char *function, int lin
 	if(ts.fatal)
 		goto print;
 
-	if(!((1<<(level-1)) & debug_level))
+	if(level>0 && !((1<<(level-1)) & debug_level))
 		return;
 
 print:

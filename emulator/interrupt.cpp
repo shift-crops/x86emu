@@ -1,7 +1,7 @@
 #include <map>
 #include "emulator/interrupt.hpp"
 #include "emulator/exception.hpp"
-#include "emulator/structs.hpp"
+#include "emulator/descriptor.hpp"
 
 void Interrupt::hundle_interrupt(void){
 	std::pair<uint8_t, bool> intr;
@@ -17,7 +17,7 @@ void Interrupt::hundle_interrupt(void){
 	hard = intr.second;
 
 	if(is_protected()){
-		INTDescriptor idt;
+		IntGateDesc idt;
 		uint32_t idt_base;
 		uint16_t idt_limit, idt_offset;
 		uint8_t CPL, RPL;
@@ -30,11 +30,11 @@ void Interrupt::hundle_interrupt(void){
 
 		EXCEPTION(EXP_GP, idt_offset > idt_limit);
 
-		read_data(&idt, idt_base + idt_offset, sizeof(INTDescriptor));
-		RPL = ((SGRegister*)&(idt.selector))->RPL;
+		read_data(&idt, idt_base + idt_offset, sizeof(IntGateDesc));
+		RPL = ((SGRegister*)&(idt.seg_sel))->RPL;
 
 		INFO(4, "int 0x%02x [CPL : %d, DPL : %d RPL : %d] (EIP : 0x%04x, CS : 0x%04x)"
-				, n, CPL, idt.DPL, RPL, (idt.offset_h << 16) + idt.offset_l, idt.selector);
+				, n, CPL, idt.DPL, RPL, (idt.offset_h << 16) + idt.offset_l, idt.seg_sel);
 
 		EXCEPTION(EXP_NP, !idt.P);
 		EXCEPTION(EXP_GP, CPL < RPL);
@@ -42,7 +42,7 @@ void Interrupt::hundle_interrupt(void){
 
 		save_regs(CPL ^ RPL);
 		set_eip((idt.offset_h << 16) + idt.offset_l);
-		set_segment(CS, idt.selector);
+		set_segment(CS, idt.seg_sel);
 
 		if(idt.type == TYPE_INTERRUPT)
 			set_interruptable(false);
@@ -95,9 +95,10 @@ bool Interrupt::chk_irq(void){
 void Interrupt::save_regs(bool chpl){
 	if(is_protected()){
 		if(chpl){
+/*
 			uint32_t gdt_base, base, limit, esp;
 			uint16_t gdt_limit, gdt_index, ss;
-			TSSDescriptor tdt;
+			TSSDesc tdt;
 			TSS tss;
 
 			gdt_index = get_tr();
@@ -107,13 +108,18 @@ void Interrupt::save_regs(bool chpl){
 			if(!gdt_index || gdt_index > gdt_limit)
 				throw EXP_GP;
 
-			read_data(&tdt, gdt_base + gdt_index, sizeof(TSSDescriptor));
+			read_data(&tdt, gdt_base + gdt_index, sizeof(TSSDesc));
 
 			base = (tdt.base_h << 24) + (tdt.base_m << 16) + tdt.base_l;
 			limit = (tdt.limit_h << 16) + tdt.limit_l;
+*/
+			uint32_t base, limit, esp;
+			uint16_t ss;
+			TSS tss;
 
-			if(limit < sizeof(TSS))
-				throw EXP_TS;
+			base = get_dtreg_base(TR);
+			limit = get_dtreg_limit(TR);
+			EXCEPTION(EXP_TS, limit < sizeof(TSS));
 
 			read_data(&tss, base, sizeof(TSS));
 

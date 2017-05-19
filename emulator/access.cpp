@@ -2,10 +2,189 @@
 #include <vector>
 #include "emulator/access.hpp"
 #include "emulator/exception.hpp"
-#include "emulator/structs.hpp"
+#include "emulator/descriptor.hpp"
 #include "hardware/processor.hpp"
 #include "hardware/cr.hpp"
-//#include "util/lru.hpp"
+
+void DataAccess::set_segment(sgreg_t reg, uint16_t v){
+	SGRegister sg;
+	SGRegCache *cache = &sg.cache;
+
+	get_sgreg(reg, &sg);
+	sg.raw = v;
+
+	if(is_protected()){
+		uint32_t dt_base;
+		uint16_t dt_limit, dt_index;
+		SegDesc gdt;
+		const char* sgreg_name[] = { "ES", "CS", "SS", "DS", "FS", "GS" };
+
+		dt_index = sg.index << 3;
+
+		dt_base = get_dtreg_base(sg.TI ? LDTR : GDTR);
+		dt_limit = get_dtreg_limit(sg.TI ? LDTR : GDTR);
+
+		EXCEPTION(EXP_GP, (reg == CS || reg == SS) && !dt_index);
+		EXCEPTION(EXP_GP, dt_index > dt_limit);
+
+		read_data(&gdt, dt_base + dt_index, sizeof(SegDesc));
+
+		cache->base = (gdt.base_h << 24) + (gdt.base_m << 16) + gdt.base_l;
+		cache->limit = (gdt.limit_h << 16) + gdt.limit_l;
+
+		*(uint8_t*)&cache->flags.type = *(uint8_t*)&gdt.type;
+		cache->flags.AVL = gdt.AVL;
+		cache->flags.DB = gdt.DB;
+		cache->flags.G = gdt.G;
+
+		INFO(3, "%s : dt_base=0x%04x, dt_limit=0x%02x, dt_index=0x%02x {base=0x%08x, limit=0x%08x, flags=0x%04x}"
+				, sgreg_name[reg], dt_base, dt_limit, dt_index
+				, cache->base, cache->limit<<(cache->flags.G ? 12 : 0), cache->flags.raw);
+
+	}
+	else
+		cache->base = (uint32_t)v << 4;
+
+	set_sgreg(reg, &sg);
+}
+
+inline uint16_t DataAccess::get_segment(sgreg_t reg){
+	SGRegister sg;
+
+	get_sgreg(reg, &sg);
+	return sg.raw;
+}
+
+uint8_t DataAccess::type_descriptor(uint16_t sel){
+	uint32_t gdt_base;
+	uint16_t gdt_limit;
+	Descriptor desc;
+
+	gdt_base = get_dtreg_base(GDTR);
+	gdt_limit = get_dtreg_limit(GDTR);
+	EXCEPTION(EXP_GP, sel > gdt_limit);
+
+	read_data(&desc, gdt_base + sel, sizeof(Descriptor));
+	if(desc.S){
+		if(((SegDesc*)&desc)->type.segc)
+			return TYPE_CODE;
+		else
+			return TYPE_DATA;
+	}
+	else if(desc.type == 3)
+		return TYPE_TSS;
+
+	return desc.type;
+}
+
+void DataAccess::set_ldtr(uint16_t sel){
+	uint32_t gdt_base, base;
+	uint16_t gdt_limit, limit;
+	LDTDesc ldt;
+
+	gdt_base = get_dtreg_base(GDTR);
+	gdt_limit = get_dtreg_limit(GDTR);
+	EXCEPTION(EXP_GP, sel > gdt_limit);
+
+	read_data(&ldt, gdt_base + sel, sizeof(LDTDesc));
+
+	base = (ldt.base_h << 24) + (ldt.base_m << 16) + ldt.base_l;
+	limit = (ldt.limit_h << 16) + ldt.limit_l;
+	set_dtreg(LDTR, sel, base, limit); 
+}
+
+void DataAccess::set_tr(uint16_t sel){
+	uint32_t gdt_base, base;
+	uint16_t gdt_limit, limit;
+	TSSDesc tssdesc;
+
+	gdt_base = get_dtreg_base(GDTR);
+	gdt_limit = get_dtreg_limit(GDTR);
+	EXCEPTION(EXP_GP, sel > gdt_limit);
+
+	read_data(&tssdesc, gdt_base + sel, sizeof(TSSDesc));
+	EXCEPTION(EXP_GP, tssdesc.type != TYPE_TSS);
+
+	base = (tssdesc.base_h << 24) + (tssdesc.base_m << 16) + tssdesc.base_l;
+	limit = (tssdesc.limit_h << 16) + tssdesc.limit_l;
+
+	set_dtreg(TR, sel, base, limit); 
+}
+
+void DataAccess::switch_task(uint16_t sel){
+	uint32_t base;
+	uint16_t prev, limit;
+	TSS old_tss, new_tss;  
+
+	prev = get_dtreg_selector(TR);
+	base = get_dtreg_base(TR);
+	limit = get_dtreg_limit(TR);
+	EXCEPTION(EXP_GP, limit < sizeof(TSS)-1);
+
+	read_data(&old_tss, base, sizeof(TSS));
+	old_tss.cr3 = get_crn(3);
+	old_tss.eip = get_eip();
+	old_tss.eflags = get_eflags();
+	old_tss.eax = get_gpreg(EAX);
+	old_tss.ecx = get_gpreg(ECX);
+	old_tss.edx = get_gpreg(EDX);
+	old_tss.ebx = get_gpreg(EBX);
+	old_tss.esp = get_gpreg(ESP);
+	old_tss.ebp = get_gpreg(EBP);
+	old_tss.esi = get_gpreg(ESI);
+	old_tss.edi = get_gpreg(EDI);
+	old_tss.es = get_segment(ES);
+	old_tss.cs = get_segment(CS);
+	old_tss.ss = get_segment(SS);
+	old_tss.ds = get_segment(DS);
+	old_tss.fs = get_segment(FS);
+	old_tss.gs = get_segment(GS);
+	write_data(base, &old_tss, sizeof(TSS));
+
+	set_tr(sel);
+
+	base = get_dtreg_base(TR);
+	limit = get_dtreg_limit(TR);
+	EXCEPTION(EXP_GP, limit < sizeof(TSS)-1);
+
+	read_data(&new_tss, base, sizeof(TSS));
+	new_tss.prev_sel = prev;
+	write_data(base, &new_tss, sizeof(TSS));
+	set_crn(3, new_tss.cr3);
+	set_eip(new_tss.eip);
+	set_eflags(new_tss.eflags);
+	set_gpreg(EAX, new_tss.eax);
+	set_gpreg(ECX, new_tss.ecx);
+	set_gpreg(EDX, new_tss.edx);
+	set_gpreg(EBX, new_tss.ebx);
+	set_gpreg(ESP, new_tss.esp);
+	set_gpreg(EBP, new_tss.ebp);
+	set_gpreg(ESI, new_tss.esi);
+	set_gpreg(EDI, new_tss.edi);
+	set_segment(ES, new_tss.es);
+	set_segment(CS, new_tss.cs);
+	set_segment(SS, new_tss.ss);
+	set_segment(DS, new_tss.ds);
+	set_segment(FS, new_tss.fs);
+	set_segment(GS, new_tss.gs);
+}
+
+void DataAccess::jmpf(uint16_t sel, uint32_t eip){
+	if(is_protected()){
+		switch(type_descriptor(sel)){
+			case TYPE_CODE:
+				goto jmp;
+			case TYPE_TSS:
+				switch_task(sel);
+				return;
+		}
+	}
+
+jmp:
+	INFO(2, "cs = 0x%04x, eip = 0x%08x", sel, eip);
+	set_segment(CS, sel);
+	set_eip(eip);
+}
 
 uint32_t DataAccess::trans_v2p(acsmode_t mode, sgreg_t seg, uint32_t vaddr){
 	uint32_t laddr, paddr;
@@ -61,24 +240,6 @@ uint32_t DataAccess::trans_v2p(acsmode_t mode, sgreg_t seg, uint32_t vaddr){
 	return paddr;
 }
 
-bool DataAccess::search_tlb(uint32_t vpn, PTE *pte){
-	if(vpn+1 > tlb.size() || !tlb[vpn])
-		return false;
-
-	ASSERT(pte);
-	*pte = *tlb[vpn];
-
-	return true;
-}
-
-void DataAccess::cache_tlb(uint32_t vpn, PTE pte){
-	if(vpn+1 > tlb.size())
-		tlb.resize(vpn+1, NULL);
-
-	tlb[vpn] = new PTE;
-	*tlb[vpn] = pte;
-}
-
 uint32_t DataAccess::trans_v2l(acsmode_t mode, sgreg_t seg, uint32_t vaddr){
 	uint32_t laddr;
 	SGRegister sg;
@@ -117,54 +278,22 @@ uint32_t DataAccess::trans_v2l(acsmode_t mode, sgreg_t seg, uint32_t vaddr){
 	return laddr;
 }
 
-void DataAccess::set_segment(sgreg_t reg, uint16_t v){
-	SGRegister sg;
-	SGRegCache *cache = &sg.cache;
+bool DataAccess::search_tlb(uint32_t vpn, PTE *pte){
+	if(vpn+1 > tlb.size() || !tlb[vpn])
+		return false;
 
-	get_sgreg(reg, &sg);
-	sg.raw = v;
+	ASSERT(pte);
+	*pte = *tlb[vpn];
 
-	if(is_protected()){
-		uint32_t dt_base;
-		uint16_t dt_limit, dt_index;
-		SGDescriptor gdt;
-		const char* sgreg_name[] = { "ES", "CS", "SS", "DS", "FS", "GS" };
-
-		dt_index = sg.index << 3;
-
-		// TODO
-		dt_base = get_dtreg_base(sg.TI ? LDTR : GDTR);
-		dt_limit = get_dtreg_limit(sg.TI ? LDTR : GDTR);
-
-		EXCEPTION(EXP_GP, (reg == CS || reg == SS) && !dt_index);
-		EXCEPTION(EXP_GP, dt_index > dt_limit);
-
-		read_data(&gdt, dt_base + dt_index, sizeof(SGDescriptor));
-
-		cache->base = (gdt.base_h << 24) + (gdt.base_m << 16) + gdt.base_l;
-		cache->limit = (gdt.limit_h << 16) + gdt.limit_l;
-
-		*(uint8_t*)&cache->flags.type = *(uint8_t*)&gdt.type;
-		cache->flags.AVL = gdt.AVL;
-		cache->flags.DB = gdt.DB;
-		cache->flags.G = gdt.G;
-
-		INFO(3, "%s : dt_base=0x%04x, dt_limit=0x%02x, dt_index=0x%02x {base=0x%08x, limit=0x%08x, flags=0x%04x}"
-				, sgreg_name[reg], dt_base, dt_limit, dt_index
-				, cache->base, cache->limit<<(cache->flags.G ? 12 : 0), cache->flags.raw);
-
-	}
-	else
-		cache->base = (uint32_t)v << 4;
-
-	set_sgreg(reg, &sg);
+	return true;
 }
 
-inline uint16_t DataAccess::get_segment(sgreg_t reg){
-	SGRegister sg;
+void DataAccess::cache_tlb(uint32_t vpn, PTE pte){
+	if(vpn+1 > tlb.size())
+		tlb.resize(vpn+1, NULL);
 
-	get_sgreg(reg, &sg);
-	return sg.raw;
+	tlb[vpn] = new PTE;
+	*tlb[vpn] = pte;
 }
 
 void DataAccess::push32(uint32_t value){

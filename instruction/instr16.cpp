@@ -576,8 +576,7 @@ void Instr16::jmp_rel16(void){
 }
 
 void Instr16::jmpf_ptr16_16(void){
-	EMU->set_segment(CS, PTR16);
-	SET_IP(IMM16);
+	EMU->jmpf(PTR16, IMM16);
 }
 
 void Instr16::in_ax_dx(void){
@@ -1090,14 +1089,13 @@ void Instr16::jmp_rm16(void){
 }
 
 void Instr16::jmpf_m16_16(void){
-	uint16_t m32, cs, ip;
+	uint16_t m32, sel, ip;
 
 	m32 = get_m();
 	ip  = READ_MEM16(m32);
-	cs  = READ_MEM16(m32+2);
+	sel  = READ_MEM16(m32+2);
 
-	EMU->set_segment(CS, cs);
-	SET_IP(ip);
+	EMU->jmpf(sel, ip);
 }
 
 void Instr16::push_rm16(void){
@@ -1116,7 +1114,7 @@ void Instr16::lgdt_m24(void){
 	limit = READ_MEM16(m48);
 	base  = READ_MEM32(m48+2)&((1<<24)-1);
 
-	EMU->set_dtreg(GDTR, base, limit);
+	EMU->set_gdtr(base, limit);
 }
 
 void Instr16::lidt_m24(void){
@@ -1126,6 +1124,6 @@ void Instr16::lidt_m24(void){
 	limit = READ_MEM16(m48);
 	base  = READ_MEM32(m48+2)&((1<<24)-1);
 
-	EMU->set_dtreg(IDTR, base, limit);
+	EMU->set_idtr(base, limit);
 }
 

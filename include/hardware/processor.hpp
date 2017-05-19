@@ -10,7 +10,7 @@ enum reg16_t { AX, CX, DX, BX, SP, BP, SI, DI };
 enum reg8_t { AL, CL, DL, BL, AH, CH, DH, BH };
 //enum reg8l_t { AL, CL, DL, BL, SPL, BPL, SIL, DIL };
 enum sgreg_t { ES, CS, SS, DS, FS, GS, SGREGS_COUNT }; 
-enum dtreg_t { GDTR, LDTR, IDTR, DTREGS_COUNT }; 
+enum dtreg_t { GDTR, IDTR, LDTR, TR, DTREGS_COUNT }; 
 
 union GPRegister {
 	uint32_t reg32;
@@ -76,8 +76,9 @@ struct SGRegister {
 };
 
 struct DTRegister {
-	uint16_t limit;
+	uint16_t selector;	// LDTR, TR
 	uint32_t base;
+	uint16_t limit;
 };
 
 class Processor : public Eflags, public CR {
@@ -90,7 +91,6 @@ class Processor : public Eflags, public CR {
 		GPRegister gpregs[GPREGS_COUNT];
 		SGRegister sgregs[SGREGS_COUNT];
 		DTRegister dtregs[DTREGS_COUNT];
-		uint16_t tr;
 
 		bool halt;
 
@@ -105,9 +105,9 @@ class Processor : public Eflags, public CR {
 		uint8_t get_gpreg(enum reg8_t n){ ASSERT((reg32_t)n<GPREGS_COUNT); return n<AH ? gpregs[n].reg8_l : gpregs[n-AH].reg8_h; };
 		void get_sgreg(enum sgreg_t n, SGRegister *reg){ ASSERT(n<SGREGS_COUNT && reg); *reg = sgregs[n]; };
 		//uint16_t get_sgreg(enum sgreg_t n){ return sgregs[n].raw; };
+		uint32_t get_dtreg_selector(enum dtreg_t n){ ASSERT(n<DTREGS_COUNT); return dtregs[n].selector; };
 		uint32_t get_dtreg_base(enum dtreg_t n){ ASSERT(n<DTREGS_COUNT); return dtregs[n].base; };
 		uint16_t get_dtreg_limit(enum dtreg_t n){ ASSERT(n<DTREGS_COUNT); return dtregs[n].limit; };
-		uint16_t get_tr(void){ return tr; };
 
 		void set_eip(uint32_t v){ eip = v; };
 		void set_ip(uint16_t v){ ip = v; };
@@ -116,9 +116,8 @@ class Processor : public Eflags, public CR {
 		void set_gpreg(enum reg8_t n, uint8_t v){
 			ASSERT((reg32_t)n<GPREGS_COUNT); (n<AH ? gpregs[n].reg8_l : gpregs[n-AH].reg8_h) = v; };
 		void set_sgreg(enum sgreg_t n, SGRegister *reg){ ASSERT(n<SGREGS_COUNT && reg); sgregs[n] = *reg; };
-		void set_dtreg(enum dtreg_t n, uint32_t base, uint16_t limit){
-			ASSERT(n<DTREGS_COUNT); dtregs[n].base = base; dtregs[n].limit = limit; };
-		void set_tr(uint16_t v){ tr = v; };
+		void set_dtreg(enum dtreg_t n, uint16_t sel, uint32_t base, uint16_t limit){
+			ASSERT(n<DTREGS_COUNT); dtregs[n].selector = sel; dtregs[n].base = base; dtregs[n].limit = limit; };
 
 		uint32_t update_eip(int32_t v){ return eip += v; };
 		uint32_t update_ip(int32_t v){ return ip += v; };

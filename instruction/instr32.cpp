@@ -576,8 +576,7 @@ void Instr32::jmp_rel32(void){
 }
 
 void Instr32::jmpf_ptr16_32(void){
-	EMU->set_segment(CS, PTR16);
-	SET_EIP(IMM32);
+	EMU->jmpf(PTR16, IMM32);
 }
 
 void Instr32::in_eax_dx(void){
@@ -1098,15 +1097,13 @@ void Instr32::jmp_rm32(void){
 
 void Instr32::jmpf_m16_32(void){
 	uint32_t m48, eip;
-	uint16_t cs;
+	uint16_t sel;
 
 	m48 = get_m();
 	eip = READ_MEM32(m48);
-	cs  = READ_MEM16(m48+4);
-	INFO(2, "cs = 0x%04x, eip = 0x%08x", cs, eip);
+	sel  = READ_MEM16(m48+4);
 
-	EMU->set_segment(CS, cs);
-	SET_EIP(eip);
+	EMU->jmpf(sel, eip);
 }
 
 void Instr32::push_rm32(void){
@@ -1127,7 +1124,7 @@ void Instr32::lgdt_m32(void){
 	base  = READ_MEM32(m48+2);
 	INFO(2, "base = 0x%08x, limit = 0x%04x", base, limit);
 
-	EMU->set_dtreg(GDTR, base, limit);
+	EMU->set_gdtr(base, limit);
 }
 
 void Instr32::lidt_m32(void){
@@ -1139,6 +1136,6 @@ void Instr32::lidt_m32(void){
 	base  = READ_MEM32(m48+2);
 	INFO(2, "base = 0x%08x, limit = 0x%04x", base, limit);
 
-	EMU->set_dtreg(IDTR, base, limit);
+	EMU->set_idtr(base, limit);
 }
 

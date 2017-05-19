@@ -105,18 +105,20 @@ void UI::mouse_callback(GLFWwindow *window, int button, int action, int mods){
 	UI *ui = static_cast<UI*>(glfwGetWindowUserPointer(window));
 	Mouse *mouse = ui->keyboard->get_mouse();
 
-	if(!ui->capture){
+	if(ui->capture){
+		ui->click[button%2] = action;
+		mouse->send_code((1<<3) + (ui->click[1]<<1) + ui->click[0]);
+		mouse->send_code(0);
+		mouse->send_code(0);
+
+		DEBUG_MSG(1, "[%02x %02x %02x] button : %d, action : %d, mods : %d\n"
+				, (1<<3) + (ui->click[1]<<1) + ui->click[0], 0 ,0, button, action, mods);
+	}
+	else{
 		ui->capture = true;
 		glfwSetInputMode(window, GLFW_CURSOR, ui->set.cursor ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_HIDDEN);
 		MSG("To cancel the input capture, press the right control key.\n");
 	}
-
-	ui->click[button%2] = action;
-	mouse->send_code((1<<3) + (ui->click[1]<<1) + ui->click[0]);
-	mouse->send_code(0);
-	mouse->send_code(0);
-
-	DEBUG_MSG(1, "[%02x %02x %02x] button : %d, action : %d, mods : %d\n", (1<<3) + (ui->click[1]<<1) + ui->click[0], 0 ,0, button, action, mods);
 }
 
 void UI::cursorpos_callback(GLFWwindow *window, double xpos, double ypos){
