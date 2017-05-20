@@ -120,7 +120,7 @@ void EmuInstr::switch_task(uint16_t sel){
 }
 
 void EmuInstr::jmpf(uint16_t sel, uint32_t eip){
-	if(is_protected()){
+	if(EMU->is_protected()){
 		switch(type_descriptor(sel)){
 			case TYPE_CODE:
 				goto jmp;
@@ -134,4 +134,113 @@ jmp:
 	INFO(2, "cs = 0x%04x, eip = 0x%08x", sel, eip);
 	EMU->set_segment(CS, sel);
 	EMU->set_eip(eip);
+}
+
+void EmuInstr::callf(uint16_t sel, uint32_t eip){
+/*
+	if(EMU->is_protected()){
+		switch(type_descriptor(sel)){
+			case TYPE_CODE:
+				goto jmp;
+			case TYPE_TSS:
+				switch_task(sel);
+				return;
+		}
+	}
+
+jmp:
+*/
+	SGRegister cs;
+	uint8_t RPL;
+
+	cs.raw = EMU->get_segment(CS);
+	RPL = sel & 3;
+
+	if(cs.RPL ^ RPL){
+		EXCEPTION(EXP_GP, RPL < cs.RPL);
+		EMU->push32(EMU->get_segment(SS));
+		EMU->push32(EMU->get_gpreg(ESP));
+	}
+
+	EMU->push32(cs.raw);
+	EMU->push32(EMU->get_eip());
+
+	EMU->set_segment(CS, sel);
+	EMU->set_eip(eip);
+}
+
+void EmuInstr::retf(void){
+	SGRegister cs;
+	uint8_t CPL;
+
+	CPL = EMU->get_segment(CS) & 3;
+
+	EMU->set_eip(EMU->pop32());
+	cs.raw = EMU->pop32();
+
+	if(cs.RPL ^ CPL){
+		uint32_t esp;
+		uint16_t ss;
+
+		esp = EMU->pop32();
+		ss = EMU->pop32();
+		EMU->set_gpreg(ESP, esp);
+		EMU->set_segment(SS, ss);
+	}
+
+	EMU->set_segment(CS, cs.raw);
+}
+
+void EmuInstr::iret(void){
+	if(is_mode32()){
+		SGRegister cs;
+		uint8_t CPL;
+		EFLAGS eflags;
+
+                CPL = EMU->get_segment(CS) & 3;
+
+		EMU->set_eip(EMU->pop32());
+		cs.raw = EMU->pop32();
+		eflags.reg32 = EMU->pop32();
+		EMU->set_eflags(eflags.reg32);
+
+		if(eflags.NT){
+			uint32_t base;
+			TSS tss;
+
+			base = EMU->get_dtreg_base(TR);
+			EMU->read_data(&tss, base, sizeof(TSS));
+			switch_task(tss.prev_sel);
+		}
+		else{
+			if(cs.RPL > CPL){
+				uint32_t esp;
+				uint16_t ss;
+
+				esp = EMU->pop32();
+				ss = EMU->pop32();
+				EMU->set_gpreg(ESP, esp);
+				EMU->set_segment(SS, ss);
+			}
+		}
+
+		EMU->set_segment(CS, cs.raw);
+		INFO(4, "iret (EIP : 0x%08x, CS : 0x%04x)", EMU->get_eip(), EMU->get_segment(CS));
+	}
+	else{
+		uint16_t cs;
+		EMU->set_ip(EMU->pop16());
+		cs = EMU->pop16();
+		EMU->set_flags(EMU->pop16());
+
+		EMU->set_segment(CS, cs);
+		INFO(4, "iret (IP : 0x%04x, CS : 0x%04x)", EMU->get_ip(), EMU->get_segment(CS));
+	}
+}
+
+bool EmuInstr::chk_ring(uint8_t DPL){
+	uint8_t CPL;
+	CPL = EMU->get_segment(CS) & 3;
+
+	return CPL<=DPL;
 }

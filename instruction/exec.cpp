@@ -106,7 +106,7 @@ uint32_t ExecInstr::get_crn(void){
 uint32_t ExecInstr::calc_modrm(void){
 	ASSERT(MOD != 3);
 
-	if(is_protected() ^ chsz_ad)
+	if(is_mode32() ^ chsz_ad)
 		return calc_modrm32();
 	else
 		return calc_modrm16();
@@ -156,6 +156,8 @@ uint32_t ExecInstr::calc_modrm16(void){
 
 uint32_t ExecInstr::calc_modrm32(void){
 	uint32_t addr = 0;
+
+	SEGMENT = DS;
 
 	switch(MOD){
 		case 1:

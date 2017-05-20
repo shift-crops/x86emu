@@ -58,6 +58,7 @@ class InstrBase : public ExecInstr, public ParseInstr, public EmuInstr {
 		void test_al_imm8(void);
                 void mov_r8_imm8(void);
                 void mov_rm8_imm8(void);
+                void retf(void);
                 void int3(void);
                 void int_imm8(void);
                 void iret(void);
@@ -188,7 +189,6 @@ class Instr16 : public InstrBase {
                 void mov_r16_imm16(void);
                 void ret(void);
                 void leave(void);
-                void retf(void);
                 void mov_rm16_imm16(void);
 		void in_ax_imm8(void);
 		void out_imm8_ax(void);
@@ -343,7 +343,6 @@ class Instr32 : public InstrBase {
                 void mov_r32_imm32(void);
                 void ret(void);
                 void leave(void);
-                void retf(void);
                 void mov_rm32_imm32(void);
 		void in_eax_imm8(void);
 		void out_imm8_eax(void);

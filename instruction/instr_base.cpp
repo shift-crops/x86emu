@@ -1,5 +1,6 @@
 #include <stdint.h>
 #include "instruction/base.hpp"
+#include "emulator/exception.hpp"
 
 #define instrbase(f) ((instrfunc_t)&InstrBase::f)
 
@@ -49,6 +50,7 @@ InstrBase::InstrBase() {
 	set_funcflag(0xa8, instrbase(test_al_imm8), CHK_IMM8);
 	for (i=0; i<8; i++)	set_funcflag(0xb0+i, instrbase(mov_r8_imm8) ,CHK_IMM8);
 	set_funcflag(0xc6, instrbase(mov_rm8_imm8), CHK_MODRM | CHK_IMM8);
+	set_funcflag(0xcb, instrbase(retf), 0);
 	set_funcflag(0xcc, instrbase(int3), 0);
 	set_funcflag(0xcd, instrbase(int_imm8), CHK_IMM8);
 	set_funcflag(0xcf, instrbase(iret), 0);
@@ -328,6 +330,10 @@ void InstrBase::mov_rm8_imm8(void){
 	set_rm8(IMM8);
 }
 
+void InstrBase::retf(void){
+	EmuInstr::retf();
+}
+
 void InstrBase::int3(void){
 	EMU->dump_regs();
 	EMU->dump_mem((EMU->get_segment(SS)<<4)+EMU->get_gpreg(ESP)-0x40, 0x80);
@@ -338,7 +344,7 @@ void InstrBase::int_imm8(void){
 }
 
 void InstrBase::iret(void){
-	EMU->iret();
+	EmuInstr::iret();
 }
 
 void InstrBase::in_al_imm8(void){
@@ -389,6 +395,7 @@ void InstrBase::std(void){
 }
 
 void InstrBase::hlt(void){
+	EXCEPTION(EXP_GP, !chk_ring(0));
 	EMU->do_halt(true);
 	//EMU->dump_regs();
 }
@@ -396,6 +403,7 @@ void InstrBase::hlt(void){
 void InstrBase::ltr_rm16(void){
 	uint16_t rm16;
 
+	EXCEPTION(EXP_GP, !chk_ring(0));
 	rm16 = get_rm16();
 	set_tr(rm16);
 }
@@ -410,6 +418,7 @@ void InstrBase::mov_r32_crn(void){
 void InstrBase::mov_crn_r32(void){
 	uint32_t r32;
 
+	EXCEPTION(EXP_GP, !chk_ring(0));
 	r32 = GET_GPREG(static_cast<reg32_t>(RM));	// get_r32
 	set_crn(r32);
 }

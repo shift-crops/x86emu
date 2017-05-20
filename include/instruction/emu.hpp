@@ -17,6 +17,11 @@ class EmuInstr : protected virtual Instruction {
 		uint8_t type_descriptor(uint16_t sel);
 		void switch_task(uint16_t sel);
 		void jmpf(uint16_t sel, uint32_t eip);
+		void callf(uint16_t sel, uint32_t eip);
+		void retf(void);
+		void iret(void);
+
+		bool chk_ring(uint8_t DPL);
 };
 
 #endif

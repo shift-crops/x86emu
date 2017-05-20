@@ -27,7 +27,7 @@ class Interrupt : public virtual DataAccess {
 		void iret(void);
 		bool chk_irq(void);
 	private:
-		void save_regs(bool chpl);
+		void save_regs(bool chpl, uint16_t cs);
 		void restore_regs(void);
 };
 

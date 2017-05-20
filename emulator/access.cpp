@@ -2,12 +2,12 @@
 #include "emulator/exception.hpp"
 #include "emulator/descriptor.hpp"
 
-void DataAccess::set_segment(sgreg_t reg, uint16_t v){
+void DataAccess::set_segment(sgreg_t reg, uint16_t sel){
 	SGRegister sg;
 	SGRegCache *cache = &sg.cache;
 
 	get_sgreg(reg, &sg);
-	sg.raw = v;
+	sg.raw = sel;
 
 	if(is_protected()){
 		uint32_t dt_base;
@@ -39,7 +39,7 @@ void DataAccess::set_segment(sgreg_t reg, uint16_t v){
 
 	}
 	else
-		cache->base = (uint32_t)v << 4;
+		cache->base = (uint32_t)sel << 4;
 
 	set_sgreg(reg, &sg);
 }
@@ -107,8 +107,10 @@ uint32_t DataAccess::trans_v2p(acsmode_t mode, sgreg_t seg, uint32_t vaddr){
 
 uint32_t DataAccess::trans_v2l(acsmode_t mode, sgreg_t seg, uint32_t vaddr){
 	uint32_t laddr;
+        uint8_t CPL;
 	SGRegister sg;
 
+	CPL = get_segment(CS) & 3;
 	get_sgreg(seg, &sg);
 
 	if(is_protected()){
@@ -122,12 +124,12 @@ uint32_t DataAccess::trans_v2l(acsmode_t mode, sgreg_t seg, uint32_t vaddr){
 		if(cache.flags.type.segc){
 			EXCEPTION(EXP_GP, mode == MODE_WRITE);
 			EXCEPTION(EXP_GP, mode == MODE_READ && !cache.flags.type.code.r);
-			EXCEPTION(EXP_GP, sg.RPL > cache.flags.DPL && !(mode == MODE_EXEC && cache.flags.type.code.cnf));
+			EXCEPTION(EXP_GP, CPL > cache.flags.DPL && !(mode == MODE_EXEC && cache.flags.type.code.cnf));
 		}
 		else{
 			EXCEPTION(EXP_GP, mode == MODE_EXEC);
 			EXCEPTION(EXP_GP, mode == MODE_WRITE && !cache.flags.type.data.w);
-			EXCEPTION(EXP_GP, sg.RPL > cache.flags.DPL);
+			EXCEPTION(EXP_GP, CPL > cache.flags.DPL);
 
 			if(cache.flags.type.data.exd)
 				base -= limit;

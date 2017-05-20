@@ -100,7 +100,7 @@ void ParseInstr::parse_opcode(void){
 		UPDATE_EIP(1);
 	}
 
-	if(is_protected())
+	if(is_mode32())
 		DEBUG_MSG(5, "CS:%04x EIP:0x%04x opcode:%02x ", EMU->get_segment(CS), GET_EIP()-1, OPCODE);
 	else
 		DEBUG_MSG(5, "CS:%04x  IP:0x%04x opcode:%02x ", EMU->get_segment(CS), GET_IP()-1, OPCODE);
@@ -112,7 +112,7 @@ void ParseInstr::parse_modrm_sib_disp(void){
 
 	DEBUG_MSG(5, "[mod:0x%02x reg:0x%02x rm:0x%02x] ", MOD, REG, RM);
 
-	if(is_protected() ^ chsz_ad)
+	if(is_mode32() ^ chsz_ad)
 		parse_modrm32();
 	else
 		parse_modrm16();

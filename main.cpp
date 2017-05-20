@@ -179,7 +179,7 @@ void run_emulator(const Setting set){
 		catch(exception_t n){
 			emu.queue_interrupt(n, true);
 			INFO(3, "Exception %d", n);
-			ERROR("Exception %d", n);
+			//ERROR("Exception %d", n);
 		}
 		catch(...){
 			emu.dump_regs();

@@ -111,14 +111,14 @@ class Instruction {
 		bool chsz_ad;
 	private:
 		Emulator *emu;
-		bool mode_protected;
+		bool mode32;
 
 	public:
 		Instruction() {};
-		Instruction(Emulator *e, InstrData *i, bool p) { emu = e; instr = i; mode_protected = p; };
+		Instruction(Emulator *e, InstrData *i, bool m) { emu = e; instr = i; mode32 = m; };
 	protected:
 		Emulator* get_emu(void) { return emu; };
-		bool is_protected(void) { return mode_protected; };
+		bool is_mode32(void) { return mode32; };
 		sgreg_t select_segment(void) { return instr->prefix ? instr->pre_segment : segment; };
 };
 

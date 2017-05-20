@@ -1,5 +1,6 @@
 #include <stdint.h>
 #include "instruction/base.hpp"
+#include "emulator/exception.hpp"
 
 #define instr16(f) ((instrfunc_t)&Instr16::f)
 
@@ -109,8 +110,8 @@ Instr16::Instr16(Emulator *e, InstrData *id) : Instruction(e, id, false) {
 
 	set_funcflag(0xc9, instr16(leave), 0);
 
-	set_funcflag(0xcb, instr16(retf), 0);
-
+	// 0xcb : retf
+	// 0xcc : int3
 	// 0xcd : int_imm8
 
 	// 0xcf : iret
@@ -497,9 +498,7 @@ void Instr16::cwd(void){
 }
 
 void Instr16::callf_ptr16_16(void){
-	EMU->set_segment(CS, PTR16);
-	PUSH16(GET_IP());
-	SET_IP(IMM16);
+	EmuInstr::callf(PTR16, IMM16);
 }
 
 void Instr16::pushf(void){
@@ -612,11 +611,6 @@ void Instr16::leave(void){
 	SET_GPREG(EBP, POP16());
 }
 
-void Instr16::retf(void){
-	SET_IP(POP16());
-	EMU->set_segment(CS, POP16());
-}
-
 void Instr16::in_ax_imm8(void){
 	SET_GPREG(AX, EMU->in_io16(IMM8));
 }
@@ -638,7 +632,7 @@ void Instr16::jmp_rel16(void){
 }
 
 void Instr16::jmpf_ptr16_16(void){
-	jmpf(PTR16, IMM16);
+	EmuInstr::jmpf(PTR16, IMM16);
 }
 
 void Instr16::in_ax_dx(void){
@@ -1086,6 +1080,7 @@ void Instr16::div_dx_ax_rm16(void){
 	uint32_t val;
 
 	rm16 = get_rm16();
+	EXCEPTION(EXP_DE, !rm16);
 	val = (GET_GPREG(DX)<<16)|GET_GPREG(AX);
 
 	SET_GPREG(AX, val/rm16);
@@ -1097,6 +1092,7 @@ void Instr16::idiv_dx_ax_rm16(void){
 	int32_t val_s;
 
 	rm16_s = get_rm16();
+	EXCEPTION(EXP_DE, !rm16_s);
 	val_s = (GET_GPREG(DX)<<16)|GET_GPREG(AX);
 
 	SET_GPREG(AX, val_s/rm16_s);
@@ -1137,10 +1133,7 @@ void Instr16::callf_m16_16(void){
 	ip  = READ_MEM16(m32);
 	cs  = READ_MEM16(m32+2);
 
-	PUSH16(EMU->get_segment(CS));
-	PUSH16(GET_IP());
-	EMU->set_segment(CS, cs);
-	SET_IP(ip);
+	EmuInstr::callf(cs, ip);
 }
 
 void Instr16::jmp_rm16(void){
@@ -1157,7 +1150,7 @@ void Instr16::jmpf_m16_16(void){
 	ip  = READ_MEM16(m32);
 	sel  = READ_MEM16(m32+2);
 
-	jmpf(sel, ip);
+	EmuInstr::jmpf(sel, ip);
 }
 
 void Instr16::push_rm16(void){
@@ -1172,6 +1165,8 @@ void Instr16::push_rm16(void){
 void Instr16::lgdt_m24(void){
 	uint16_t m48, base, limit;
 
+	EXCEPTION(EXP_GP, !chk_ring(0));
+
 	m48 = get_m();
 	limit = READ_MEM16(m48);
 	base  = READ_MEM32(m48+2)&((1<<24)-1);
@@ -1181,6 +1176,8 @@ void Instr16::lgdt_m24(void){
 
 void Instr16::lidt_m24(void){
 	uint16_t m48, base, limit;
+
+	EXCEPTION(EXP_GP, !chk_ring(0));
 
 	m48 = get_m();
 	limit = READ_MEM16(m48);
