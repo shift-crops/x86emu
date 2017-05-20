@@ -164,16 +164,6 @@ template <class T> uint32_t Eflags::update_eflags_shr(T v, uint8_t c){
 	return eflags.reg32;
 }
 
-uint32_t Eflags::update_eflags_cld(void){
-	eflags.DF = 0;
-	return eflags.reg32;
-}
-
-uint32_t Eflags::update_eflags_std(void){
-	eflags.DF = 1;
-	return eflags.reg32;
-}
-
 bool Eflags::chk_parity(uint8_t v){
 	bool p = true;
 

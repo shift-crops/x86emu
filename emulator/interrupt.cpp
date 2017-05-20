@@ -45,7 +45,7 @@ void Interrupt::hundle_interrupt(void){
 		set_segment(CS, idt.seg_sel);
 
 		if(idt.type == TYPE_INTERRUPT)
-			set_interruptable(false);
+			set_interrupt(false);
 	}
 	else{
 		uint32_t idt_base;
@@ -63,7 +63,7 @@ void Interrupt::hundle_interrupt(void){
 		set_ip(ivt.offset);
 		set_segment(CS, ivt.segment);
 
-		//set_interruptable(false);
+		//set_interrupt(false);
 		INFO(4, "int 0x%02x (IP : 0x%04x, CS : 0x%04x)", n, ivt.offset, ivt.segment);
 	}
 }
@@ -80,7 +80,7 @@ void Interrupt::iret(void){
 bool Interrupt::chk_irq(void){
 	int8_t n_intr;
 
-	if(!is_interruptable())
+	if(!is_interrupt())
 		return false;
 	if(!pic_m || !pic_m->chk_intreq())
 		return false;
@@ -95,24 +95,6 @@ bool Interrupt::chk_irq(void){
 void Interrupt::save_regs(bool chpl){
 	if(is_protected()){
 		if(chpl){
-/*
-			uint32_t gdt_base, base, limit, esp;
-			uint16_t gdt_limit, gdt_index, ss;
-			TSSDesc tdt;
-			TSS tss;
-
-			gdt_index = get_tr();
-			gdt_base = get_dtreg_base(GDTR);
-			gdt_limit = get_dtreg_limit(GDTR);
-
-			if(!gdt_index || gdt_index > gdt_limit)
-				throw EXP_GP;
-
-			read_data(&tdt, gdt_base + gdt_index, sizeof(TSSDesc));
-
-			base = (tdt.base_h << 24) + (tdt.base_m << 16) + tdt.base_l;
-			limit = (tdt.limit_h << 16) + tdt.limit_l;
-*/
 			uint32_t base, limit, esp;
 			uint16_t ss;
 			TSS tss;

@@ -86,6 +86,7 @@ InstrBase::InstrBase() {
 	set_funcflag(0x80, instrbase(code_80), CHK_MODRM | CHK_IMM8);
 	set_funcflag(0x82, instrbase(code_82), CHK_MODRM | CHK_IMM8);
 	set_funcflag(0xc0, instrbase(code_c0), CHK_MODRM | CHK_IMM8);
+	set_funcflag(0xf6, instrbase(code_f6), CHK_MODRM);
 }
 
 void InstrBase::set_funcflag(uint16_t opcode, instrfunc_t func, uint8_t flags){
@@ -372,19 +373,19 @@ void InstrBase::out_dx_al(void){
 }
 
 void InstrBase::cli(void){
-	EMU->set_interruptable(false);
+	EMU->set_interrupt(false);
 }
 
 void InstrBase::sti(void){
-	EMU->set_interruptable(true);
+	EMU->set_interrupt(true);
 }
 
 void InstrBase::cld(void){
-	EFLAGS_UPDATE_CLD();
+	EMU->set_direction(false);
 }
 
 void InstrBase::std(void){
-	EFLAGS_UPDATE_STD();
+	EMU->set_direction(true);
 }
 
 void InstrBase::hlt(void){
@@ -396,7 +397,7 @@ void InstrBase::ltr_rm16(void){
 	uint16_t rm16;
 
 	rm16 = get_rm16();
-	EMU->set_tr(rm16);
+	set_tr(rm16);
 }
 
 void InstrBase::mov_r32_crn(void){
@@ -468,6 +469,20 @@ void InstrBase::code_c0(void){
 		case 7:	sar_rm8_imm8();		break;
 		default:
 			ERROR("not implemented: 0xc0 /%d\n", REG);
+	}
+}
+
+void InstrBase::code_f6(void){
+	switch(REG){
+		case 0: test_rm8_imm8();	break;
+		case 2: not_rm8();		break;
+		case 3: neg_rm8();		break;
+		case 4: mul_ax_al_rm8();	break;
+		case 5: imul_ax_al_rm8();	break;
+		case 6: div_al_ah_rm8();	break;
+		case 7: idiv_al_ah_rm8();	break;
+		default:
+			ERROR("not implemented: 0xf6 /%d\n", REG);
 	}
 }
 
@@ -570,3 +585,78 @@ void InstrBase::sar_rm8_imm8(void){
 	set_rm8(rm8_s>>IMM8);
 //	EFLAGS_UPDATE_SAR(rm8_s, IMM8);
 }
+
+/******************************************************************/
+
+void InstrBase::test_rm8_imm8(void){
+	uint8_t rm8, imm8;
+
+	rm8 = get_rm8();
+	imm8 = EMU->get_code8(0);
+	UPDATE_EIP(1);
+	EFLAGS_UPDATE_AND(rm8, imm8);
+}
+
+void InstrBase::not_rm8(void){
+	uint8_t rm8;
+
+	rm8 = get_rm8();
+	set_rm8(~rm8);
+}
+
+void InstrBase::neg_rm8(void){
+	int8_t rm8_s;
+
+	rm8_s = get_rm8();
+	set_rm8(-rm8_s);
+	EFLAGS_UPDATE_SUB((uint8_t)0, rm8_s);
+}
+
+void InstrBase::mul_ax_al_rm8(void){
+	uint8_t rm8, al;
+	uint16_t val;
+
+	rm8 = get_rm8();
+	al = GET_GPREG(AL);
+	val = al*rm8;
+
+	SET_GPREG(AX, val);
+
+	EFLAGS_UPDATE_MUL(al, rm8);
+}
+
+void InstrBase::imul_ax_al_rm8(void){
+	int8_t rm8_s, al_s;
+	int16_t val_s;
+
+	rm8_s = get_rm8();
+	al_s = GET_GPREG(AL);
+	val_s = al_s*rm8_s;
+
+	SET_GPREG(AX, val_s);
+
+	EFLAGS_UPDATE_IMUL(al_s, rm8_s);
+}
+
+void InstrBase::div_al_ah_rm8(void){
+	uint8_t rm8;
+	uint16_t ax;
+
+	rm8 = get_rm8();
+	ax = GET_GPREG(AX);
+
+	SET_GPREG(AL, ax/rm8);
+	SET_GPREG(AH, ax%rm8);
+}
+
+void InstrBase::idiv_al_ah_rm8(void){
+	int8_t rm8_s;
+	int16_t ax_s;
+
+	rm8_s = get_rm8();
+	ax_s = GET_GPREG(AX);
+
+	SET_GPREG(AL, ax_s/rm8_s);
+	SET_GPREG(AH, ax_s%rm8_s);
+}
+

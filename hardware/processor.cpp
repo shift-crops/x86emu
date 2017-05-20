@@ -43,14 +43,14 @@ void Processor::dump_regs(void){
 
 	for(i=0; i<SGREGS_COUNT; i++){
 		SGRegCache cache = sgregs[i].cache;
-		MSG("%s=0x%04x {base = 0x%08x, limit = %08x, flags = %04x}\n"
+		MSG("%s = 0x%04x {base = 0x%08x, limit = %08x, flags = %04x}\n"
 				, sgreg_name[i], sgregs[i].raw, cache.base, cache.limit, cache.flags.raw);
 	}
 
 	for(i=0; i<LDTR; i++)
-		MSG("%s=       {base = 0x%08x, limit = %08x}\n"	, dtreg_name[i], dtregs[i].base, dtregs[i].limit);
+		MSG("%s =        {base = 0x%08x, limit = %08x}\n"	, dtreg_name[i], dtregs[i].base, dtregs[i].limit);
 	for(; i<DTREGS_COUNT; i++)
-		MSG("%s=0x%04x {base = 0x%08x, limit = %08x}\n"	, dtreg_name[i], dtregs[i].selector, dtregs[i].base, dtregs[i].limit);
+		MSG("%s = 0x%04x {base = 0x%08x, limit = %08x}\n"	, dtreg_name[i], dtregs[i].selector, dtregs[i].base, dtregs[i].limit);
 
 	for(i=0; i<5; i++)
 		MSG("CR%d=0x%08x ", i, get_crn(i));

@@ -23,19 +23,18 @@
 #define EFLAGS_UPDATE_IMUL(v1, v2)	EMU->update_eflags_imul(v1, v2)
 #define EFLAGS_UPDATE_SHL(v1, v2)	EMU->update_eflags_shl(v1, v2)
 #define EFLAGS_UPDATE_SHR(v1, v2)	EMU->update_eflags_shr(v1, v2)
-#define EFLAGS_UPDATE_CLD()		EMU->update_eflags_cld()
-#define EFLAGS_UPDATE_STD()		EMU->update_eflags_std()
 #define EFLAGS_CF			EMU->is_carry()
 #define EFLAGS_PF			EMU->is_parity()
 #define EFLAGS_ZF			EMU->is_zero()
 #define EFLAGS_SF			EMU->is_sign()
 #define EFLAGS_OF			EMU->is_overflow()
-#define READ_MEM32(addr)		EMU->get_data32(get_segment(), addr)
-#define READ_MEM16(addr)		EMU->get_data16(get_segment(), addr)
-#define READ_MEM8(addr)			EMU->get_data8(get_segment(), addr)
-#define WRITE_MEM32(addr, v)		EMU->put_data32(get_segment(), addr, v)
-#define WRITE_MEM16(addr, v)		EMU->put_data16(get_segment(), addr, v)
-#define WRITE_MEM8(addr, v)		EMU->put_data8(get_segment(), addr, v)
+#define EFLAGS_DF			EMU->is_direction()
+#define READ_MEM32(addr)		EMU->get_data32(select_segment(), addr)
+#define READ_MEM16(addr)		EMU->get_data16(select_segment(), addr)
+#define READ_MEM8(addr)			EMU->get_data8(select_segment(), addr)
+#define WRITE_MEM32(addr, v)		EMU->put_data32(select_segment(), addr, v)
+#define WRITE_MEM16(addr, v)		EMU->put_data16(select_segment(), addr, v)
+#define WRITE_MEM8(addr, v)		EMU->put_data8(select_segment(), addr, v)
 #define PUSH32(v)			EMU->push32(v)
 #define PUSH16(v)			EMU->push16(v)
 #define POP32()				EMU->pop32()
@@ -59,6 +58,7 @@
 #define IMM8		(instr->imm8)
 #define PTR16		(instr->ptr16)
 #define PRE_SEGMENT	(instr->pre_segment)
+#define PRE_REPEAT	(instr->pre_repeat)
 #define SEGMENT		(segment)
 
 #define MAX_OPCODE	0x200
@@ -75,9 +75,12 @@ struct SIB {
         uint8_t scale : 2; 
 };
 
+enum rep_t { NONE, REPZ, REPNZ };
+
 struct InstrData {
 	uint16_t prefix;
 	sgreg_t pre_segment;
+	rep_t pre_repeat;
 
 	uint16_t opcode;
 	union {
@@ -116,7 +119,7 @@ class Instruction {
 	protected:
 		Emulator* get_emu(void) { return emu; };
 		bool is_protected(void) { return mode_protected; };
-		sgreg_t get_segment(void) { return instr->prefix ? instr->pre_segment : segment; };
+		sgreg_t select_segment(void) { return instr->prefix ? instr->pre_segment : segment; };
 };
 
 

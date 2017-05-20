@@ -95,6 +95,8 @@ Instr16::Instr16(Emulator *e, InstrData *id) : Instruction(e, id, false) {
 	set_funcflag(0xa2, instr16(mov_moffs8_al), CHK_IMM16);
 	set_funcflag(0xa3, instr16(mov_moffs16_ax), CHK_IMM16);
 
+	set_funcflag(0xa6, instr16(cmps_m8_m8), 0);
+	set_funcflag(0xa7, instr16(cmps_m16_m16), 0);
 	// 0xa8 : test_al_imm8
 	set_funcflag(0xa9, instr16(test_ax_imm16), CHK_IMM16);
 
@@ -106,6 +108,8 @@ Instr16::Instr16(Emulator *e, InstrData *id) : Instruction(e, id, false) {
 	set_funcflag(0xc7, instr16(mov_rm16_imm16), CHK_MODRM | CHK_IMM16);
 
 	set_funcflag(0xc9, instr16(leave), 0);
+
+	set_funcflag(0xcb, instr16(retf), 0);
 
 	// 0xcd : int_imm8
 
@@ -522,6 +526,62 @@ void Instr16::mov_moffs16_ax(void){
 	WRITE_MEM16(IMM16, GET_GPREG(AX));
 }
 
+void Instr16::cmps_m8_m8(void){
+	uint8_t m8_s, m8_d;
+
+repeat:
+	m8_s = EMU->get_data8(select_segment(), GET_GPREG(SI));
+	m8_d = EMU->get_data8(ES, GET_GPREG(DI));
+	EFLAGS_UPDATE_SUB(m8_s, m8_d);
+
+	UPDATE_GPREG(SI, EFLAGS_DF ? -1 : 1);
+	UPDATE_GPREG(DI, EFLAGS_DF ? -1 : 1);
+	
+	if(PRE_REPEAT){
+		UPDATE_GPREG(CX, -1);
+		switch(PRE_REPEAT){
+			case REPZ:
+				if(!GET_GPREG(CX) || !EFLAGS_ZF)
+					break;
+				goto repeat;
+			case REPNZ:
+				if(!GET_GPREG(CX) || EFLAGS_ZF)
+					break;
+				goto repeat;
+			default:
+				break;
+		}
+	}
+}
+
+void Instr16::cmps_m16_m16(void){
+	uint16_t m16_s, m16_d;
+
+repeat:
+	m16_s = EMU->get_data16(select_segment(), GET_GPREG(SI));
+	m16_d = EMU->get_data16(ES, GET_GPREG(DI));
+	EFLAGS_UPDATE_SUB(m16_s, m16_d);
+
+	UPDATE_GPREG(SI, EFLAGS_DF ? -1 : 1);
+	UPDATE_GPREG(DI, EFLAGS_DF ? -1 : 1);
+
+	if(PRE_REPEAT){
+		UPDATE_GPREG(CX, -1);
+		switch(PRE_REPEAT){
+			case REPZ:
+				if(!GET_GPREG(CX) || !EFLAGS_ZF)
+					break;
+				goto repeat;
+			case REPNZ:
+				if(!GET_GPREG(CX) || EFLAGS_ZF)
+					break;
+				goto repeat;
+			default:
+				break;
+		}
+	}
+}
+
 void Instr16::test_ax_imm16(void){
 	uint16_t ax;
 
@@ -537,10 +597,7 @@ void Instr16::mov_r16_imm16(void){
 }
 
 void Instr16::ret(void){
-	uint16_t addr;
-
-	addr = POP16();
-	SET_IP(addr);
+	SET_IP(POP16());
 }
 
 void Instr16::mov_rm16_imm16(void){
@@ -553,6 +610,11 @@ void Instr16::leave(void){
 	ebp = GET_GPREG(EBP);
 	SET_GPREG(ESP, ebp);
 	SET_GPREG(EBP, POP16());
+}
+
+void Instr16::retf(void){
+	SET_IP(POP16());
+	EMU->set_segment(CS, POP16());
 }
 
 void Instr16::in_ax_imm8(void){
@@ -576,7 +638,7 @@ void Instr16::jmp_rel16(void){
 }
 
 void Instr16::jmpf_ptr16_16(void){
-	EMU->jmpf(PTR16, IMM16);
+	jmpf(PTR16, IMM16);
 }
 
 void Instr16::in_ax_dx(void){
@@ -1095,7 +1157,7 @@ void Instr16::jmpf_m16_16(void){
 	ip  = READ_MEM16(m32);
 	sel  = READ_MEM16(m32+2);
 
-	EMU->jmpf(sel, ip);
+	jmpf(sel, ip);
 }
 
 void Instr16::push_rm16(void){
@@ -1114,7 +1176,7 @@ void Instr16::lgdt_m24(void){
 	limit = READ_MEM16(m48);
 	base  = READ_MEM32(m48+2)&((1<<24)-1);
 
-	EMU->set_gdtr(base, limit);
+	set_gdtr(base, limit);
 }
 
 void Instr16::lidt_m24(void){
@@ -1124,6 +1186,6 @@ void Instr16::lidt_m24(void){
 	limit = READ_MEM16(m48);
 	base  = READ_MEM32(m48+2)&((1<<24)-1);
 
-	EMU->set_idtr(base, limit);
+	set_idtr(base, limit);
 }
 

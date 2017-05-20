@@ -148,7 +148,7 @@ void run_emulator(const Setting set){
 	//while(true){
 	while(emu.is_running()){
 		bool is_mode32;
-		uint8_t chsz;
+		uint8_t prefix;
 		bool chsz_op, chsz_ad;
 
 		memset(&instr, 0, sizeof(InstrData));
@@ -161,9 +161,9 @@ void run_emulator(const Setting set){
 			emu.hundle_interrupt();
 
 			is_mode32 = emu.is_mode32();
-			chsz = (is_mode32 ? instr32.parse_prefix() : instr16.parse_prefix());
-			chsz_op = chsz & CHSZ_OP;
-			chsz_ad = chsz & CHSZ_AD;
+			prefix = (is_mode32 ? instr32.parse_prefix() : instr16.parse_prefix());
+			chsz_op = prefix & CHSZ_OP;
+			chsz_ad = prefix & CHSZ_AD;
 
 			if(is_mode32 ^ chsz_op){
 				instr32.set_chsz_ad(!(is_mode32 ^ chsz_ad));

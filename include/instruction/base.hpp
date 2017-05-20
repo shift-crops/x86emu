@@ -4,8 +4,9 @@
 #include <string.h>
 #include "common.hpp"
 #include "instruction.hpp"
+#include "emu.hpp"
 
-class InstrBase : public ExecInstr , public ParseInstr {
+class InstrBase : public ExecInstr, public ParseInstr, public EmuInstr {
 	public:
 		InstrBase();
 		void set_chsz_ad(bool ad){ chsz_ad = ad; };
@@ -95,6 +96,7 @@ class InstrBase : public ExecInstr , public ParseInstr {
 		void code_82(void);
 		virtual void code_83(void) = 0;
 		void code_c0(void);
+                void code_f6(void);
                 virtual void code_f7(void) = 0;
                 virtual void code_ff(void) = 0;
                 virtual void code_0f00(void) = 0;
@@ -115,6 +117,15 @@ class InstrBase : public ExecInstr , public ParseInstr {
 		void shr_rm8_imm8(void);
 		void sal_rm8_imm8(void);
 		void sar_rm8_imm8(void);
+
+		//0xf6
+		void test_rm8_imm8(void);
+		void not_rm8(void);
+		void neg_rm8(void);
+		void mul_ax_al_rm8(void);
+		void imul_ax_al_rm8(void);
+		void div_al_ah_rm8(void);
+		void idiv_al_ah_rm8(void);
 };
 
 class Instr16 : public InstrBase {
@@ -171,10 +182,13 @@ class Instr16 : public InstrBase {
 		void mov_ax_moffs16(void);
 		void mov_moffs8_al(void);
 		void mov_moffs16_ax(void);
+		void cmps_m8_m8(void);
+		void cmps_m16_m16(void);
 		void test_ax_imm16(void);
                 void mov_r16_imm16(void);
                 void ret(void);
                 void leave(void);
+                void retf(void);
                 void mov_rm16_imm16(void);
 		void in_ax_imm8(void);
 		void out_imm8_ax(void);
@@ -323,10 +337,13 @@ class Instr32 : public InstrBase {
 		void mov_eax_moffs32(void);
 		void mov_moffs8_al(void);
 		void mov_moffs32_eax(void);
+		void cmps_m8_m8(void);
+		void cmps_m32_m32(void);
 		void test_eax_imm32(void);
                 void mov_r32_imm32(void);
                 void ret(void);
                 void leave(void);
+                void retf(void);
                 void mov_rm32_imm32(void);
 		void in_eax_imm8(void);
 		void out_imm8_eax(void);

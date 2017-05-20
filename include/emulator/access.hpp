@@ -4,7 +4,6 @@
 #include "common.hpp"
 #include <vector>
 #include "hardware/hardware.hpp"
-//#include "util/lru.hpp"
 
 struct PDE {
 	uint32_t P : 1;
@@ -34,72 +33,15 @@ struct PTE {
 	uint32_t page_base : 20;
 };
 
-struct TSS {
-	uint16_t prev_sel;
-	uint16_t : 16;
-	uint32_t esp0;
-	uint16_t ss0;
-	uint16_t : 16;
-	uint32_t esp1;
-	uint16_t ss1;
-	uint16_t : 16;
-	uint32_t esp2;
-	uint16_t ss2;
-	uint16_t : 16;
-	uint32_t cr3;
-	uint32_t eip;
-	uint32_t eflags;
-	uint32_t eax;
-	uint32_t ecx;
-	uint32_t edx;
-	uint32_t ebx;
-	uint32_t esp;
-	uint32_t ebp;
-	uint32_t esi;
-	uint32_t edi;
-	uint16_t es;
-	uint16_t : 16;
-	uint16_t cs;
-	uint16_t : 16;
-	uint16_t ss;
-	uint16_t : 16;
-	uint16_t ds;
-	uint16_t : 16;
-	uint16_t fs;
-	uint16_t : 16;
-	uint16_t gs;
-	uint16_t : 16;
-	uint16_t ldtr;
-	uint16_t : 16;
-	uint16_t T : 1;
-	uint16_t : 15;
-	uint16_t io_base;
-};
-
-
 enum acsmode_t { MODE_READ, MODE_WRITE, MODE_EXEC };
 
 class DataAccess : public virtual Hardware {
 	private:
-		//LRU<uint32_t, PTE> *tlb;
 		std::vector<PTE*> tlb;
 
 	public:
-		//DataAccess(){ tlb = new LRU<uint32_t, PTE>(128); }
 		void set_segment(sgreg_t seg, uint16_t v);
 		uint16_t get_segment(sgreg_t seg);
-
-		void set_gdtr(uint32_t base, uint16_t limit){ set_dtreg(GDTR, 0, base, limit); };
-		void set_idtr(uint32_t base, uint16_t limit){ set_dtreg(IDTR, 0, base, limit); };
-
-		void set_ldtr(uint16_t sel);
-		uint16_t get_ldtr(void) { return get_dtreg_selector(LDTR); };
-		void set_tr(uint16_t sel);
-		uint16_t get_tr(void) { return get_dtreg_selector(TR); };
-
-		uint8_t type_descriptor(uint16_t sel);
-		void switch_task(uint16_t sel);
-		void jmpf(uint16_t sel, uint32_t eip);
 
 		uint8_t get_data8(sgreg_t seg, uint32_t addr){ return read_mem8_seg(seg, addr); };
 		uint16_t get_data16(sgreg_t seg, uint32_t addr){ return read_mem16_seg(seg, addr); };

@@ -24,17 +24,25 @@ uint8_t ParseInstr::parse_prefix(void){
 				goto set_pre;
 			case 0x65:
 				PRE_SEGMENT = GS;
-set_pre:			PREFIX = code;
-				goto next;
+				goto set_pre;
 			case 0x66:
 				chsz |= CHSZ_OP;
 				goto next;
 			case 0x67:
 				chsz |= CHSZ_AD;
-next:				UPDATE_EIP(1);
-				break;
+				goto next;
+			case 0xf2:
+				PRE_REPEAT = REPNZ;
+				goto next;
+			case 0xf3:
+				PRE_REPEAT = REPZ;
+				goto next;
 			default:
 				return chsz;
+				
+set_pre:			PREFIX = code;
+next:				UPDATE_EIP(1);
+				break;
 		}
 	}
 }

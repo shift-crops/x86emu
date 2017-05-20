@@ -95,6 +95,8 @@ Instr32::Instr32(Emulator *e, InstrData *id) : Instruction(e, id, true) {
 	set_funcflag(0xa2, instr32(mov_moffs8_al), CHK_IMM32);
 	set_funcflag(0xa3, instr32(mov_moffs32_eax), CHK_IMM32);
 
+	set_funcflag(0xa6, instr32(cmps_m8_m8), 0);
+	set_funcflag(0xa7, instr32(cmps_m32_m32), 0);
 	// 0xa8 : test_al_imm8
 	set_funcflag(0xa9, instr32(test_eax_imm32), CHK_IMM16);
 
@@ -106,6 +108,8 @@ Instr32::Instr32(Emulator *e, InstrData *id) : Instruction(e, id, true) {
 	set_funcflag(0xc7, instr32(mov_rm32_imm32), CHK_MODRM | CHK_IMM32);
 
 	set_funcflag(0xc9, instr32(leave), 0);
+
+	set_funcflag(0xcb, instr32(retf), 0);
 
 	// 0xcd : int_imm8
 
@@ -522,6 +526,62 @@ void Instr32::mov_moffs32_eax(void){
 	WRITE_MEM32(IMM32, GET_GPREG(EAX));
 }
 
+void Instr32::cmps_m8_m8(void){
+	uint8_t m8_s, m8_d;
+
+repeat:
+	m8_s = EMU->get_data8(select_segment(), GET_GPREG(ESI));
+	m8_d = EMU->get_data8(ES, GET_GPREG(EDI));
+	EFLAGS_UPDATE_SUB(m8_s, m8_d);
+
+	UPDATE_GPREG(ESI, EFLAGS_DF ? -1 : 1);
+	UPDATE_GPREG(EDI, EFLAGS_DF ? -1 : 1);
+	
+	if(PRE_REPEAT){
+		UPDATE_GPREG(ECX, -1);
+		switch(PRE_REPEAT){
+			case REPZ:
+				if(!GET_GPREG(ECX) || !EFLAGS_ZF)
+					break;
+				goto repeat;
+			case REPNZ:
+				if(!GET_GPREG(ECX) || EFLAGS_ZF)
+					break;
+				goto repeat;
+			default:
+				break;
+		}
+	}
+}
+
+void Instr32::cmps_m32_m32(void){
+	uint32_t m32_s, m32_d;
+
+repeat:
+	m32_s = EMU->get_data32(select_segment(), GET_GPREG(ESI));
+	m32_d = EMU->get_data32(ES, GET_GPREG(EDI));
+	EFLAGS_UPDATE_SUB(m32_s, m32_d);
+
+	UPDATE_GPREG(ESI, EFLAGS_DF ? -1 : 1);
+	UPDATE_GPREG(EDI, EFLAGS_DF ? -1 : 1);
+
+	if(PRE_REPEAT){
+		UPDATE_GPREG(ECX, -1);
+		switch(PRE_REPEAT){
+			case REPZ:
+				if(!GET_GPREG(ECX) || !EFLAGS_ZF)
+					break;
+				goto repeat;
+			case REPNZ:
+				if(!GET_GPREG(ECX) || EFLAGS_ZF)
+					break;
+				goto repeat;
+			default:
+				break;
+		}
+	}
+}
+
 void Instr32::test_eax_imm32(void){
 	uint32_t eax;
 
@@ -537,10 +597,7 @@ void Instr32::mov_r32_imm32(void){
 }
 
 void Instr32::ret(void){
-	uint32_t addr;
-
-	addr = POP32();
-	SET_EIP(addr);
+	SET_EIP(POP32());
 }
 
 void Instr32::mov_rm32_imm32(void){
@@ -553,6 +610,11 @@ void Instr32::leave(void){
 	ebp = GET_GPREG(EBP);
 	SET_GPREG(ESP, ebp);
 	SET_GPREG(EBP, POP32());
+}
+
+void Instr32::retf(void){
+	SET_IP(POP32());
+	EMU->set_segment(CS, POP32());
 }
 
 void Instr32::in_eax_imm8(void){
@@ -576,7 +638,7 @@ void Instr32::jmp_rel32(void){
 }
 
 void Instr32::jmpf_ptr16_32(void){
-	EMU->jmpf(PTR16, IMM32);
+	jmpf(PTR16, IMM32);
 }
 
 void Instr32::in_eax_dx(void){
@@ -1103,7 +1165,7 @@ void Instr32::jmpf_m16_32(void){
 	eip = READ_MEM32(m48);
 	sel  = READ_MEM16(m48+4);
 
-	EMU->jmpf(sel, eip);
+	jmpf(sel, eip);
 }
 
 void Instr32::push_rm32(void){
@@ -1124,7 +1186,7 @@ void Instr32::lgdt_m32(void){
 	base  = READ_MEM32(m48+2);
 	INFO(2, "base = 0x%08x, limit = 0x%04x", base, limit);
 
-	EMU->set_gdtr(base, limit);
+	set_gdtr(base, limit);
 }
 
 void Instr32::lidt_m32(void){
@@ -1136,6 +1198,6 @@ void Instr32::lidt_m32(void){
 	base  = READ_MEM32(m48+2);
 	INFO(2, "base = 0x%08x, limit = 0x%04x", base, limit);
 
-	EMU->set_idtr(base, limit);
+	set_idtr(base, limit);
 }
 
