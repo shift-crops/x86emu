@@ -30,17 +30,17 @@ FDD::~FDD(){
 	th.join();
 }
 
-void FDD::insert_disk(uint8_t slot, const char* fname, bool write){
+bool FDD::insert_disk(uint8_t slot, const char* fname, bool write){
 	DRIVE *d;
 
 	if(slot>=MAX_FDD || drive[slot])
-		return;
+		return false;
 
 	d = new DRIVE;
 	d->disk = fopen(fname, write ? "rb+" : "rb");
 	if(!d->disk){
 		delete d;
-		return;
+		return false;
 	}
 	d->cylinder = 0;
 	d->head = 0;
@@ -48,15 +48,19 @@ void FDD::insert_disk(uint8_t slot, const char* fname, bool write){
 	d->write = write;
 
 	drive[slot] = d;
+
+	return true;
 }
 
-void FDD::eject_disk(uint8_t slot){
+bool FDD::eject_disk(uint8_t slot){
 	if(slot>=MAX_FDD || !drive[slot])
-		return;
+		return false;
 
 	fclose(drive[slot]->disk);
 	delete drive[slot];
 	drive[slot] = NULL;
+
+	return true;
 }
 
 int32_t FDD::seek(uint8_t slot, uint8_t c, uint8_t h, uint8_t s){

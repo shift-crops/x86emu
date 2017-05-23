@@ -1,4 +1,4 @@
-global write_esb, write_esw, write_esd
+global write_esb, write_esw, write_esd, copy_esw
 global in_port, out_port, _cli, _sti
 
 BITS 16
@@ -32,6 +32,20 @@ write_esd:
 	mov eax, dword [ebp+0xc]
 	mov dword [es:di], eax
 	pop edi
+	o32 leave
+	o32 ret
+
+copy_esw:
+	push ebp
+	mov ebp, esp
+	push esi
+	push edi
+	mov di, word [ebp+0x8]
+	mov si, word [ebp+0xc]
+	mov ax, word [es:si]
+	mov word [es:di], ax
+	pop edi
+	pop esi
 	o32 leave
 	o32 ret
 

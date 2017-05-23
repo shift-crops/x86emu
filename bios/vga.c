@@ -86,3 +86,38 @@ void load_font(void){
 	}
 	__asm__("pop es");
 }
+
+extern uint32_t cursor_x, cursor_y;
+uint32_t print(const uint8_t *s){
+	uint32_t i;
+
+	__asm__("push es\n"
+		"mov ax, 0xb800\n"
+		"mov es, ax");
+
+	for(i=0; s[i]; i++){
+		write_esw((uint16_t*)(cursor_y*0x28 + cursor_x), 0x0700 + s[i]);
+		cursor_x++;
+		if(cursor_x >= 0x28 || !(s[i]^0x0a)){
+			cursor_x = 0;
+			cursor_y++;
+		}
+
+		if(cursor_y >= 0x19){
+			uint32_t j;
+
+			for(j=0; j<0x18*0x28; j++)
+				copy_esw((uint16_t*)j, (uint16_t*)(0x28+j));
+			for(; j<0x19*0x28; j++)
+				write_esw((uint16_t*)j, 0x0700);
+
+			cursor_x = 0;
+			cursor_y --;
+		}
+	}
+
+	__asm__("pop es");
+
+	return i;
+}
+

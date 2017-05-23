@@ -22,8 +22,9 @@ class Emulator : public virtual DataAccess, public Interrupt {
 		void stop(void) { delete ui; ui = NULL; };
 
 		void load_binary(const char* fname, uint32_t addr, uint32_t offset, size_t size);
-		void insert_fdd(uint8_t slot, const char* disk, bool write) { if(!fdd) return; fdd->insert_disk(slot, disk, write); };
-		void eject_fdd(uint8_t slot) { if(!fdd) return; fdd->eject_disk(slot); };
+		bool insert_floppy(uint8_t slot, const char* disk, bool write) {
+			return fdd ? fdd->insert_disk(slot, disk, write) : false; };
+		bool eject_floppy(uint8_t slot) { return fdd ? fdd->eject_disk(slot) : false; };
 };
 
 #endif

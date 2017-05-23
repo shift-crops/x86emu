@@ -4,7 +4,6 @@
 #include <string.h>
 #include "common.hpp"
 #include "instruction.hpp"
-#include "emu.hpp"
 
 class InstrBase : public ExecInstr, public ParseInstr, public EmuInstr {
 	public:

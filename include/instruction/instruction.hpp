@@ -59,7 +59,7 @@
 #define PTR16		(instr->ptr16)
 #define PRE_SEGMENT	(instr->pre_segment)
 #define PRE_REPEAT	(instr->pre_repeat)
-#define SEGMENT		(segment)
+#define SEGMENT		(instr->segment)
 
 #define MAX_OPCODE	0x200
 
@@ -82,6 +82,7 @@ struct InstrData {
 	sgreg_t pre_segment;
 	rep_t pre_repeat;
 
+	sgreg_t segment;
 	uint16_t opcode;
 	union {
 		uint8_t _modrm;
@@ -107,7 +108,6 @@ struct InstrData {
 class Instruction {
 	protected:
 		InstrData *instr;
-		sgreg_t segment;
 		bool chsz_ad;
 	private:
 		Emulator *emu;
@@ -119,7 +119,7 @@ class Instruction {
 	protected:
 		Emulator* get_emu(void) { return emu; };
 		bool is_mode32(void) { return mode32; };
-		sgreg_t select_segment(void) { return instr->prefix ? instr->pre_segment : segment; };
+		sgreg_t select_segment(void) { return instr->prefix ? PRE_SEGMENT : SEGMENT; };
 };
 
 
@@ -202,6 +202,26 @@ class ParseInstr : protected virtual Instruction {
 		void parse_modrm_sib_disp(void);
 		void parse_modrm16(void);
 		void parse_modrm32(void);
+};
+
+class EmuInstr : protected virtual Instruction {
+	public:
+		void set_gdtr(uint32_t base, uint16_t limit){ EMU->set_dtreg(GDTR, 0, base, limit); };
+		void set_idtr(uint32_t base, uint16_t limit){ EMU->set_dtreg(IDTR, 0, base, limit); };
+
+		void set_ldtr(uint16_t sel);
+		uint16_t get_ldtr(void) { return EMU->get_dtreg_selector(LDTR); };
+		void set_tr(uint16_t sel);
+		uint16_t get_tr(void) { return EMU->get_dtreg_selector(TR); };
+
+		uint8_t type_descriptor(uint16_t sel);
+		void switch_task(uint16_t sel);
+		void jmpf(uint16_t sel, uint32_t eip);
+		void callf(uint16_t sel, uint32_t eip);
+		void retf(void);
+		void iret(void);
+
+		bool chk_ring(uint8_t DPL);
 };
 
 #endif

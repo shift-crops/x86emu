@@ -99,7 +99,7 @@ Instr32::Instr32(Emulator *e, InstrData *id) : Instruction(e, id, true) {
 	set_funcflag(0xa6, instr32(cmps_m8_m8), 0);
 	set_funcflag(0xa7, instr32(cmps_m32_m32), 0);
 	// 0xa8 : test_al_imm8
-	set_funcflag(0xa9, instr32(test_eax_imm32), CHK_IMM16);
+	set_funcflag(0xa9, instr32(test_eax_imm32), CHK_IMM32);
 
 	// 0xb0-0xb7 : mov_r8_imm
 	for (i=0; i<8; i++)	set_funcflag(0xb8+i, instr32(mov_r32_imm32) ,CHK_IMM32);

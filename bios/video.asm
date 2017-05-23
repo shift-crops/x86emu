@@ -1,4 +1,4 @@
-global bsv_video
+global bsv_video, cursor_x, cursor_y
 
 BITS 16
 ; bsv_video

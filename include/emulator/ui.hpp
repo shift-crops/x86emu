@@ -12,7 +12,7 @@ struct UISetting {
 	bool enable;
 	uint8_t zoom;
 	bool full;
-	bool cursor;
+	bool vm;
 };
 
 class UI {

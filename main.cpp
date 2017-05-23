@@ -18,7 +18,7 @@ struct Setting {
 	bool ui_enable;
 	uint8_t ui_zoom;
 	bool ui_full;
-	bool ui_cursor;
+	bool ui_vm;
 };
 
 void run_emulator(const Setting set);
@@ -46,7 +46,7 @@ int main(int argc, char *argv[]){
 		.ui_enable = true,
 		.ui_zoom = 3,
 		.ui_full = false,
-		.ui_cursor = true,
+		.ui_vm = false,
 	};
 
 	char opt;
@@ -56,7 +56,7 @@ int main(int argc, char *argv[]){
 		{"load_addr",	required_argument, NULL, 3},
 		{"load_size",	required_argument, NULL, 4},
 		{"full",	no_argument,       NULL, 5},
-		{"vm_cursor",	no_argument,       NULL, 6},
+		{"VM",		no_argument,       NULL, 6},
 		{"no_graphic",	no_argument,       NULL, 7},
 		{"help",	no_argument,       NULL, 'h'},
 		{0, 0, 0, 0}};
@@ -93,7 +93,7 @@ int main(int argc, char *argv[]){
 				set.ui_full = true;
 				break;
 			case 6:
-				set.ui_cursor = false;
+				set.ui_vm = true;
 				break;
 			case 7:
 				set.ui_enable = false;
@@ -128,7 +128,7 @@ void run_emulator(const Setting set){
 			.enable = set.ui_enable,
 			.zoom = set.ui_zoom,
 			.full = set.ui_full,
-			.cursor = set.ui_cursor,
+			.vm = set.ui_vm,
 		},
 	};
 	Emulator emu = Emulator(emuset);
@@ -137,7 +137,11 @@ void run_emulator(const Setting set){
 	Instr16 instr16(&emu, &instr);
 	Instr32 instr32(&emu, &instr);
 
-	emu.insert_fdd(0, set.image_name, false);
+	if(!emu.insert_floppy(0, set.image_name, false)){
+		WARN("cannot load image '%s'", set.image_name);
+		return;
+	}
+
 	emu.load_binary("bios/bios.bin", 0xf0000, 0, 0x2000);
 	emu.load_binary("bios/crt0.bin", 0xffff0, 0, 0x10);
 	if(set.load_addr)
@@ -206,7 +210,7 @@ void help(const char *name){
 		"\t\tSize to load (Enabled when 'load_addr' is specified)\n\n"
 		"\t--full\n"
 		"\t\tfull screen\n\n"
-		"\t--vm_cursor\n"
+		"\t--VM\n"
 		"\t\trunning on VMware or VirtualBox\n\n"
 #ifdef DEBUG
 		"\t-v...\n"

@@ -92,11 +92,11 @@ void UI::keyboard_callback(GLFWwindow *window, int key, int scancode, int action
 
 	switch(action){
 		case GLFW_RELEASE:
-			kb->send_code(scancode + 0x80);
+			kb->send_code(scancode - (ui->set.vm ? 8 : 0) + 0x80);
 			break;
 		case GLFW_PRESS:
 		case GLFW_REPEAT:
-			kb->send_code(scancode);
+			kb->send_code(scancode - (ui->set.vm ? 8 : 0));
 			break;
 	}
 }
@@ -116,7 +116,7 @@ void UI::mouse_callback(GLFWwindow *window, int button, int action, int mods){
 	}
 	else{
 		ui->capture = true;
-		glfwSetInputMode(window, GLFW_CURSOR, ui->set.cursor ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_HIDDEN);
+		glfwSetInputMode(window, GLFW_CURSOR, !ui->set.vm ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_HIDDEN);
 		MSG("To cancel the input capture, press the right control key.\n");
 	}
 }

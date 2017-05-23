@@ -1,4 +1,3 @@
-#include "instruction/emu.hpp"
 #include "instruction/instruction.hpp"
 #include "emulator/exception.hpp"
 #include "emulator/descriptor.hpp"

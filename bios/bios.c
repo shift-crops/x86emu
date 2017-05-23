@@ -1,6 +1,9 @@
 #include "bios.h"
 
+char *msg = "now booting from floppy disk...";
+
 int bios_main(void){
+	//print(msg);
 	return 0;
 }
 
