@@ -1,5 +1,6 @@
 # x86emu
 
+[![Build Status](https://travis-ci.org/shift-crops/x86emu.svg?branch=master)](https://travis-ci.org/shift-crops/x86emu)
 [![MIT License](http://img.shields.io/badge/license-MIT-blue.svg?style=flat)](LICENSE.md)
 
 simple x86 emulator

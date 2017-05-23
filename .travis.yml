@@ -1,0 +1,22 @@
+sudo: false
+addons:
+  apt:
+    packages:
+      - libglfw3-dev
+  
+# Enable C++ support
+language: cpp
+
+# Compiler selection
+compiler:
+  - g++
+
+os:
+  - linux
+  
+install:
+  - true
+
+# Build steps
+script:
+  - make all
