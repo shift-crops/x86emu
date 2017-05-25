@@ -91,10 +91,10 @@ Instr32::Instr32(Emulator *e, InstrData *id) : Instruction(e, id, true) {
 	set_funcflag(0x9c, instr32(pushf), 0);
 	set_funcflag(0x9d, instr32(popf), 0);
 
-	set_funcflag(0xa0, instr32(mov_al_moffs8), CHK_IMM32);
-	set_funcflag(0xa1, instr32(mov_eax_moffs32), CHK_IMM32);
-	set_funcflag(0xa2, instr32(mov_moffs8_al), CHK_IMM32);
-	set_funcflag(0xa3, instr32(mov_moffs32_eax), CHK_IMM32);
+	// 0xa0 : mov_al_moffs8
+	set_funcflag(0xa1, instr32(mov_eax_moffs32), CHK_MOFFS);
+	// 0xa2 : mov_moffs8_al
+	set_funcflag(0xa3, instr32(mov_moffs32_eax), CHK_MOFFS);
 
 	set_funcflag(0xa6, instr32(cmps_m8_m8), 0);
 	set_funcflag(0xa7, instr32(cmps_m32_m32), 0);
@@ -509,20 +509,12 @@ void Instr32::popf(void){
 	EMU->set_eflags(POP32());
 }
 
-void Instr32::mov_al_moffs8(void){
-	SET_GPREG(AL, READ_MEM8(IMM32));
-}
-
 void Instr32::mov_eax_moffs32(void){
-	SET_GPREG(EAX, READ_MEM32(IMM32));
-}
-
-void Instr32::mov_moffs8_al(void){
-	WRITE_MEM8(IMM32, GET_GPREG(AL));
+	SET_GPREG(EAX, get_moffs32());
 }
 
 void Instr32::mov_moffs32_eax(void){
-	WRITE_MEM32(IMM32, GET_GPREG(EAX));
+	set_moffs32(GET_GPREG(EAX));
 }
 
 void Instr32::cmps_m8_m8(void){

@@ -3,7 +3,7 @@
 char *msg = "now booting from floppy disk...";
 
 int bios_main(void){
-	//print(msg);
+	print(msg);
 	return 0;
 }
 

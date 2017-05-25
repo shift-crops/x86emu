@@ -57,6 +57,7 @@
 #define IMM16		(instr->imm16)
 #define IMM8		(instr->imm8)
 #define PTR16		(instr->ptr16)
+#define MOFFS		(instr->moffs)
 #define PRE_SEGMENT	(instr->pre_segment)
 #define PRE_REPEAT	(instr->pre_repeat)
 #define SEGMENT		(instr->segment)
@@ -103,6 +104,7 @@ struct InstrData {
 		int32_t imm32;
 	};
 	int16_t ptr16;
+	uint32_t moffs;
 };
 
 class Instruction {
@@ -138,16 +140,22 @@ class ExecInstr : protected virtual Instruction {
 		uint32_t get_rm32(void);
 		void set_r32(uint32_t value);
 		uint32_t get_r32(void);
+		void set_moffs32(uint32_t value);
+		uint32_t get_moffs32(void);
 
 		void set_rm16(uint16_t value);
 		uint16_t get_rm16(void);
 		void set_r16(uint16_t value);
 		uint16_t get_r16(void);
+		void set_moffs16(uint16_t value);
+		uint16_t get_moffs16(void);
 
 		void set_rm8(uint8_t value);
 		uint8_t get_rm8(void);
 		void set_r8(uint8_t value);
 		uint8_t get_r8(void);
+		void set_moffs8(uint8_t value);
+		uint8_t get_moffs8(void);
 
 		uint32_t get_m(void);
 
@@ -170,6 +178,7 @@ class ExecInstr : protected virtual Instruction {
 #define CHK_IMM16 	(1<<2)
 #define CHK_IMM8 	(1<<3)
 #define CHK_PTR16 	(1<<4)
+#define CHK_MOFFS 	(1<<5)
 
 #define CHSZ_NONE	0
 #define CHSZ_OP		1
@@ -202,6 +211,7 @@ class ParseInstr : protected virtual Instruction {
 		void parse_modrm_sib_disp(void);
 		void parse_modrm16(void);
 		void parse_modrm32(void);
+		void parse_moffs(void);
 };
 
 class EmuInstr : protected virtual Instruction {

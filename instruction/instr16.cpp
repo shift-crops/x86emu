@@ -91,10 +91,10 @@ Instr16::Instr16(Emulator *e, InstrData *id) : Instruction(e, id, false) {
 	set_funcflag(0x9c, instr16(pushf), 0);
 	set_funcflag(0x9d, instr16(popf), 0);
 
-	set_funcflag(0xa0, instr16(mov_al_moffs8), CHK_IMM16);
-	set_funcflag(0xa1, instr16(mov_ax_moffs16), CHK_IMM16);
-	set_funcflag(0xa2, instr16(mov_moffs8_al), CHK_IMM16);
-	set_funcflag(0xa3, instr16(mov_moffs16_ax), CHK_IMM16);
+	// 0xa0 : mov_al_moffs8
+	set_funcflag(0xa1, instr16(mov_ax_moffs16), CHK_MOFFS);
+	// 0xa2 : mov_moffs8_al
+	set_funcflag(0xa3, instr16(mov_moffs16_ax), CHK_MOFFS);
 
 	set_funcflag(0xa6, instr16(cmps_m8_m8), 0);
 	set_funcflag(0xa7, instr16(cmps_m16_m16), 0);
@@ -509,20 +509,12 @@ void Instr16::popf(void){
 	EMU->set_flags(POP16());
 }
 
-void Instr16::mov_al_moffs8(void){
-	SET_GPREG(AL, READ_MEM8(IMM16));
-}
-
 void Instr16::mov_ax_moffs16(void){
-	SET_GPREG(AX, READ_MEM16(IMM16));
-}
-
-void Instr16::mov_moffs8_al(void){
-	WRITE_MEM8(IMM16, GET_GPREG(AL));
+	SET_GPREG(AX, get_moffs16());
 }
 
 void Instr16::mov_moffs16_ax(void){
-	WRITE_MEM16(IMM16, GET_GPREG(AX));
+	set_moffs16(GET_GPREG(AX));
 }
 
 void Instr16::cmps_m8_m8(void){

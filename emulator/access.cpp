@@ -139,8 +139,10 @@ uint32_t DataAccess::trans_v2l(acsmode_t mode, sgreg_t seg, uint32_t vaddr){
 		laddr = base + vaddr;
 		INFO(6, "base=0x%04x, limit=0x%02x, laddr=0x%02x", base, limit, laddr);
 	}
-	else
+	else{
 		laddr = (sg.raw << 4) + vaddr;
+		INFO(6, "base=0x%04x, laddr=0x%02x", sg.raw<<4, laddr);
+	}
 
 	return laddr;
 }

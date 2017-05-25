@@ -38,6 +38,16 @@ uint32_t ExecInstr::get_r32(void){
 	return GET_GPREG(static_cast<reg32_t>(REG));
 }
 
+void ExecInstr::set_moffs32(uint32_t value){
+	SEGMENT = DS;
+	return WRITE_MEM32(MOFFS, value);
+}
+
+uint32_t ExecInstr::get_moffs32(void){
+	SEGMENT = DS;
+	return READ_MEM32(MOFFS);
+}
+
 void ExecInstr::set_rm16(uint16_t value){
 	if(MOD == 3)
 		SET_GPREG(static_cast<reg16_t>(RM), value);
@@ -60,6 +70,16 @@ uint16_t ExecInstr::get_r16(void){
 	return GET_GPREG(static_cast<reg16_t>(REG));
 }
 
+void ExecInstr::set_moffs16(uint16_t value){
+	SEGMENT = DS;
+	return WRITE_MEM16(MOFFS, value);
+}
+
+uint16_t ExecInstr::get_moffs16(void){
+	SEGMENT = DS;
+	return READ_MEM16(MOFFS);
+}
+
 void ExecInstr::set_rm8(uint8_t value){
 	if(MOD == 3)
 		SET_GPREG(static_cast<reg8_t>(RM), value);
@@ -76,6 +96,16 @@ uint8_t ExecInstr::get_rm8(void){
 
 void ExecInstr::set_r8(uint8_t value){
 	SET_GPREG(static_cast<reg8_t>(REG), value);
+}
+
+void ExecInstr::set_moffs8(uint8_t value){
+	SEGMENT = DS;
+	return WRITE_MEM8(MOFFS, value);
+}
+
+uint8_t ExecInstr::get_moffs8(void){
+	SEGMENT = DS;
+	return READ_MEM8(MOFFS);
 }
 
 uint8_t ExecInstr::get_r8(void){
@@ -106,6 +136,7 @@ uint32_t ExecInstr::get_crn(void){
 uint32_t ExecInstr::calc_modrm(void){
 	ASSERT(MOD != 3);
 
+	SEGMENT = DS;
 	if(is_mode32() ^ chsz_ad)
 		return calc_modrm32();
 	else
@@ -114,8 +145,6 @@ uint32_t ExecInstr::calc_modrm(void){
 
 uint32_t ExecInstr::calc_modrm16(void){
 	uint32_t addr = 0;
-
-	SEGMENT = DS;
 
 	switch(MOD){
 		case 1:
@@ -156,8 +185,6 @@ uint32_t ExecInstr::calc_modrm16(void){
 
 uint32_t ExecInstr::calc_modrm32(void){
 	uint32_t addr = 0;
-
-	SEGMENT = DS;
 
 	switch(MOD){
 		case 1:

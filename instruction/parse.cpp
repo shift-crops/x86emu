@@ -86,6 +86,8 @@ void ParseInstr::parse(void){
 		UPDATE_EIP(2);
 	}
 
+	if(chk[opcode].moffs)
+		parse_moffs();
 
 	DEBUG_MSG(5, "\n");
 }
@@ -149,3 +151,16 @@ void ParseInstr::parse_modrm16(void){
 		DEBUG_MSG(5, "disp8:0x%02x ", DISP8);
 	}
 }
+
+void ParseInstr::parse_moffs(void){
+	if(is_mode32() ^ chsz_ad){
+		MOFFS = get_emu()->get_code32(0);
+		UPDATE_EIP(4);
+	}
+	else{
+		MOFFS = get_emu()->get_code16(0);
+		UPDATE_EIP(2);
+	}
+	DEBUG_MSG(5, "moffs:0x%04x ", MOFFS);
+}
+

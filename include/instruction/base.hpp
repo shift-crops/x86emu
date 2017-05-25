@@ -52,8 +52,8 @@ class InstrBase : public ExecInstr, public ParseInstr, public EmuInstr {
 		void mov_r8_rm8(void);
 		void mov_sreg_rm16(void);
 		void nop(void);
-		//void mov_al_moffs8(void);
-		//void mov_moffs8_al(void);
+		void mov_al_moffs8(void);
+		void mov_moffs8_al(void);
 		void test_al_imm8(void);
                 void mov_r8_imm8(void);
                 void mov_rm8_imm8(void);
@@ -178,9 +178,7 @@ class Instr16 : public InstrBase {
                 void callf_ptr16_16(void);
                 void pushf(void);
                 void popf(void);
-		void mov_al_moffs8(void);
 		void mov_ax_moffs16(void);
-		void mov_moffs8_al(void);
 		void mov_moffs16_ax(void);
 		void cmps_m8_m8(void);
 		void cmps_m16_m16(void);
@@ -332,9 +330,7 @@ class Instr32 : public InstrBase {
                 void callf_ptr16_32(void);
                 void pushf(void);
                 void popf(void);
-		void mov_al_moffs8(void);
 		void mov_eax_moffs32(void);
-		void mov_moffs8_al(void);
 		void mov_moffs32_eax(void);
 		void cmps_m8_m8(void);
 		void cmps_m32_m32(void);
