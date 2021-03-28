@@ -85,21 +85,21 @@ uint32_t init_idt(void){
 	idtr->base_l = (uint32_t)idt & 0xffff;
 	idtr->base_h = (uint32_t)idt >> 16;
 
-	set_idt(&idt[0x00], sys_puts, 7, 3, 0x8); 
-	set_idt(&idt[0x01], sys_gets, 7, 3, 0x8); 
-	set_idt(&idt[0x20], irq_timer, 6, 0, 0x8); 
-	set_idt(&idt[0x21], irq_keyboard, 6, 0, 0x8); 
-	set_idt(&idt[0x2c], irq_mouse, 6, 0, 0x8); 
+	set_idt(&idt[0x00], sys_puts, 7, 3, 0x8);
+	set_idt(&idt[0x01], sys_gets, 7, 3, 0x8);
+	set_idt(&idt[0x20], irq_timer, 6, 0, 0x8);
+	set_idt(&idt[0x21], irq_keyboard, 6, 0, 0x8);
+	set_idt(&idt[0x2c], irq_mouse, 6, 0, 0x8);
 
 	return (uint32_t)idtr;
 }
 
 void set_idt(struct IDT *idt, void (*off)(), uint8_t type, uint8_t DPL, uint16_t sel){
-	idt->offset_l = (uint32_t)off & 0xffff; 
-	idt->offset_h = (uint32_t)off >> 16; 
-	idt->selector = sel; 
-	idt->type = type; 
-	idt->D = 1; 
-	idt->DPL = DPL; 
-	idt->P = 1; 
+	idt->offset_l = (uint32_t)off & 0xffff;
+	idt->offset_h = (uint32_t)off >> 16;
+	idt->selector = sel;
+	idt->type = type;
+	idt->D = 1;
+	idt->DPL = DPL;
+	idt->P = 1;
 }

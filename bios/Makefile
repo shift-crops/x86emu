@@ -3,7 +3,7 @@ OBJS	= startup.o bios.o functions.o service.o disk.o vga.o video.o keyboard.o
 
 CC 	:= gcc
 AS 	:= nasm
-CFLAGS	+= -masm=intel -nostdlib -fno-asynchronous-unwind-tables -g -fno-stack-protector -m16
+CFLAGS	+= -masm=intel -nostdlib -fno-asynchronous-unwind-tables -fcf-protection=none -fno-stack-protector -fno-pie -m16
 LDFLAGS	+= --entry=start --oformat=binary -Ttext 0x0 -melf_i386
 
 all :

@@ -29,15 +29,17 @@ next:
 	mov cr0, eax
 
 	call init_pic
-	call init_timer
+	;call init_timer
 	call init_key_mouse
 	call init_vga
 
 	mov ax, 0x23
 	mov ds, ax
 	mov ss, ax
-	call 0x1b:main
+	call 0x18:main
+infinit:
 	hlt
+	jmp infinit
 
 init_pic:
 	cli
@@ -110,6 +112,7 @@ align 8
 gdtr:
 	dw gdt_end - gdt -1
 	dd gdt
+align 8
 gdt:
 	dq 0
 
@@ -144,7 +147,7 @@ gdt:
 	dw 0x0080
 	dw tss - start
 	db 0x01
-	db 0x00
+	db 0x01
 	db 0x00
 	db 0x00
 gdt_end:

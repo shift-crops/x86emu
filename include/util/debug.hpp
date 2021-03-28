@@ -12,7 +12,7 @@ enum {F_ASSERT, F_ERROR, F_WARN, F_INFO, F_MSG};
 
 #ifdef DEBUG
 #define ON_DEBUG(type, lv, fmt, ...)	DEBUG_PRINT(type, lv, fmt, ##__VA_ARGS__)
-#define DEBUG_OPT			"v::"
+#define DEBUG_OPT			"v:"
 #else
 #define ON_DEBUG(type, lv, fmt, ...)
 #define DEBUG_OPT

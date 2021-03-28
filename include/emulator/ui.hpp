@@ -10,7 +10,6 @@
 
 struct UISetting {
 	bool enable;
-	uint8_t zoom;
 	bool full;
 	bool vm;
 };
@@ -42,6 +41,7 @@ class UI {
 		static void keyboard_callback(GLFWwindow *window, int key, int scancode, int action, int mods);
 		static void mouse_callback(GLFWwindow *window, int button, int action, int mods);
 		static void cursorpos_callback(GLFWwindow *window, double xpos, double ypos);
+		static void window_size_callback(GLFWwindow* window, int width, int height);
 		//static void cursorenter_callback(GLFWwindow *window, int entered);
 };
 

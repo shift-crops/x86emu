@@ -16,7 +16,6 @@ struct Setting {
 	uint32_t load_addr;
 	size_t load_size;
 	bool ui_enable;
-	uint8_t ui_zoom;
 	bool ui_full;
 	bool ui_vm;
 };
@@ -28,13 +27,6 @@ __attribute__((constructor))
 void init(void){
 	setbuf(stdout, NULL);
 	setbuf(stderr, NULL);
-
-	glfwInit();
-}
-
-__attribute__((destructor))
-void fini(void){
-	glfwTerminate();
 }
 
 int main(int argc, char *argv[]){
@@ -44,7 +36,6 @@ int main(int argc, char *argv[]){
 		.load_addr = 0x0,
 		.load_size = (size_t)-1,
 		.ui_enable = true,
-		.ui_zoom = 3,
 		.ui_full = false,
 		.ui_vm = false,
 	};
@@ -52,7 +43,6 @@ int main(int argc, char *argv[]){
 	char opt;
 	struct option long_options[] = {
 		{"memory",	required_argument, NULL, 1},
-		{"zoom",	required_argument, NULL, 2},
 		{"load_addr",	required_argument, NULL, 3},
 		{"load_size",	required_argument, NULL, 4},
 		{"full",	no_argument,       NULL, 5},
@@ -72,14 +62,6 @@ int main(int argc, char *argv[]){
 					set.mem_size = v*MB;
 				else
 					WARN("memory size is zero");
-				break;
-			case 'z':
-			case 2:
-				v = atoi(optarg);
-				if(v)
-					set.ui_zoom = v;
-				else
-					WARN("zoom error");
 				break;
 			case 'a':
 			case 3:
@@ -126,7 +108,6 @@ void run_emulator(const Setting set){
 		.mem_size = set.mem_size,
 		.uiset = {
 			.enable = set.ui_enable,
-			.zoom = set.ui_zoom,
 			.full = set.ui_full,
 			.vm = set.ui_vm,
 		},
@@ -142,7 +123,7 @@ void run_emulator(const Setting set){
 		return;
 	}
 
-	emu.load_binary("bios/bios.bin", 0xf0000, 0, 0x2000);
+	emu.load_binary("bios/bios.bin", 0xf0000, 0, 0x2800);
 	emu.load_binary("bios/crt0.bin", 0xffff0, 0, 0x10);
 	if(set.load_addr)
 		emu.load_binary(set.image_name, set.load_addr, 0x200, set.load_size);
@@ -182,8 +163,8 @@ void run_emulator(const Setting set){
 		}
 		catch(exception_t n){
 			emu.queue_interrupt(n, true);
-			INFO(3, "Exception %d", n);
-			//ERROR("Exception %d", n);
+			//INFO(3, "Exception %d", n);
+			ERROR("Exception %d", n);
 		}
 		catch(...){
 			emu.dump_regs();
@@ -202,8 +183,6 @@ void help(const char *name){
 	MSG(	"Options : \n"
 		"\t-m MB, --memory=MB\n"
 		"\t\tMemory size (MB)\n\n"
-		"\t-z X, --zoom=X\n"
-		"\t\tZoom magnification\n\n"
 		"\t-a ADDR, --load_addr=ADDR\n"
 		"\t\tAddress to preload disk image\n\n"
 		"\t-s SIZE, --load_size=SIZE\n"
@@ -213,7 +192,7 @@ void help(const char *name){
 		"\t--VM\n"
 		"\t\trunning on VMware or VirtualBox\n\n"
 #ifdef DEBUG
-		"\t-v...\n"
+		"\t-v [1..4]\n"
 		"\t\tverbose level\n\n"
 #endif
 		"\t-h, --help\n"
